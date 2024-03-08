@@ -11,6 +11,8 @@ const char password[] = WIFI_PASSWORD;  // Need to create + define in secrets.h
 const char mqtt_server[] = "192.168.1.65";
 #define MQTT_PORT 1883
 
+#define MQTT_MAX_SIZE 1024
+
 #define MQTT_P1P2_HOST_ID                           "066" // NOTE: Need to custimize this
 #define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
 #define MQTT_P1P2_W_TOPIC                           "P1P2/W/" MQTT_P1P2_HOST_ID "/"  // FIXME: HOST_ID ?
@@ -30,6 +32,7 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_P1P2_P_LEAVING_WATER_TEMP              MQTT_P1P2_P_PREFIX "T/1/Temperature_Leaving_Water"
 #define MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE   MQTT_P1P2_P_PREFIX "T/1/Temperature_Room"
 
+// Control topics
 #define MQTT_C_HYSTERESIS_HACK_ON                   "ctrl4dkn/C/Hysteresis_Hack"
 #define MQTT_C_PRIMARY_ZONE_SET_POINT               "ctrl4dkn/C/Primary_Zone_Set_Point"
 #define MQTT_C_PRIMARY_ZONE_HEATING                 "ctrl4dkn/C/Primary_Zone_Heating"
@@ -37,6 +40,7 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_C_EXTRA_ZONE_HEATING                   "ctrl4dkn/C/Extra_Zone_Heating"
 #define MQTT_C_GAS_ONLY_ON                          "ctrl4dkn/C/Gas_Only"
 
+// Status topics
 #define MQTT_S_VALVE_ZONE_PRIMARY_OPEN              "ctrl4dkn/S/Valve_Zone_Primary_Open"
 #define MQTT_S_VALVE_ZONE_EXTRA_OPEN                "ctrl4dkn/S/Valve_Zone_Extra_Open"
 #define MQTT_S_DAIKIN_ZONE_PRIMARY_ENABLE           "ctrl4dkn/S/Daikin_Zone_Primary_Enable"
@@ -55,7 +59,7 @@ const char mqtt_server[] = "192.168.1.65";
 #define PRIMARY_ZONE_PROTECTION_DELAY         5     // Minutes
 
 #define CONTROL_LOOP_TIME             60    // Seconds
-#define MQTT_UPDATE_TIME              10    // Seconds
+#define MQTT_UPDATE_TIME               5    // Seconds
 
 // set output pin numbers
 const int LedRed = 25;                      // Onboard LED

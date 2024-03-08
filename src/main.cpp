@@ -190,6 +190,45 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
 }
 
 
+void MQTTPublishConfig()
+{
+  JsonDocument root;
+  root["name"] = "Ctrl4Dkn Valve_Zone_Extra_Open";
+  root["state_topic"] = MQTT_S_VALVE_ZONE_EXTRA_OPEN;
+//  root["command_topic"] = "ctrl4dkn/" MQTT_S_VALVE_ZONE_EXTRA_OPEN "/set";
+  root["command_topic"] = MQTT_C_EXTRA_ZONE_HEATING;
+  root["payload_on"] = "1";
+  root["payload_off"] = "0";
+  root["state_on"] = "1";
+  root["state_off"] = "0";
+  root["unique_id"] = "ctrl4dkn_01"; // Optional
+//  root["value_template"] = "{{ value_json.state }}"; // FIXME
+
+  //JsonObject device  = root.createNestedObject("device");
+  JsonObject device = root.to<JsonObject>();
+  device["name"] = "Ctrl4Dkn";
+  device["model"] = "Ctrl4Dkn";
+  device["manufacturer"] = "Arnova";
+  device["identifiers"][0] = "Ctrl4DknID00";
+
+//  root["device_class"] = "sensor";
+//  root["unit_of_meas"] = "%";
+//  root["dev_cla"] = "humidity";
+//  root["frc_upd"] = true;
+  //root["val_tpl"] = "{{value_json['ESP32']['Humidity']}}";
+
+  // Output to console
+  serializeJsonPretty(root, Serial);
+  Serial.println();
+
+  // Serialize JSON for MQTT
+  char message[MQTT_MAX_SIZE];
+  serializeJson(root, message);
+  Serial.println(message); //Prints it out on one line.
+  g_MQTTClient.publish("homeassistant/switch/ctrl4dkn_01/" "Valve_Zone_Extra_Open" "/config", message, true);
+}
+
+
 void MQTTReconnect()
 {
   // Loop until we're reconnected
@@ -232,30 +271,9 @@ void MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_C_SECONDARY_ZONE_HEATING, 0);
   g_MQTTClient.subscribe(MQTT_C_EXTRA_ZONE_HEATING, 0);
   g_MQTTClient.subscribe(MQTT_C_GAS_ONLY_ON, 0);
-}
 
-
-void MQTTPublishConfig()
-{
-  JsonDocument root;
-  root["name"] = "ctrl4dkn_00";
-  root["device_class"] = "sensor";
-  root["state_topic"] = "ctrl4dkn_00/state";
-  root["unique_id"] = "ctrl4dkn_00";
-//  root["unit_of_meas"] = "%";
-//  root["dev_cla"] = "humidity";
-//  root["frc_upd"] = true;
-  //root["val_tpl"] = "{{value_json['ESP32']['Humidity']}}";
-
-  // Output to console
-  serializeJsonPretty(root, Serial);
-  Serial.println();
-
-  // Serialize JSON for MQTT
-  char message[1024];
-  serializeJson(root, message);
-  Serial.println(message); //Prints it out on one line.
-  g_MQTTClient.publish("homeassistant/binary_sensor/ctrl4dkn_00/config", message, true);
+  // Publish MQTT config for eg. HA discovery
+  MQTTPublishConfig();
 }
 
 
@@ -331,13 +349,8 @@ void setup()
   g_MQTTClient.setServer(mqtt_server, MQTT_PORT);
 
   g_MQTTClient.setCallback(MQTTCallback);
+  g_MQTTClient.setBufferSize(MQTT_MAX_SIZE);
   MQTTReconnect();
-
-  // Publish MQTT config for eg. HA discovery
-  MQTTPublishConfig();
-
-  // Indicate we're running:
-  digitalWrite(LedRed, HIGH);
 }
 
 
@@ -349,10 +362,17 @@ void loop()
   // Listen for mqtt message and reconnect if disconnected
   if (!g_MQTTClient.connected())
   {
+    digitalWrite(LedRed, HIGH); // Off
+
     MQTTReconnect();
   }
+  else
+  {
+    // Indicate we're running:
+    digitalWrite(LedRed, LOW); // On
 
-  g_MQTTClient.loop();
+    g_MQTTClient.loop();
+  }
 
   g_DaikinCtrl.loop();
 }
