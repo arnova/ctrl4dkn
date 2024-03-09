@@ -199,14 +199,14 @@ void MQTTPublishConfig(const char* strItem)
   root["payload_off"] = "0";
   root["state_on"] = "1";
   root["state_off"] = "0";
-  root["unique_id"] = "ctrl4dkn_" MQTT_CTRL4DKN_HOST_ID; // Optional
+  root["unique_id"] = String("Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID "_") + strItem; // Optional
 //  root["value_template"] = "{{ value_json.state }}"; // FIXME?
 
   JsonObject device = root["device"].to<JsonObject>();
   device["name"] = "Ctrl4Dkn";
   device["model"] = "Heat Controller";
   device["manufacturer"] = "Arnova";
-  device["identifiers"][0] = "Ctrl4DknID" MQTT_CTRL4DKN_HOST_ID;
+  device["identifiers"][0] = "Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID;
 
 //  root["device_class"] = "sensor";
 //  root["unit_of_meas"] = "%";

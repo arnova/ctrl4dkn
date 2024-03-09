@@ -36,6 +36,8 @@ class CDaikinCtrl
     void SetP1P2HeatingOn(const bool& bVal) { m_bP1P2HeatingOn = bVal; };
     void SetP1P2ValveZoneMain(const bool& bVal) { m_bP1P2ValveZoneMain = bVal; };
 
+    bool GetIsHeatingActive() { return m_bP1P2HeatingOn && m_bP1P2CirculationPumpOn && m_bP1P2ValveZoneMain; }; // FIXME: This needs changing when secondary heating curve is used
+
     void SetCtrlPriZoneHeating(const bool& bVal) { m_bCtrlPriZoneHeating = bVal; m_bUpdateCtrlPriZoneHeating = true; };
     void SetCtrlSecZoneHeating(const bool& bVal) { m_bCtrlSecZoneHeating = bVal; m_bUpdateCtrlSecZoneHeating = true; };
     void SetCtrlExtraZoneHeating(const bool& bVal) { m_bCtrlExtraZoneHeating = bVal; m_bUpdateCtrlExtraZoneHeating = true; };
