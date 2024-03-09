@@ -1,8 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
-#include <mDNS.h>
-//#include <WiFi.h>
 //#include <WiFiSTA.h>
+//#include <mDNS.h>
 #include <PubSubClient.h>
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h>
@@ -53,30 +52,6 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_C_PRIMARY_ZONE_HEATING))
-  {
-    if (bValidInt)
-    {
-      if (iVal == 0 || iVal == 1)
-        g_DaikinCtrl.SetCtrlPriZoneHeating(iVal);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_C_SECONDARY_ZONE_HEATING))
-  {
-    if (bValidInt)
-    {
-      if (iVal >= 0 && iVal <= 2)
-        g_DaikinCtrl.SetCtrlSecZoneHeating(iVal);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
   else if (STRIEQUALS(topic, MQTT_P1P2_P_LEAVING_WATER_TEMP))
   {
     if (bValidFloat)
@@ -112,53 +87,6 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_C_HYSTERESIS_HACK_ON))
-  {
-    if (bValidInt)
-    {
-      if (iVal == 1)
-        g_DaikinCtrl.SetCtrlHysteresisHack(true);
-      else if (iVal == 0)
-        g_DaikinCtrl.SetCtrlHysteresisHack(false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_C_PRIMARY_ZONE_SET_POINT))
-  {
-    if (bValidFloat)
-      g_DaikinCtrl.UpdateDaikinTargetTemperature(fVal); // FIXME: Need to only saved value
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_C_EXTRA_ZONE_HEATING))
-  {
-    if (bValidInt)
-    {
-      if (iVal == 0 || iVal == 1)
-        g_DaikinCtrl.SetCtrlExtraZoneHeating(iVal);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_C_GAS_ONLY_ON))
-  {
-    if (bValidInt)
-    {
-      if (iVal == 1)
-        digitalWrite(DaikinPreferentialRelay, HIGH);
-      else if (iVal == 0)
-        digitalWrite(DaikinPreferentialRelay, LOW);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
   else if (STRIEQUALS(topic, MQTT_P1P2_P_CIRCULATION_PUMP_ON))
   {
     if (bValidInt)
@@ -187,25 +115,95 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
+  else if (STRIEQUALS(topic, MQTT_C_PRIMARY_ZONE_HEATING "/set"))
+  {
+    if (bValidInt)
+    {
+      if (iVal == 0 || iVal == 1)
+        g_DaikinCtrl.SetCtrlPriZoneHeating(iVal);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_C_SECONDARY_ZONE_HEATING "/set"))
+  {
+    if (bValidInt)
+    {
+      if (iVal >= 0 && iVal <= 2)
+        g_DaikinCtrl.SetCtrlSecZoneHeating(iVal);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_C_EXTRA_ZONE_HEATING "/set"))
+  {
+    if (bValidInt)
+    {
+      if (iVal == 0 || iVal == 1)
+        g_DaikinCtrl.SetCtrlExtraZoneHeating(iVal);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_C_HYSTERESIS_HACK_ON "/set"))
+  {
+    if (bValidInt)
+    {
+      if (iVal == 1)
+        g_DaikinCtrl.SetCtrlHysteresisHack(true);
+      else if (iVal == 0)
+        g_DaikinCtrl.SetCtrlHysteresisHack(false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_C_PRIMARY_ZONE_SET_POINT "/set"))
+  {
+    if (bValidFloat)
+      g_DaikinCtrl.UpdateDaikinTargetTemperature(fVal); // FIXME: Need to only saved value
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_C_GAS_ONLY_ON "/set"))
+  {
+    if (bValidInt)
+    {
+      if (iVal == 1)
+        digitalWrite(DaikinPreferentialRelay, HIGH);
+      else if (iVal == 0)
+        digitalWrite(DaikinPreferentialRelay, LOW);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
 }
 
 
 void MQTTPublishConfig()
 {
   JsonDocument root;
-  root["name"] = "Ctrl4Dkn Valve_Zone_Extra_Open";
-  root["state_topic"] = MQTT_S_VALVE_ZONE_EXTRA_OPEN;
-//  root["command_topic"] = "ctrl4dkn/" MQTT_S_VALVE_ZONE_EXTRA_OPEN "/set";
-  root["command_topic"] = MQTT_C_EXTRA_ZONE_HEATING;
+  root["name"] = "Ctrl4Dkn Valve Zone Extra Open";
+  root["state_topic"] = MQTT_C_EXTRA_ZONE_HEATING;
+  root["command_topic"] = MQTT_C_EXTRA_ZONE_HEATING "/set";
+//  root["command_topic"] = MQTT_C_EXTRA_ZONE_HEATING;
   root["payload_on"] = "1";
   root["payload_off"] = "0";
   root["state_on"] = "1";
   root["state_off"] = "0";
   root["unique_id"] = "ctrl4dkn_01"; // Optional
-//  root["value_template"] = "{{ value_json.state }}"; // FIXME
+//  root["value_template"] = "{{ value_json.state }}"; // FIXME?
 
-  //JsonObject device  = root.createNestedObject("device");
-  JsonObject device = root.to<JsonObject>();
+  JsonObject device = root["device"].to<JsonObject>();
   device["name"] = "Ctrl4Dkn";
   device["model"] = "Ctrl4Dkn";
   device["manufacturer"] = "Arnova";
@@ -264,13 +262,13 @@ void MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
 
-  // CTRL4DKN topics
-  g_MQTTClient.subscribe(MQTT_C_HYSTERESIS_HACK_ON, 0);
-  g_MQTTClient.subscribe(MQTT_C_PRIMARY_ZONE_SET_POINT, 0);
-  g_MQTTClient.subscribe(MQTT_C_PRIMARY_ZONE_HEATING, 0);
-  g_MQTTClient.subscribe(MQTT_C_SECONDARY_ZONE_HEATING, 0);
-  g_MQTTClient.subscribe(MQTT_C_EXTRA_ZONE_HEATING, 0);
-  g_MQTTClient.subscribe(MQTT_C_GAS_ONLY_ON, 0);
+  // Control topics
+  g_MQTTClient.subscribe(MQTT_C_PRIMARY_ZONE_HEATING "/set", 0);
+  g_MQTTClient.subscribe(MQTT_C_SECONDARY_ZONE_HEATING "/set", 0);
+  g_MQTTClient.subscribe(MQTT_C_EXTRA_ZONE_HEATING "/set", 0);
+  g_MQTTClient.subscribe(MQTT_C_PRIMARY_ZONE_SET_POINT "/set", 0);
+  g_MQTTClient.subscribe(MQTT_C_GAS_ONLY_ON "/set", 0);
+  g_MQTTClient.subscribe(MQTT_C_HYSTERESIS_HACK_ON "/set", 0);
 
   // Publish MQTT config for eg. HA discovery
   MQTTPublishConfig();

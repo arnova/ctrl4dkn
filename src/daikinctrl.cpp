@@ -145,6 +145,24 @@ void CDaikinCtrl::UpdateDaikinZoneSecondaryEnable(const bool bVal)
 
 bool CDaikinCtrl::MQTTPublishValues()
 {
+  if (m_bUpdateCtrlPriZoneHeating)
+  {
+    m_bUpdateCtrlPriZoneHeating = false;
+    m_pMQTTClient->publish(MQTT_C_PRIMARY_ZONE_HEATING, m_bCtrlPriZoneHeating ? "1" : "0");
+  }
+
+  if (m_bUpdateCtrlSecZoneHeating)
+  {
+    m_bUpdateCtrlSecZoneHeating = false;
+    m_pMQTTClient->publish(MQTT_C_SECONDARY_ZONE_HEATING, m_bCtrlSecZoneHeating ? "1" : "0");
+  }
+
+  if (m_bUpdateCtrlExtraZoneHeating)
+  {
+    m_bUpdateCtrlExtraZoneHeating = false;
+    m_pMQTTClient->publish(MQTT_C_EXTRA_ZONE_HEATING, m_bCtrlExtraZoneHeating ? "1" : "0");
+  }
+
   if (m_bUpdateZonePrimaryRealSetPoint)
   {
     m_bUpdateZonePrimaryRealSetPoint = false;
@@ -226,12 +244,12 @@ void CDaikinCtrl::loop()
       //       This is due to (possible) modulation else it may take forever before we switch over.
       //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
       if (m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp ||
-          m_iCtrlSecZoneHeating == 2 /* = Force secondary zone heating */)
+          m_bCtrlSecZoneForceHeating)
       {
-        if (m_iCtrlSecZoneHeating == 2 /* = Force secondary zone heating */ ||
+        if (m_bCtrlSecZoneForceHeating ||
             m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
         {
-          if (m_iCtrlSecZoneHeating != 0 || !digitalRead(SecondaryZoneThermostat))
+          if (m_bCtrlSecZoneForceHeating || m_bCtrlSecZoneHeating || !digitalRead(SecondaryZoneThermostat))
           {
             m_bDaikinSecondaryZoneOn = true;
 
@@ -321,7 +339,7 @@ void CDaikinCtrl::loop()
   if (m_bSecZoneOnly || m_bPrimaryZoneProtection)
   {
     // Close primary zone valve
-    digitalWrite(PrimaryZoneCloseValveRelay, HIGH);
+    digitalWrite(PrimaryZoneCloseValveRelay, HIGH); // FIXME: Only when heating active
 
     UpdateValveZonePrimaryOpen(false);
   }
@@ -333,10 +351,10 @@ void CDaikinCtrl::loop()
     UpdateValveZonePrimaryOpen(true);
   }
 
-  if (!m_bPrimaryZoneProtection && (!digitalRead(ExtraZoneThermostaat) || m_iCtrlExtraZoneHeating != 0))
+  if (!m_bPrimaryZoneProtection && (!digitalRead(ExtraZoneThermostaat) || m_bCtrlExtraZoneHeating))
   {
     // Open extra zone valve
-    digitalWrite(ExtraZoneOpenValveRelay, HIGH);
+    digitalWrite(ExtraZoneOpenValveRelay, HIGH); // FIXME: Only when heating active
 
     UpdateValveZoneExtraOpen(true);
   }
@@ -387,7 +405,7 @@ void CDaikinCtrl::loop()
 
   if (m_bDaikinSecondaryZoneOn)
   {
-    digitalWrite(DaikinSecondaryZoneRelay, HIGH); // Enable secondary zone heating on Daikin
+    digitalWrite(DaikinSecondaryZoneRelay, HIGH); // Enable secondary zone heating on Daikin. FIXME: Only when heating active
 
     UpdateDaikinZoneSecondaryEnable(true);
   }

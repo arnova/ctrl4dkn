@@ -28,16 +28,18 @@ class CDaikinCtrl
     bool P1P2SetTargetTemp(const float& fTemp);
     bool UpdateDaikinTargetTemperature(float fNewVal);
     bool PublishMQTTValues();
+
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
-    void SetCtrlPriZoneHeating(const uint8_t& iVal) { m_iCtrlPriZoneHeating = iVal; };
-    void SetCtrlSecZoneHeating(const uint8_t& iVal) { m_iCtrlSecZoneHeating = iVal; };
     void SetP1P2LeavingWaterTemp(const float& fVal) { m_fP1P2LeavingWaterTemp = fVal; };
     void SetP1P2CompressorOn(const bool& bVal) { m_bP1P2CompressorOn = bVal; };
-    void SetCtrlHysteresisHack(const bool& bVal) { m_bCtrlHysteresisHackOn = bVal; };
-    void SetCtrlExtraZoneHeating(const uint8_t& iVal) { m_iCtrlExtraZoneHeating = iVal; };
     void SetP1P2CirculationPumpOn(const bool& bVal) { m_bP1P2CirculationPumpOn = bVal; };
     void SetP1P2HeatingOn(const bool& bVal) { m_bP1P2HeatingOn = bVal; };
     void SetP1P2ValveZoneMain(const bool& bVal) { m_bP1P2ValveZoneMain = bVal; };
+
+    void SetCtrlPriZoneHeating(const bool& bVal) { m_bCtrlPriZoneHeating = bVal; m_bUpdateCtrlPriZoneHeating = true; };
+    void SetCtrlSecZoneHeating(const bool& bVal) { m_bCtrlSecZoneHeating = bVal; m_bUpdateCtrlSecZoneHeating = true; };
+    void SetCtrlExtraZoneHeating(const bool& bVal) { m_bCtrlExtraZoneHeating = bVal; m_bUpdateCtrlExtraZoneHeating = true; };
+    void SetCtrlHysteresisHack(const bool& bVal) { m_bCtrlHysteresisHackOn = bVal; };
 
   private:
     PubSubClient* m_pMQTTClient;
@@ -51,6 +53,14 @@ class CDaikinCtrl
     uint16_t m_iPrimaryZoneDisableCounter = 0;
     uint16_t m_iPrimaryZoneValveCounter = 0;
     uint16_t m_iPrimaryZoneProtectionCounter = 0;
+
+    bool m_bCtrlPriZoneHeating = true;
+    bool m_bCtrlSecZoneHeating = false;
+    bool m_bCtrlExtraZoneHeating = false;
+    bool m_bCtrlSecZoneForceHeating = false; // FIXME: Implement
+    bool m_bUpdateCtrlPriZoneHeating = true;
+    bool m_bUpdateCtrlSecZoneHeating = true;
+    bool m_bUpdateCtrlExtraZoneHeating = true;
 
     float m_fZonePrimaryRealSetPoint = 0.0f;
     bool m_bUpdateZonePrimaryRealSetPoint = true;
@@ -75,9 +85,6 @@ class CDaikinCtrl
     bool m_bP1P2CirculationPumpOn = false;
     bool m_bP1P2HeatingOn = false;
     bool m_bP1P2ValveZoneMain = false;
-    uint8_t m_iCtrlPriZoneHeating = 0;
-    uint8_t m_iCtrlSecZoneHeating = 0;
-    uint8_t m_iCtrlExtraZoneHeating = 0;
     bool m_bCtrlHysteresisHackOn = false;
     float m_fCtrlPrimaryZoneRealSetPoint = -1.0f; //DEFAULT_SET_POINT; // Default
 };

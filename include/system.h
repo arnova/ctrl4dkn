@@ -33,12 +33,12 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE   MQTT_P1P2_P_PREFIX "T/1/Temperature_Room"
 
 // Control topics
-#define MQTT_C_HYSTERESIS_HACK_ON                   "ctrl4dkn/C/Hysteresis_Hack"
-#define MQTT_C_PRIMARY_ZONE_SET_POINT               "ctrl4dkn/C/Primary_Zone_Set_Point"
 #define MQTT_C_PRIMARY_ZONE_HEATING                 "ctrl4dkn/C/Primary_Zone_Heating"
 #define MQTT_C_SECONDARY_ZONE_HEATING               "ctrl4dkn/C/Secondary_Zone_Heating"
 #define MQTT_C_EXTRA_ZONE_HEATING                   "ctrl4dkn/C/Extra_Zone_Heating"
+#define MQTT_C_PRIMARY_ZONE_SET_POINT               "ctrl4dkn/C/Primary_Zone_Set_Point"
 #define MQTT_C_GAS_ONLY_ON                          "ctrl4dkn/C/Gas_Only"
+#define MQTT_C_HYSTERESIS_HACK_ON                   "ctrl4dkn/C/Hysteresis_Hack"
 
 // Status topics
 #define MQTT_S_VALVE_ZONE_PRIMARY_OPEN              "ctrl4dkn/S/Valve_Zone_Primary_Open"
@@ -59,7 +59,7 @@ const char mqtt_server[] = "192.168.1.65";
 #define PRIMARY_ZONE_PROTECTION_DELAY         5     // Minutes
 
 #define CONTROL_LOOP_TIME             60    // Seconds
-#define MQTT_UPDATE_TIME               5    // Seconds
+#define MQTT_UPDATE_TIME               1    // Seconds
 
 // set output pin numbers
 const int LedRed = 25;                      // Onboard LED
