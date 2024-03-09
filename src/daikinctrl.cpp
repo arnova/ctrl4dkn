@@ -148,19 +148,19 @@ bool CDaikinCtrl::MQTTPublishValues()
   if (m_bUpdateCtrlPriZoneHeating)
   {
     m_bUpdateCtrlPriZoneHeating = false;
-    m_pMQTTClient->publish(MQTT_C_PRIMARY_ZONE_HEATING, m_bCtrlPriZoneHeating ? "1" : "0");
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING, m_bCtrlPriZoneHeating ? "1" : "0");
   }
 
   if (m_bUpdateCtrlSecZoneHeating)
   {
     m_bUpdateCtrlSecZoneHeating = false;
-    m_pMQTTClient->publish(MQTT_C_SECONDARY_ZONE_HEATING, m_bCtrlSecZoneHeating ? "1" : "0");
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING, m_bCtrlSecZoneHeating ? "1" : "0");
   }
 
   if (m_bUpdateCtrlExtraZoneHeating)
   {
     m_bUpdateCtrlExtraZoneHeating = false;
-    m_pMQTTClient->publish(MQTT_C_EXTRA_ZONE_HEATING, m_bCtrlExtraZoneHeating ? "1" : "0");
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_EXTRA_ZONE_HEATING, m_bCtrlExtraZoneHeating ? "1" : "0");
   }
 
   if (m_bUpdateZonePrimaryRealSetPoint)
@@ -169,7 +169,7 @@ bool CDaikinCtrl::MQTTPublishValues()
     char strTemp[5] = { 0 };
     Float2Str(m_fZonePrimaryRealSetPoint, strTemp);
 
-    m_pMQTTClient->publish(MQTT_S_ZONE_PRIMARY_REAL_SET_POINT, strTemp);
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_ZONE_PRIMARY_REAL_SET_POINT, strTemp);
   }
 
   if (m_bUpdateZonePrimarySavedSetPoint)
@@ -178,37 +178,37 @@ bool CDaikinCtrl::MQTTPublishValues()
     char strTemp[5] = { 0 };
     Float2Str(m_fZonePrimarySavedSetPoint, strTemp);
 
-    m_pMQTTClient->publish(MQTT_S_ZONE_PRIMARY_SAVED_SET_POINT, strTemp);
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_ZONE_PRIMARY_SAVED_SET_POINT, strTemp);
   }
 
   if (m_bUpdateLeavingWaterTooHigh)
   {
     m_bUpdateLeavingWaterTooHigh = false;
-    m_pMQTTClient->publish(MQTT_S_LEAVING_WATER_TOO_HIGH, m_bLeavingWaterTooHigh ? "1" : "0");
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_LEAVING_WATER_TOO_HIGH, m_bLeavingWaterTooHigh ? "1" : "0");
   }
 
   if (m_bUpdateValveZonePrimaryOpen)
   {
     m_bUpdateValveZonePrimaryOpen = false;
-    m_pMQTTClient->publish(MQTT_S_VALVE_ZONE_PRIMARY_OPEN, m_bValveZonePrimaryOpen ? "1": "0");
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ZONE_PRIMARY_OPEN, m_bValveZonePrimaryOpen ? "1": "0");
   }
 
   if (m_bUpdateValveZoneExtraOpen)
   {
     m_bUpdateValveZoneExtraOpen = false;
-    m_pMQTTClient->publish(MQTT_S_VALVE_ZONE_EXTRA_OPEN, m_bValveZoneExtraOpen ? "1" : "0");
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ZONE_EXTRA_OPEN, m_bValveZoneExtraOpen ? "1" : "0");
   }
 
   if (m_bUpdateDaikinZonePrimaryEnable)
   {
     m_bUpdateDaikinZonePrimaryEnable = false;
-    m_pMQTTClient->publish(MQTT_S_DAIKIN_ZONE_PRIMARY_ENABLE, m_bDaikinZonePrimaryEnable ? "1": "0");
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, m_bDaikinZonePrimaryEnable ? "1": "0");
   }
 
   if (m_bUpdateDaikinZoneSecondaryEnable)
   {
     m_bUpdateDaikinZoneSecondaryEnable = false;
-    m_pMQTTClient->publish(MQTT_S_DAIKIN_ZONE_SECONDARY_ENABLE, m_bDaikinZoneSecondaryEnable ? "1": "0");
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, m_bDaikinZoneSecondaryEnable ? "1": "0");
   }
 
   return true;

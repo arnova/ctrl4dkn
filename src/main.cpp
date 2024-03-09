@@ -115,7 +115,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_C_PRIMARY_ZONE_HEATING "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING "/set"))
   {
     if (bValidInt)
     {
@@ -127,7 +127,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_C_SECONDARY_ZONE_HEATING "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING "/set"))
   {
     if (bValidInt)
     {
@@ -139,7 +139,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_C_EXTRA_ZONE_HEATING "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_EXTRA_ZONE_HEATING "/set"))
   {
     if (bValidInt)
     {
@@ -151,7 +151,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_C_HYSTERESIS_HACK_ON "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_HYSTERESIS_HACK_ON "/set"))
   {
     if (bValidInt)
     {
@@ -165,14 +165,14 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_C_PRIMARY_ZONE_SET_POINT "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_SET_POINT "/set"))
   {
     if (bValidFloat)
       g_DaikinCtrl.UpdateDaikinTargetTemperature(fVal); // FIXME: Need to only saved value
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_C_GAS_ONLY_ON "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set"))
   {
     if (bValidInt)
     {
@@ -189,23 +189,22 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
 }
 
 
-void MQTTPublishConfig()
+void MQTTPublishConfig(const char* strItem)
 {
   JsonDocument root;
-  root["name"] = "Ctrl4Dkn Valve Zone Extra Open";
-  root["state_topic"] = MQTT_C_EXTRA_ZONE_HEATING;
-  root["command_topic"] = MQTT_C_EXTRA_ZONE_HEATING "/set";
-//  root["command_topic"] = MQTT_C_EXTRA_ZONE_HEATING;
+  root["name"] = String("Ctrl4Dkn ") + strItem;
+  root["state_topic"] = String(MQTT_CTRL4DKN_CTRL_PREFIX) + strItem;
+  root["command_topic"] = String(MQTT_CTRL4DKN_CTRL_PREFIX) + strItem + "/set";
   root["payload_on"] = "1";
   root["payload_off"] = "0";
   root["state_on"] = "1";
   root["state_off"] = "0";
-  root["unique_id"] = "ctrl4dkn_01"; // Optional
+  root["unique_id"] = "ctrl4dkn_00"; // Optional
 //  root["value_template"] = "{{ value_json.state }}"; // FIXME?
 
   JsonObject device = root["device"].to<JsonObject>();
   device["name"] = "Ctrl4Dkn";
-  device["model"] = "Ctrl4Dkn";
+  device["model"] = "Heat Controller";
   device["manufacturer"] = "Arnova";
   device["identifiers"][0] = "Ctrl4DknID00";
 
@@ -223,7 +222,8 @@ void MQTTPublishConfig()
   char message[MQTT_MAX_SIZE];
   serializeJson(root, message);
   Serial.println(message); //Prints it out on one line.
-  g_MQTTClient.publish("homeassistant/switch/ctrl4dkn_01/" "Valve_Zone_Extra_Open" "/config", message, true);
+  String strTopic = String("homeassistant/switch/ctrl4dkn_01/") + strItem + "/config";
+  g_MQTTClient.publish(strTopic.c_str(), message, true);
 }
 
 
@@ -263,15 +263,17 @@ void MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
 
   // Control topics
-  g_MQTTClient.subscribe(MQTT_C_PRIMARY_ZONE_HEATING "/set", 0);
-  g_MQTTClient.subscribe(MQTT_C_SECONDARY_ZONE_HEATING "/set", 0);
-  g_MQTTClient.subscribe(MQTT_C_EXTRA_ZONE_HEATING "/set", 0);
-  g_MQTTClient.subscribe(MQTT_C_PRIMARY_ZONE_SET_POINT "/set", 0);
-  g_MQTTClient.subscribe(MQTT_C_GAS_ONLY_ON "/set", 0);
-  g_MQTTClient.subscribe(MQTT_C_HYSTERESIS_HACK_ON "/set", 0);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING "/set", 0);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING "/set", 0);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_EXTRA_ZONE_HEATING "/set", 0);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_SET_POINT "/set", 0);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set", 0);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_HYSTERESIS_HACK_ON "/set", 0);
 
   // Publish MQTT config for eg. HA discovery
-  MQTTPublishConfig();
+  MQTTPublishConfig(MQTT_PRIMARY_ZONE_HEATING);
+  MQTTPublishConfig(MQTT_SECONDARY_ZONE_HEATING);
+  MQTTPublishConfig(MQTT_EXTRA_ZONE_HEATING);
 }
 
 
