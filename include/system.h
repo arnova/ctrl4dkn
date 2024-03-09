@@ -17,6 +17,7 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
 #define MQTT_P1P2_W_TOPIC                           "P1P2/W/" MQTT_P1P2_HOST_ID "/"  // FIXME: HOST_ID ?
 
+#define MQTT_CTRL4DKN_HOST_ID                       "067"
 #define MQTT_CTRL4DKN_CTRL_PREFIX                   "ctrl4dkn/C/"
 #define MQTT_CTRL4DKN_STATUS_PREFIX                 "ctrl4dkn/S/"
 

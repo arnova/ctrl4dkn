@@ -199,14 +199,14 @@ void MQTTPublishConfig(const char* strItem)
   root["payload_off"] = "0";
   root["state_on"] = "1";
   root["state_off"] = "0";
-  root["unique_id"] = "ctrl4dkn_00"; // Optional
+  root["unique_id"] = "ctrl4dkn_" MQTT_CTRL4DKN_HOST_ID; // Optional
 //  root["value_template"] = "{{ value_json.state }}"; // FIXME?
 
   JsonObject device = root["device"].to<JsonObject>();
   device["name"] = "Ctrl4Dkn";
   device["model"] = "Heat Controller";
   device["manufacturer"] = "Arnova";
-  device["identifiers"][0] = "Ctrl4DknID00";
+  device["identifiers"][0] = "Ctrl4DknID" MQTT_CTRL4DKN_HOST_ID;
 
 //  root["device_class"] = "sensor";
 //  root["unit_of_meas"] = "%";
@@ -222,7 +222,7 @@ void MQTTPublishConfig(const char* strItem)
   char message[MQTT_MAX_SIZE];
   serializeJson(root, message);
   Serial.println(message); //Prints it out on one line.
-  String strTopic = String("homeassistant/switch/ctrl4dkn_01/") + strItem + "/config";
+  String strTopic = String("homeassistant/switch/ctrl4dkn_" MQTT_CTRL4DKN_HOST_ID "/") + strItem + "/config";
   g_MQTTClient.publish(strTopic.c_str(), message, true);
 }
 
