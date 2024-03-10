@@ -192,7 +192,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
 void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfigType)
 {
   JsonDocument root;
-  root["name"] = String("Ctrl4Dkn ") + strItem;
+  root["name"] = strItem;
   root["unique_id"] = String("Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID "_") + strItem; // Optional
   root["retain"] = true;
 //  root["value_template"] = "{{ value_json.state }}"; // FIXME?
@@ -395,8 +395,8 @@ void setup()
   Serial.setTimeout(2000);
 
   SetupWifi();
-  g_MQTTClient.setServer(mqtt_server, MQTT_PORT);
 
+  g_MQTTClient.setServer(mqtt_server, MQTT_PORT);
   g_MQTTClient.setCallback(MQTTCallback);
   g_MQTTClient.setBufferSize(MQTT_MAX_SIZE);
   MQTTReconnect();
