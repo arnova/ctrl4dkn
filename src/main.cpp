@@ -225,7 +225,7 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
   device["name"] = "Ctrl4Dkn";
   device["model"] = "Heat Controller";
   device["manufacturer"] = "Arnova";
-  device["identifiers"][0] = "Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID;
+  device["identifiers"] = "Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID;
 
 //  root["device_class"] = "sensor";
 //  root["unit_of_meas"] = "%";
