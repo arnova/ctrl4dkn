@@ -9,6 +9,13 @@
 class CDaikinCtrl
 {
   public:
+    typedef enum HAConfigType_e
+    {
+      SWITCH,
+      SENSOR,
+      BINARY_SENSOR
+    } HAConfigType_t;
+
     CDaikinCtrl(PubSubClient* MQTTClient);
 
     void loop();

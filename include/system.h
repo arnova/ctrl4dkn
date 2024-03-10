@@ -40,9 +40,9 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_PRIMARY_ZONE_HEATING                   "Primary_Zone_Heating"
 #define MQTT_SECONDARY_ZONE_HEATING                 "Secondary_Zone_Heating"
 #define MQTT_EXTRA_ZONE_HEATING                     "Extra_Zone_Heating"
-#define MQTT_PRIMARY_ZONE_SET_POINT                 "Primary_Zone_Set_Point"
-#define MQTT_GAS_ONLY_ON                            "Gas_Only"
-#define MQTT_HYSTERESIS_HACK_ON                     "Hysteresis_Hack"
+#define MQTT_PRIMARY_ZONE_SET_POINT                 "Primary_Zone_Set_Point" //FIXME
+#define MQTT_GAS_ONLY_ON                            "Gas_Only" //FIXME
+#define MQTT_HYSTERESIS_HACK_ON                     "Hysteresis_Hack" //FIXME
 
 // Status topics
 #define MQTT_VALVE_ZONE_PRIMARY_OPEN                "Valve_Zone_Primary_Open"
@@ -50,8 +50,8 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_DAIKIN_ZONE_PRIMARY_ENABLE             "Daikin_Zone_Primary_Enable"
 #define MQTT_DAIKIN_ZONE_SECONDARY_ENABLE           "Daikin_Zone_Secondary_Enable"
 #define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving_Water_Too_High"
-#define MQTT_ZONE_PRIMARY_REAL_SET_POINT            "Zone_Primary_Real_Set_Point"
-#define MQTT_ZONE_PRIMARY_SAVED_SET_POINT           "Zone_Primary_Saved_Set_Point"
+#define MQTT_ZONE_PRIMARY_REAL_SET_POINT            "Zone_Primary_Real_Set_Point" //FIXME
+#define MQTT_ZONE_PRIMARY_SAVED_SET_POINT           "Zone_Primary_Saved_Set_Point" //FIXME
 
 #define DAIKIN_HYSTERESIS                     1.0f
 #define DAIKIN_PRIMARY_ZONE_OFF_TEMPERATURE  15.0f

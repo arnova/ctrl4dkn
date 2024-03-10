@@ -189,16 +189,35 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
 }
 
 
-void MQTTPublishConfig(const char* strItem)
+void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfigType)
 {
   JsonDocument root;
   root["name"] = String("Ctrl4Dkn ") + strItem;
-  root["state_topic"] = String(MQTT_CTRL4DKN_CTRL_PREFIX) + strItem;
-  root["command_topic"] = String(MQTT_CTRL4DKN_CTRL_PREFIX) + strItem + "/set";
-  root["payload_on"] = "1";
-  root["payload_off"] = "0";
-  root["state_on"] = "1";
-  root["state_off"] = "0";
+
+  switch(HAConfigType)
+  {
+    case CDaikinCtrl::SWITCH:
+    {
+      root["state_topic"] = String(MQTT_CTRL4DKN_CTRL_PREFIX) + strItem;
+      root["command_topic"] = String(MQTT_CTRL4DKN_CTRL_PREFIX) + strItem + "/set";
+      root["payload_on"] = "1";
+      root["payload_off"] = "0";
+      root["state_on"] = "1";
+      root["state_off"] = "0";
+
+    }
+    break;
+
+    case CDaikinCtrl::BINARY_SENSOR:
+    case CDaikinCtrl::SENSOR:
+    {
+      root["state_topic"] = String(MQTT_CTRL4DKN_STATUS_PREFIX) + strItem;
+      root["payload_on"] = "1";
+      root["payload_off"] = "0";
+    }
+    break;    
+  }
+
   root["unique_id"] = String("Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID "_") + strItem; // Optional
 //  root["value_template"] = "{{ value_json.state }}"; // FIXME?
 
@@ -222,7 +241,31 @@ void MQTTPublishConfig(const char* strItem)
   char message[MQTT_MAX_SIZE];
   serializeJson(root, message);
   Serial.println(message); //Prints it out on one line.
-  String strTopic = String("homeassistant/switch/ctrl4dkn_" MQTT_CTRL4DKN_HOST_ID "/") + strItem + "/config";
+
+  String strTopic = String("homeassistant/");
+  switch (HAConfigType)
+  {
+    case CDaikinCtrl::SWITCH:
+    {
+       strTopic += "switch";
+    }
+    break;
+
+    case CDaikinCtrl::SENSOR:
+    {
+      strTopic += "sensor";
+    }
+    break;
+
+    case CDaikinCtrl::BINARY_SENSOR:
+    {
+      strTopic += "binary_sensor";
+    }
+    break;
+  }
+  strTopic += String("/ctrl4dkn_" MQTT_CTRL4DKN_HOST_ID "/") + strItem + "/config";
+
+
   g_MQTTClient.publish(strTopic.c_str(), message, true);
 }
 
@@ -271,9 +314,15 @@ void MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_HYSTERESIS_HACK_ON "/set", 0);
 
   // Publish MQTT config for eg. HA discovery
-  MQTTPublishConfig(MQTT_PRIMARY_ZONE_HEATING);
-  MQTTPublishConfig(MQTT_SECONDARY_ZONE_HEATING);
-  MQTTPublishConfig(MQTT_EXTRA_ZONE_HEATING);
+  MQTTPublishConfig(MQTT_PRIMARY_ZONE_HEATING, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_SECONDARY_ZONE_HEATING, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_EXTRA_ZONE_HEATING, CDaikinCtrl::SWITCH);
+
+  MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_VALVE_ZONE_EXTRA_OPEN, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR);
 }
 
 
