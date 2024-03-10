@@ -193,6 +193,15 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
 {
   JsonDocument root;
   root["name"] = String("Ctrl4Dkn ") + strItem;
+  root["unique_id"] = String("Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID "_") + strItem; // Optional
+  root["retain"] = true;
+//  root["value_template"] = "{{ value_json.state }}"; // FIXME?
+
+//  root["device_class"] = "sensor";
+//  root["unit_of_meas"] = "%";
+//  root["dev_cla"] = "humidity";
+//  root["frc_upd"] = true;
+  //root["val_tpl"] = "{{value_json['ESP32']['Humidity']}}";
 
   switch(HAConfigType)
   {
@@ -218,20 +227,11 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
     break;    
   }
 
-  root["unique_id"] = String("Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID "_") + strItem; // Optional
-//  root["value_template"] = "{{ value_json.state }}"; // FIXME?
-
   JsonObject device = root["device"].to<JsonObject>();
   device["name"] = "Ctrl4Dkn";
   device["model"] = "Heat Controller";
   device["manufacturer"] = "Arnova";
   device["identifiers"] = "Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID;
-
-//  root["device_class"] = "sensor";
-//  root["unit_of_meas"] = "%";
-//  root["dev_cla"] = "humidity";
-//  root["frc_upd"] = true;
-  //root["val_tpl"] = "{{value_json['ESP32']['Humidity']}}";
 
   // Output to console
   serializeJsonPretty(root, Serial);
