@@ -21,10 +21,19 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_CTRL4DKN_CTRL_PREFIX                   "ctrl4dkn/C/"
 #define MQTT_CTRL4DKN_STATUS_PREFIX                 "ctrl4dkn/S/"
 
-// Publish topics
-#define MQTT_P1P2_W_SET_POINT_CMD                   "E360"     // Suffixed with 2-digit temperature hex-value
-#define MQTT_P1P2_W_SILENT_ON_OFF_CMD               "E3500030" // Suffixed with either 0 (off) or 1 (on)
-#define MQTT_P1P2_W_SILENT_LEVEL_CMD                "E3500010" // Suffixed with 1, 2 or 3 to select level
+// P1P2 write topics
+#define MQTT_P1P2_W_SET_POINT_CMD                   "E360"      // Room temperature setpoint.
+                                                                // Suffixed with 2-digit temperature hex-value
+#define MQTT_P1P2_W_ON_OFF_CMD                      "E352F"     // Heating/cooling on/off
+                                                                // Suffixed with either 0 (off) or 1 (on)
+#define MQTT_P1P2_W_AWT_DEV_CMD                     "E368"      // AWT temperature deviation
+                                                                // Suffixed with temperature:
+                                                                // E36 8 A sets deviation to +1 C
+                                                                // E36 8 FFF6 sets deviation to -1 C
+#define MQTT_P1P2_W_SILENT_ON_OFF_CMD               "E3500030"  // Silent mode on/off
+                                                                // Suffixed with either 0 (off) or 1 (on)
+#define MQTT_P1P2_W_SILENT_LEVEL_CMD                "E3500010"  // Silent level
+                                                                // Suffixed with 1, 2 or 3 to select level
 
 // Subscribe topics
 #define MQTT_P1P2_P_POWER_HEATPUMP                  MQTT_P1P2_P_PREFIX "M/9/Power_Heatpump"
