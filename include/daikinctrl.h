@@ -86,14 +86,16 @@ class CDaikinCtrl
     bool m_bDaikinZoneSecondaryEnable = false;
     bool m_bUpdateDaikinZoneSecondaryEnable = true;
 
+    float m_fP1P2LeavingWaterTemp = -1.0f;
     float m_fP1P2PrimaryZoneRoomTemp = -1.0f;       // Room temperature reported by P1P2/thermostat
     float m_fP1P2PrimaryZoneTargetTemp = -1.0f;     // Actual target temperature set on P1P2/thermostat
     float m_fP1P2PrimaryZoneRoomTempSave = -1.0f;   // (Temporary) saved value for room temperature from P1P2/thermostat
-    float m_fP1P2LeavingWaterTemp = -1.0f;
+
+    float m_fCtrlPrimaryZoneRealSetPoint = -1.0f; //DEFAULT_SET_POINT; // Default
+
     bool m_bP1P2CompressorOn = false;
     bool m_bP1P2CirculationPumpOn = false;
     bool m_bP1P2HeatingOn = false;
     bool m_bP1P2ValveZoneMain = false;
-    float m_fCtrlPrimaryZoneRealSetPoint = -1.0f; //DEFAULT_SET_POINT; // Default
 };
 #endif // DAIKIN_CTRL_H
