@@ -4,14 +4,6 @@
 CDaikinCtrl::CDaikinCtrl(PubSubClient* MQTTClient)
 {
   m_pMQTTClient = MQTTClient;
-  m_bDaikinPrimaryZoneOn = false;
-  m_bDaikinSecondaryZoneOn = false;
-  m_bSecZoneOnly = false;
-  m_bPrimaryZoneProtection = false;
-  m_loopTimer = 0;
-  m_iPrimaryZoneDisableCounter = 0;
-  m_iPrimaryZoneValveCounter = 0;
-  m_iPrimaryZoneProtectionCounter = 0;
 }
 
 
@@ -239,7 +231,7 @@ void CDaikinCtrl::loop()
         {
           if (m_bCtrlSecZoneForceHeating || m_bCtrlSecZoneHeating || !digitalRead(SecondaryZoneThermostat))
           {
-            m_bDaikinSecondaryZoneOn = true;
+            m_bDaikinSecondaryZoneOn = true; // FIXME: Instead of selecting secondary curve, we can also increase AWT deviation
 
             // Need to wait (5 minutes) before primary zone valve(s) are closed
             m_iPrimaryZoneValveCounter = PRIMARY_ZONE_VALVE_DELAY;

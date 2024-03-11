@@ -36,6 +36,7 @@ class CDaikinCtrl
     bool UpdateDaikinTargetTemperature(float fNewVal);
 
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
+    void SetP1P2PrimaryZoneTargetTemp(const float& fVal) { m_fP1P2PrimaryZoneTargetTemp = fVal; };
     void SetP1P2LeavingWaterTemp(const float& fVal) { m_fP1P2LeavingWaterTemp = fVal; };
     void SetP1P2CompressorOn(const bool& bVal) { m_bP1P2CompressorOn = bVal; };
     void SetP1P2CirculationPumpOn(const bool& bVal) { m_bP1P2CirculationPumpOn = bVal; };
@@ -85,8 +86,8 @@ class CDaikinCtrl
     bool m_bDaikinZoneSecondaryEnable = false;
     bool m_bUpdateDaikinZoneSecondaryEnable = true;
 
-    float m_fP1P2PrimaryZoneRoomTemp = -1.0f;       // (User requested) room temperature from P1P2/thermostat
-    float m_fP1P2PrimaryZoneTargetTemp = -1.0f;     // Actual target temperature on Daikin read by P1P2. FIXME: Never updated
+    float m_fP1P2PrimaryZoneRoomTemp = -1.0f;       // Room temperature reported by P1P2/thermostat
+    float m_fP1P2PrimaryZoneTargetTemp = -1.0f;     // Actual target temperature set on P1P2/thermostat
     float m_fP1P2PrimaryZoneRoomTempSave = -1.0f;   // (Temporary) saved value for room temperature from P1P2/thermostat
     float m_fP1P2LeavingWaterTemp = -1.0f;
     bool m_bP1P2CompressorOn = false;

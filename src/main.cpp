@@ -48,7 +48,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   else if (STRIEQUALS(topic, MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE))
   {
     if (bValidFloat)
-      g_DaikinCtrl.UpdateDaikinTargetTemperature(fVal); // FIXME: Need to only saved value
+      g_DaikinCtrl.SetP1P2PrimaryZoneTargetTemp(fVal); // FIXME: Need to only saved value
     else
       MQTTPrintError();
   }
@@ -368,7 +368,7 @@ void setup()
   digitalWrite(DaikinPrimaryZoneRelay, LOW);
   digitalWrite(DaikinSecondaryZoneRelay, LOW);
   digitalWrite(PrimaryZoneCloseValveRelay, LOW);
-  digitalWrite(ExtraZoneOpenValveRelay, HIGH); // FIXME
+  digitalWrite(ExtraZoneOpenValveRelay, LOW);
   digitalWrite(DaikinPreferentialRelay, LOW);
 
   // Inputs
