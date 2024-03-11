@@ -311,10 +311,10 @@ void CDaikinCtrl::loop()
   }
 #endif
 
-  if (m_bSecZoneOnly || m_bPrimaryZoneProtection)
+  if (!IsHeatingActive() || m_bSecZoneOnly || m_bPrimaryZoneProtection)
   {
     // Close primary zone valve
-    digitalWrite(PrimaryZoneCloseValveRelay, HIGH); // FIXME: Only when heating active
+    digitalWrite(PrimaryZoneCloseValveRelay, HIGH);
 
     UpdateValveZonePrimaryOpen(false);
   }
@@ -326,10 +326,10 @@ void CDaikinCtrl::loop()
     UpdateValveZonePrimaryOpen(true);
   }
 
-  if (!m_bPrimaryZoneProtection && (!digitalRead(ExtraZoneThermostaat) || m_bCtrlExtraZoneHeating))
+  if (IsHeatingActive() && !m_bPrimaryZoneProtection && (!digitalRead(ExtraZoneThermostaat) || m_bCtrlExtraZoneHeating))
   {
     // Open extra zone valve
-    digitalWrite(ExtraZoneOpenValveRelay, HIGH); // FIXME: Only when heating active
+    digitalWrite(ExtraZoneOpenValveRelay, HIGH);
 
     UpdateValveZoneExtraOpen(true);
   }
