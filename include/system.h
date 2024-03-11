@@ -51,7 +51,6 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_EXTRA_ZONE_HEATING                     "Extra_Zone_Heating"
 #define MQTT_PRIMARY_ZONE_SET_POINT                 "Primary_Zone_Set_Point" //FIXME
 #define MQTT_GAS_ONLY_ON                            "Gas_Only" //FIXME
-#define MQTT_HYSTERESIS_HACK_ON                     "Hysteresis_Hack" //FIXME
 
 // Status topics
 #define MQTT_VALVE_ZONE_PRIMARY_OPEN                "Valve_Zone_Primary_Open"

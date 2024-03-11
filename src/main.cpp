@@ -151,20 +151,6 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_HYSTERESIS_HACK_ON "/set"))
-  {
-    if (bValidInt)
-    {
-      if (iVal == 1)
-        g_DaikinCtrl.SetCtrlHysteresisHack(true);
-      else if (iVal == 0)
-        g_DaikinCtrl.SetCtrlHysteresisHack(false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_SET_POINT "/set"))
   {
     if (bValidFloat)
@@ -311,7 +297,6 @@ void MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_EXTRA_ZONE_HEATING "/set", 0);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_SET_POINT "/set", 0);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set", 0);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_HYSTERESIS_HACK_ON "/set", 0);
 
   // Publish MQTT config for eg. HA discovery
   MQTTPublishConfig(MQTT_PRIMARY_ZONE_HEATING, CDaikinCtrl::SWITCH);

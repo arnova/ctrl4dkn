@@ -48,7 +48,6 @@ class CDaikinCtrl
     void SetCtrlPriZoneHeating(const bool& bVal) { m_bCtrlPriZoneHeating = bVal; m_bUpdateCtrlPriZoneHeating = true; };
     void SetCtrlSecZoneHeating(const bool& bVal) { m_bCtrlSecZoneHeating = bVal; m_bUpdateCtrlSecZoneHeating = true; };
     void SetCtrlExtraZoneHeating(const bool& bVal) { m_bCtrlExtraZoneHeating = bVal; m_bUpdateCtrlExtraZoneHeating = true; };
-    void SetCtrlHysteresisHack(const bool& bVal) { m_bCtrlHysteresisHackOn = bVal; };
 
   private:
     PubSubClient* m_pMQTTClient;
@@ -94,7 +93,6 @@ class CDaikinCtrl
     bool m_bP1P2CirculationPumpOn = false;
     bool m_bP1P2HeatingOn = false;
     bool m_bP1P2ValveZoneMain = false;
-    bool m_bCtrlHysteresisHackOn = false;
     float m_fCtrlPrimaryZoneRealSetPoint = -1.0f; //DEFAULT_SET_POINT; // Default
 };
 #endif // DAIKIN_CTRL_H

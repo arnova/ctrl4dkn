@@ -40,25 +40,13 @@ bool CDaikinCtrl::P1P2SetTargetTemp(const float& fTemp)
 
 bool CDaikinCtrl::UpdateDaikinTargetTemperature(float fNewVal)
 {
-  if (fNewVal == m_fP1P2PrimaryZoneTargetTemp || !m_bCtrlHysteresisHackOn) // FIXME
+  if (fNewVal == m_fP1P2PrimaryZoneTargetTemp)
     return false;
 
   if (fNewVal == m_fCtrlPrimaryZoneRealSetPoint)
     return false;
 
   m_fCtrlPrimaryZoneRealSetPoint = fNewVal;
-
-  if (m_bCtrlHysteresisHackOn &&
-      m_fP1P2PrimaryZoneRoomTemp > -1.0f &&
-      fNewVal > m_fP1P2PrimaryZoneRoomTemp)
-  {
-    // When room temperature is within thermostat hysteresis, hack around it (if requested)
-    const auto fDiff = fNewVal - m_fP1P2PrimaryZoneRoomTemp;
-    if (fDiff <= DAIKIN_HYSTERESIS / 2)
-    {
-      fNewVal += ((DAIKIN_HYSTERESIS / 2) - fDiff) + 0.1f;
-    }
-  }
 
   // When requested set point is the same as target, we're done
   if (m_fP1P2PrimaryZoneTargetTemp == fNewVal)
@@ -287,19 +275,6 @@ void CDaikinCtrl::loop()
       m_bDaikinPrimaryZoneOn = true;
       m_bDaikinSecondaryZoneOn = false;
       m_bSecZoneOnly = false;
-    }
-
-    // FIXME: Make sure RoomTemp is min value for x time!
-    if (m_bCtrlHysteresisHackOn &&
-        m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
-        m_fCtrlPrimaryZoneRealSetPoint > 0.0f &&
-        m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
-        m_fP1P2PrimaryZoneRoomTemp >= m_fCtrlPrimaryZoneRealSetPoint &&
-        m_fP1P2PrimaryZoneTargetTemp != m_fCtrlPrimaryZoneRealSetPoint)
-    {
-      // FIXME: Check last write
-      P1P2SetTargetTemp(m_fCtrlPrimaryZoneRealSetPoint);
-      UpdateZonePrimaryRealSetPoint(m_fCtrlPrimaryZoneRealSetPoint);
     }
 
     m_loopTimer = 0;
