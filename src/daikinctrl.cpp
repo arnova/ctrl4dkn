@@ -283,7 +283,7 @@ void CDaikinCtrl::loop()
   }
 #endif
 
-  if (!IsHeatingActive() || m_bPrimaryZoneDisable || m_bPrimaryZoneProtection)
+  if ((IsHeatingActive() && m_bPrimaryZoneDisable) || m_bPrimaryZoneProtection)
   {
     // Close primary zone valve
     digitalWrite(PRIMARY_ZONE_CLOSE_VALVE_RELAY, HIGH);
