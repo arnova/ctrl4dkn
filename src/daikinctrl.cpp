@@ -200,14 +200,6 @@ void CDaikinCtrl::loop()
   // Run timed control loop
   if (m_loopTimer > CONTROL_LOOP_TIME * 1000)
   {
-    if (m_iPrimaryZoneValveCounter > 0)
-    {
-      if (--m_iPrimaryZoneValveCounter == 0)
-      {
-        m_bSecZoneOnly = true;
-      }
-    }
-
     if (m_iPrimaryZoneProtectionCounter > 0)
     {
       if (--m_iPrimaryZoneProtectionCounter)
@@ -234,22 +226,27 @@ void CDaikinCtrl::loop()
             m_bDaikinSecondaryZoneOn = true; // FIXME: Instead of selecting secondary curve, we can also increase AWT deviation
 
             // Need to wait (5 minutes) before primary zone valve(s) are closed
-            m_iPrimaryZoneValveCounter = PRIMARY_ZONE_VALVE_DELAY;
+            if (!m_bSecZoneOnly && ++m_iPrimaryZoneValveCounter == PRIMARY_ZONE_VALVE_DELAY)
+            {
+              m_bSecZoneOnly = true;
+            }
           }
           else
           {
             m_bDaikinSecondaryZoneOn = false; //FIXME: Needs more places for false
+            m_iPrimaryZoneValveCounter = 0;
           }
         }
         else
         {
           // Primary zone should be at target temperature for at least PRIMARY_ZONE_VALVE_DELAY minutes!
-          ++m_iPrimaryZoneDisableCounter;
+          m_iPrimaryZoneDisableCounter++;
         }
       }
       else
       {
         m_iPrimaryZoneDisableCounter = 0;
+        m_iPrimaryZoneValveCounter = 0;
         m_bDaikinSecondaryZoneOn = false;
 
         // FIXME: When modulation is used this isn't true. We must probably check primary zone valve also
