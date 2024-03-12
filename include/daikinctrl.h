@@ -63,7 +63,7 @@ class CDaikinCtrl
     uint16_t m_iPrimaryZoneValveCounter = 0;
     uint16_t m_iPrimaryZoneProtectionCounter = 0;
 
-    bool m_bCtrlPriZoneHeating = true;
+    bool m_bCtrlPriZoneHeating = false; //FIXME: Implement
     bool m_bCtrlSecZoneHeating = false;
     bool m_bCtrlExtraZoneHeating = false;
     bool m_bCtrlSecZoneForceHeating = false; // FIXME: Implement
