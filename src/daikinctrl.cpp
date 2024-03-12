@@ -208,62 +208,42 @@ void CDaikinCtrl::loop()
       }
     }
 
+    // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hyseresis!).
+    //       This is due to (possible) modulation else it may take forever before we switch over.
+    //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
     if (m_bP1P2HeatingOn &&
-        m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
-        m_fP1P2PrimaryZoneTargetTemp > 0.0f)
+       (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
+        m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
+        m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp &&
+       (m_bCtrlSecZoneHeating || !digitalRead(SecondaryZoneThermostat))) || m_bCtrlSecZoneForceHeating)
     {
-      // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hyseresis!).
-      //       This is due to (possible) modulation else it may take forever before we switch over.
-      //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
-      if (m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp ||
-          m_bCtrlSecZoneForceHeating)
+      // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
+      if (!m_bDaikinSecondaryZoneOn && ++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
       {
-        if (m_bCtrlSecZoneForceHeating ||
-            m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
-        {
-          if (m_bCtrlSecZoneForceHeating || m_bCtrlSecZoneHeating || !digitalRead(SecondaryZoneThermostat))
-          {
-            m_bDaikinSecondaryZoneOn = true; // FIXME: Instead of selecting secondary curve, we can also increase AWT deviation
+        m_bDaikinSecondaryZoneOn = true;
 
-            // Need to wait (5 minutes) before primary zone valve(s) are closed
-            if (!m_bSecZoneOnly && ++m_iPrimaryZoneValveCounter == PRIMARY_ZONE_VALVE_DELAY)
-            {
-              m_bSecZoneOnly = true;
-            }
-          }
-          else
-          {
-            m_bDaikinSecondaryZoneOn = false; //FIXME: Needs more places for false
-            m_iPrimaryZoneValveCounter = 0;
-          }
-        }
-        else
+        // Need to wait PRIMARY_ZONE_VALVE_DELAY minutes) before primary zone valve(s) are closed
+        if (!m_bSecZoneOnly && ++m_iPrimaryZoneValveCounter >= PRIMARY_ZONE_VALVE_DELAY)
         {
-          // Primary zone should be at target temperature for at least PRIMARY_ZONE_VALVE_DELAY minutes!
-          m_iPrimaryZoneDisableCounter++;
-        }
-      }
-      else
-      {
-        m_iPrimaryZoneDisableCounter = 0;
-        m_iPrimaryZoneValveCounter = 0;
-        m_bDaikinSecondaryZoneOn = false;
-
-        // FIXME: When modulation is used this isn't true. We must probably check primary zone valve also
-        //        In that case we can also lower the hysteresis value :-)
-        //        Perhaps there's another P1P2 property we can use to determine primary zone requires heating?
-        if (m_fP1P2PrimaryZoneRoomTemp <= (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
-        {
-          m_bDaikinPrimaryZoneOn = true;
-          m_bSecZoneOnly = false;
+          m_bSecZoneOnly = true;
+          m_bDaikinPrimaryZoneOn = false;
         }
       }
     }
     else
     {
-      m_bDaikinPrimaryZoneOn = true;
+      m_iPrimaryZoneDisableCounter = 0;
+      m_iPrimaryZoneValveCounter = 0;
       m_bDaikinSecondaryZoneOn = false;
-      m_bSecZoneOnly = false;
+
+      // FIXME: When modulation is used this isn't true. We must probably check primary zone valve also
+      //        In that case we can also lower the hysteresis value :-)
+      //        Perhaps there's another P1P2 property we can use to determine primary zone requires heating?
+      if (m_fP1P2PrimaryZoneRoomTemp <= (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
+      {
+        m_bDaikinPrimaryZoneOn = true;
+        m_bSecZoneOnly = false;
+      }
     }
 
     m_loopTimer = 0;
@@ -369,6 +349,7 @@ void CDaikinCtrl::loop()
 
   if (m_bDaikinSecondaryZoneOn)
   {
+    // FIXME: Instead of selecting secondary curve, we can also increase AWT deviation
     digitalWrite(DaikinSecondaryZoneRelay, HIGH); // Enable secondary zone heating on Daikin. FIXME: Only when heating active
 
     UpdateDaikinZoneSecondaryEnable(true);
