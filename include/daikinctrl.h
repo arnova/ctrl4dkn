@@ -54,7 +54,7 @@ class CDaikinCtrl
     PubSubClient* m_pMQTTClient;
     bool m_bDaikinPrimaryZoneOn = false;
     bool m_bDaikinSecondaryZoneOn = false;
-    bool m_bSecZoneOnly = false;
+    bool m_bPrimaryZoneDisable = false;
     bool m_bPrimaryZoneProtection = false;
     elapsedMillis m_loopTimer = 0;
     elapsedMillis m_MQTTTimer = 0;

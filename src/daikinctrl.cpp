@@ -215,18 +215,21 @@ void CDaikinCtrl::loop()
        (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
         m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
         m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp &&
-       (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT))) || m_bCtrlSecZoneForceHeating)
+       (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT) ||
+        m_bCtrlExtraZoneHeating || !digitalRead(EXTRA_ZONE_THERMOSTAT))) || m_bCtrlSecZoneForceHeating)
     {
       // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
       if (!m_bDaikinSecondaryZoneOn && ++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
       {
-        m_bDaikinSecondaryZoneOn = true;
+        if (!(m_bCtrlExtraZoneHeating || !digitalRead(EXTRA_ZONE_THERMOSTAT)))
+          m_bDaikinSecondaryZoneOn = true; // (Also) enable secondary zone heating on Daikin
 
         // Need to wait PRIMARY_ZONE_VALVE_DELAY minutes) before primary zone valve(s) are closed
-        if (!m_bSecZoneOnly && ++m_iPrimaryZoneValveCounter >= PRIMARY_ZONE_VALVE_DELAY)
+        if (!m_bPrimaryZoneDisable && ++m_iPrimaryZoneValveCounter >= PRIMARY_ZONE_VALVE_DELAY)
         {
-          m_bSecZoneOnly = true;
-          m_bDaikinPrimaryZoneOn = false;
+          m_bPrimaryZoneDisable = true;
+          if (m_bDaikinSecondaryZoneOn)
+            m_bDaikinPrimaryZoneOn = false; // When secondary heating is enabled, disable primary
         }
       }
     }
@@ -242,7 +245,7 @@ void CDaikinCtrl::loop()
       if (m_fP1P2PrimaryZoneRoomTemp <= (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
       {
         m_bDaikinPrimaryZoneOn = true;
-        m_bSecZoneOnly = false;
+        m_bPrimaryZoneDisable = false;
       }
     }
 
@@ -280,7 +283,7 @@ void CDaikinCtrl::loop()
   }
 #endif
 
-  if (!IsHeatingActive() || m_bSecZoneOnly || m_bPrimaryZoneProtection)
+  if (!IsHeatingActive() || m_bPrimaryZoneDisable || m_bPrimaryZoneProtection)
   {
     // Close primary zone valve
     digitalWrite(PRIMARY_ZONE_CLOSE_VALVE_RELAY, HIGH);
