@@ -163,9 +163,9 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     if (bValidInt)
     {
       if (iVal == 1)
-        digitalWrite(DaikinPreferentialRelay, HIGH);
+        digitalWrite(DAIKIN_PREFERENTIAL_RELAY, HIGH);
       else if (iVal == 0)
-        digitalWrite(DaikinPreferentialRelay, LOW);
+        digitalWrite(DAIKIN_PREFERENTIAL_RELAY, LOW);
       else
         MQTTPrintError();
     }
@@ -357,24 +357,24 @@ void SetupWifi()
 void setup()
 {
   // Outputs
-  pinMode(LedRed, OUTPUT);
-  pinMode(DaikinPrimaryZoneRelay, OUTPUT);
-  pinMode(DaikinSecondaryZoneRelay, OUTPUT);
-  pinMode(PrimaryZoneCloseValveRelay, OUTPUT);
-  pinMode(ExtraZoneOpenValveRelay, OUTPUT);
-  pinMode(DaikinPreferentialRelay, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
+  pinMode(DAIKIN_PRIMARY_ZONE_RELAY, OUTPUT);
+  pinMode(DAIKIN_SECONDARY_ZONE_RELAY, OUTPUT);
+  pinMode(PRIMARY_ZONE_CLOSE_VALVE_RELAY, OUTPUT);
+  pinMode(EXTRA_ZONE_OPEN_VALVE_RELAY, OUTPUT);
+  pinMode(DAIKIN_PREFERENTIAL_RELAY, OUTPUT);
 
   // FIXME: These should be set according to the previous state?
-  digitalWrite(DaikinPrimaryZoneRelay, LOW);
-  digitalWrite(DaikinSecondaryZoneRelay, LOW);
-  digitalWrite(PrimaryZoneCloseValveRelay, LOW);
-  digitalWrite(ExtraZoneOpenValveRelay, LOW);
-  digitalWrite(DaikinPreferentialRelay, LOW);
+  digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, LOW);
+  digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, LOW);
+  digitalWrite(PRIMARY_ZONE_CLOSE_VALVE_RELAY, LOW);
+  digitalWrite(EXTRA_ZONE_OPEN_VALVE_RELAY, LOW);
+  digitalWrite(DAIKIN_PREFERENTIAL_RELAY, LOW);
 
   // Inputs
-  pinMode(SecondaryZoneThermostat, INPUT_PULLUP);
-  pinMode(ExtraZoneThermostaat, INPUT_PULLUP);
-  pinMode(HardwareMaxTempSensor, INPUT_PULLUP);
+  pinMode(SECONDARY_ZONE_THERMOSTAT, INPUT_PULLUP);
+  pinMode(EXTRA_ZONE_THERMOSTAT, INPUT_PULLUP);
+  pinMode(HARDWARE_MAX_TEMP_SENSOR, INPUT_PULLUP);
 
   Serial.begin(9600);
   Serial.setTimeout(2000);
@@ -396,14 +396,14 @@ void loop()
   // Listen for mqtt message and reconnect if disconnected
   if (!g_MQTTClient.connected())
   {
-    digitalWrite(LedRed, HIGH); // Off
+    digitalWrite(LED_RED, HIGH); // Off
 
     MQTTReconnect();
   }
   else
   {
     // Indicate we're running:
-    digitalWrite(LedRed, LOW); // On
+    digitalWrite(LED_RED, LOW); // On
 
     g_MQTTClient.loop();
   }

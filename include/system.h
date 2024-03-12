@@ -70,25 +70,25 @@ const char mqtt_server[] = "192.168.1.65";
 #define PRIMARY_ZONE_VALVE_DELAY              5     // Minutes
 #define PRIMARY_ZONE_PROTECTION_DELAY         5     // Minutes
 
-#define CONTROL_LOOP_TIME             60    // Seconds
-#define MQTT_UPDATE_TIME               1    // Seconds
+#define CONTROL_LOOP_TIME                    60     // Seconds
+#define MQTT_UPDATE_TIME                      1     // Seconds
 
 // set output pin numbers
-const int LedRed = 25;                      // Onboard LED
+const int LED_RED = 25;                         // Onboard LED
 
 // Low voltage relais:
-const int DaikinPreferentialRelay = 33;     // K1 relay: kWh preferential kWh (aka. gas only) rate relay (X5M 3/4) on the Daikin. NOT IMPLEMENTED (yet)
+const int DAIKIN_PREFERENTIAL_RELAY = 33;       // K1 relay: kWh preferential kWh (aka. gas only) rate relay (X5M 3/4) on the Daikin. NOT IMPLEMENTED (yet)
 
 // High voltage relais:
-const int DaikinSecondaryZoneRelay = 21;    // K5 relay: Enables the secondary zone input (X2M 1a+4) on the Daikin (if used. Requires configuration on Daikin)
-const int DaikinPrimaryZoneRelay = 19;      // K6 relay: Enables the primary zone input (X2M 1+4) on the Daikin (if used. Requires configuration on Daikin)
-const int ExtraZoneOpenValveRelay = 18;     // K7 relay: Used to open/close the (primary) extra zone (floor-heating)
-//const int PrimaryZoneCloseValveRelay = 5;   // K8 relay: Used to close/open the primary zone (floor-heating)
-const int PrimaryZoneCloseValveRelay = 32;   // K2 relay: Used to close/open the primary zone (floor-heating). FIXME!
+const int DAIKIN_SECONDARY_ZONE_RELAY = 21;     // K5 relay: Enables the secondary zone input (X2M 1a+4) on the Daikin (if used. Requires configuration on Daikin)
+const int DAIKIN_PRIMARY_ZONE_RELAY = 19;       // K6 relay: Enables the primary zone input (X2M 1+4) on the Daikin (if used. Requires configuration on Daikin)
+const int EXTRA_ZONE_OPEN_VALVE_RELAY = 18;     // K7 relay: Used to open/close the (primary) extra zone (floor-heating)
+//const int PRIMARY_ZONE_CLOSE_VALVE_RELAY = 5;   // K8 relay: Used to close/open the primary zone (floor-heating)
+const int PRIMARY_ZONE_CLOSE_VALVE_RELAY = 32;  // K2 relay: Used to close/open the primary zone (floor-heating). FIXME!
 
 // set input pin numbers
-const int SecondaryZoneThermostat = 22;     // Thermostat input for the secondary zone (low active)
-const int ExtraZoneThermostaat = 23;        // Thermostat input for the extra zone (if used) (low active)
-const int HardwareMaxTempSensor = 26;       // Hardware sensor (clixon) to detect maximum temperature exceeded (if used) (low active)
+const int SECONDARY_ZONE_THERMOSTAT = 22;       // Thermostat input for the secondary zone (low active)
+const int EXTRA_ZONE_THERMOSTAT = 23;           // Thermostat input for the extra zone (if used) (low active)
+const int HARDWARE_MAX_TEMP_SENSOR = 26;        // Hardware sensor (clixon) to detect maximum temperature exceeded (if used) (low active)
 
 #endif // SYSTEM_H

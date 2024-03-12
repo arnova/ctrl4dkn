@@ -215,7 +215,7 @@ void CDaikinCtrl::loop()
        (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
         m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
         m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp &&
-       (m_bCtrlSecZoneHeating || !digitalRead(SecondaryZoneThermostat))) || m_bCtrlSecZoneForceHeating)
+       (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT))) || m_bCtrlSecZoneForceHeating)
     {
       // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
       if (!m_bDaikinSecondaryZoneOn && ++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
@@ -283,29 +283,29 @@ void CDaikinCtrl::loop()
   if (!IsHeatingActive() || m_bSecZoneOnly || m_bPrimaryZoneProtection)
   {
     // Close primary zone valve
-    digitalWrite(PrimaryZoneCloseValveRelay, HIGH);
+    digitalWrite(PRIMARY_ZONE_CLOSE_VALVE_RELAY, HIGH);
 
     UpdateValveZonePrimaryOpen(false);
   }
   else
   {
     // Open primary zone valve
-    digitalWrite(PrimaryZoneCloseValveRelay, LOW);
+    digitalWrite(PRIMARY_ZONE_CLOSE_VALVE_RELAY, LOW);
 
     UpdateValveZonePrimaryOpen(true);
   }
 
-  if (IsHeatingActive() && !m_bPrimaryZoneProtection && (!digitalRead(ExtraZoneThermostaat) || m_bCtrlExtraZoneHeating))
+  if (IsHeatingActive() && !m_bPrimaryZoneProtection && (!digitalRead(EXTRA_ZONE_THERMOSTAT) || m_bCtrlExtraZoneHeating))
   {
     // Open extra zone valve
-    digitalWrite(ExtraZoneOpenValveRelay, HIGH);
+    digitalWrite(EXTRA_ZONE_OPEN_VALVE_RELAY, HIGH);
 
     UpdateValveZoneExtraOpen(true);
   }
   else
   {
     // Close extra zone valve
-    digitalWrite(ExtraZoneOpenValveRelay, LOW);
+    digitalWrite(EXTRA_ZONE_OPEN_VALVE_RELAY, LOW);
 
     UpdateValveZoneExtraOpen(false);
   }
@@ -313,7 +313,7 @@ void CDaikinCtrl::loop()
   if (m_bDaikinPrimaryZoneOn && !m_bPrimaryZoneProtection)
   {
     // Enable primary zone heating relay on Daikin
-    digitalWrite(DaikinPrimaryZoneRelay, HIGH);
+    digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, HIGH);
 
     // Restore temperature
     if (m_fP1P2PrimaryZoneRoomTemp != -1 &&
@@ -333,7 +333,7 @@ void CDaikinCtrl::loop()
   else
   {
     // Disable primary zone heating on Daikin
-    digitalWrite(DaikinPrimaryZoneRelay, LOW);
+    digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, LOW);
 
     if (m_fP1P2PrimaryZoneRoomTemp != -1 && m_lastTempUpdateTimer > MIN_P1P2_WRITE_INTERVAL * 1000 * 60) // FIXME: Need to check last changed value instead
     {
@@ -350,13 +350,13 @@ void CDaikinCtrl::loop()
   if (m_bDaikinSecondaryZoneOn)
   {
     // FIXME: Instead of selecting secondary curve, we can also increase AWT deviation
-    digitalWrite(DaikinSecondaryZoneRelay, HIGH); // Enable secondary zone heating on Daikin. FIXME: Only when heating active
+    digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, HIGH); // Enable secondary zone heating on Daikin. FIXME: Only when heating active
 
     UpdateDaikinZoneSecondaryEnable(true);
   }
   else
   {
-    digitalWrite(DaikinSecondaryZoneRelay, LOW); // Disable secondary zone heating on Daikin
+    digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, LOW); // Disable secondary zone heating on Daikin
 
     UpdateDaikinZoneSecondaryEnable(false);
   }
