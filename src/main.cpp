@@ -180,7 +180,6 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
   JsonDocument root;
   root["name"] = strItem;
   root["unique_id"] = String("Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID "_") + strItem; // Optional
-  root["retain"] = true;
 //  root["value_template"] = "{{ value_json.state }}"; // FIXME?
 
 //  root["device_class"] = "sensor";
@@ -250,7 +249,6 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
     break;
   }
   strTopic += String("/ctrl4dkn_" MQTT_CTRL4DKN_HOST_ID "/") + strItem + "/config";
-
 
   g_MQTTClient.publish(strTopic.c_str(), message, true);
 }

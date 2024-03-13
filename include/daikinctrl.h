@@ -82,7 +82,7 @@ class CDaikinCtrl
     bool m_bValveZoneExtraOpen = true;
     bool m_bUpdateValveZoneExtraOpen = true;
     bool m_bDaikinZonePrimaryEnable = false;
-    bool m_bUpdateDaikinZonePrimaryEnable = false;
+    bool m_bUpdateDaikinZonePrimaryEnable = true;
     bool m_bDaikinZoneSecondaryEnable = false;
     bool m_bUpdateDaikinZoneSecondaryEnable = true;
 
