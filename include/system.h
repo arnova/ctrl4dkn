@@ -83,8 +83,8 @@ const int DAIKIN_PREFERENTIAL_RELAY = 33;       // K1 relay: kWh preferential kW
 const int DAIKIN_SECONDARY_ZONE_RELAY = 21;     // K5 relay: Enables the secondary zone input (X2M 1a+4) on the Daikin (if used. Requires configuration on Daikin)
 const int DAIKIN_PRIMARY_ZONE_RELAY = 19;       // K6 relay: Enables the primary zone input (X2M 1+4) on the Daikin (if used. Requires configuration on Daikin)
 const int EXTRA_ZONE_OPEN_VALVE_RELAY = 18;     // K7 relay: Used to open/close the (primary) extra zone (floor-heating)
-//const int PRIMARY_ZONE_CLOSE_VALVE_RELAY = 5;   // K8 relay: Used to close/open the primary zone (floor-heating)
-const int PRIMARY_ZONE_CLOSE_VALVE_RELAY = 32;  // K2 relay: Used to close/open the primary zone (floor-heating). FIXME!
+const int PRIMARY_ZONE_CLOSE_VALVE_RELAY = 5;   // K8 relay: Used to close/open the primary zone (floor-heating)
+//const int PRIMARY_ZONE_CLOSE_VALVE_RELAY = 32;  // K2 relay: Used to close/open the primary zone (floor-heating). FIXME!
 
 // set input pin numbers
 const int SECONDARY_ZONE_THERMOSTAT = 22;       // Thermostat input for the secondary zone (low active)
