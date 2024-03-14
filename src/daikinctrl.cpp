@@ -219,17 +219,30 @@ void CDaikinCtrl::loop()
         m_bCtrlExtraZoneHeating || !digitalRead(EXTRA_ZONE_THERMOSTAT))) || m_bCtrlSecZoneForceHeating)
     {
       // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
-      if (!m_bDaikinSecondaryZoneOn && ++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
+      if (m_iPrimaryZoneDisableCounter < PRIMARY_ZONE_DISABLE_TIME)
       {
+        m_iPrimaryZoneDisableCounter++;
+      }
+      else
+      {
+        // Enable secondary zone heating on Daikin but only when extra (vvw) zone isn't requesting heat
         if (!(m_bCtrlExtraZoneHeating || !digitalRead(EXTRA_ZONE_THERMOSTAT)))
-          m_bDaikinSecondaryZoneOn = true; // (Also) enable secondary zone heating on Daikin
+          m_bDaikinSecondaryZoneOn = true;
 
-        // Need to wait PRIMARY_ZONE_VALVE_DELAY minutes) before primary zone valve(s) are closed
-        if (!m_bPrimaryZoneDisable && ++m_iPrimaryZoneValveCounter >= PRIMARY_ZONE_VALVE_DELAY)
+        // Disable primary zone
+        m_bPrimaryZoneDisable = true;
+
+        if (m_bDaikinSecondaryZoneOn)
         {
-          m_bPrimaryZoneDisable = true;
-          if (m_bDaikinSecondaryZoneOn)
+          // Need to wait PRIMARY_ZONE_VALVE_DELAY minutes) before primary zone valve(s) are closed
+          if (m_iPrimaryZoneValveCounter < PRIMARY_ZONE_VALVE_DELAY)
+          {
+            m_iPrimaryZoneValveCounter++;
+          }
+          else
+          {
             m_bDaikinPrimaryZoneOn = false; // When secondary heating is enabled, disable primary
+          }
         }
       }
     }
