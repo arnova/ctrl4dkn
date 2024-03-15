@@ -365,8 +365,8 @@ void CDaikinCtrl::loop()
 
   if (m_bDaikinSecondaryZoneOn)
   {
-    // FIXME: Instead of selecting secondary curve, we can also increase AWT deviation
-    digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, HIGH); // Enable secondary zone heating on Daikin. FIXME: Only when heating active
+    // FIXME: Instead of selecting secondary curve, we can also increase AWT deviation but only when primary zone is active
+    digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, HIGH); // Enable secondary zone heating on Daikin
 
     UpdateDaikinZoneSecondaryEnable(true);
   }
