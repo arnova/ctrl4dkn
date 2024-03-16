@@ -1,34 +1,31 @@
 #include "daikinctrl.h"
 #include "system.h"
 
-CDaikinCtrl::CDaikinCtrl(PubSubClient* MQTTClient)
+CDaikinCtrl::CDaikinCtrl(PubSubClient *MQTTClient)
 {
   m_pMQTTClient = MQTTClient;
 }
 
-
-bool CDaikinCtrl::Float2HexStr(const float& fVal, char* strVal)
+bool CDaikinCtrl::Float2HexStr(const float &fVal, char *strVal)
 {
-  return (snprintf(strVal, 3, "%02X", (uint8_t) (fVal * 10)) > 0);
+  return (snprintf(strVal, 3, "%02X", (uint8_t)(fVal * 10)) > 0);
 }
 
-
-bool CDaikinCtrl::Float2Str(const float& fVal, char* strVal)
+bool CDaikinCtrl::Float2Str(const float &fVal, char *strVal)
 {
   return (snprintf(strVal, 4, "%f", fVal));
 }
 
-bool CDaikinCtrl::P1P2SetTargetTemp(const float& fTemp)
+bool CDaikinCtrl::P1P2SetTargetTemp(const float &fTemp)
 {
   char strPayLoad[10] = MQTT_P1P2_W_SET_POINT_CMD;
 
   // Convert float value to hex string & send P1P2 MQTT command
   if (Float2HexStr(fTemp, strPayLoad + sizeof(MQTT_P1P2_W_SET_POINT_CMD)))
-    return m_pMQTTClient->publish(MQTT_P1P2_W_TOPIC, strPayLoad); //FIXME
+    return m_pMQTTClient->publish(MQTT_P1P2_W_TOPIC, strPayLoad); // FIXME
 
   return false;
 }
-
 
 bool CDaikinCtrl::UpdateDaikinTargetTemperature(float fNewVal)
 {
@@ -52,7 +49,6 @@ bool CDaikinCtrl::UpdateDaikinTargetTemperature(float fNewVal)
   return true;
 }
 
-
 void CDaikinCtrl::UpdateZonePrimaryRealSetPoint(const float fSetPoint)
 {
   if (m_fZonePrimaryRealSetPoint != fSetPoint)
@@ -61,7 +57,6 @@ void CDaikinCtrl::UpdateZonePrimaryRealSetPoint(const float fSetPoint)
     m_bUpdateZonePrimaryRealSetPoint = true;
   }
 }
-
 
 void CDaikinCtrl::UpdateZonePrimarySavedSetPoint(const float fSetPoint)
 {
@@ -72,7 +67,6 @@ void CDaikinCtrl::UpdateZonePrimarySavedSetPoint(const float fSetPoint)
   }
 }
 
-
 void CDaikinCtrl::UpdateLeavingWaterTooHigh(const bool bVal)
 {
   if (m_bLeavingWaterTooHigh != bVal)
@@ -81,7 +75,6 @@ void CDaikinCtrl::UpdateLeavingWaterTooHigh(const bool bVal)
     m_bUpdateLeavingWaterTooHigh = true;
   }
 }
-
 
 void CDaikinCtrl::UpdateValveZonePrimaryOpen(const bool bVal)
 {
@@ -92,7 +85,6 @@ void CDaikinCtrl::UpdateValveZonePrimaryOpen(const bool bVal)
   }
 }
 
-
 void CDaikinCtrl::UpdateValveZoneExtraOpen(const bool bVal)
 {
   if (m_bValveZoneExtraOpen != bVal)
@@ -101,7 +93,6 @@ void CDaikinCtrl::UpdateValveZoneExtraOpen(const bool bVal)
     m_bUpdateValveZoneExtraOpen = true;
   }
 }
-
 
 void CDaikinCtrl::UpdateDaikinZonePrimaryEnable(const bool bVal)
 {
@@ -112,7 +103,6 @@ void CDaikinCtrl::UpdateDaikinZonePrimaryEnable(const bool bVal)
   }
 }
 
-
 void CDaikinCtrl::UpdateDaikinZoneSecondaryEnable(const bool bVal)
 {
   if (m_bDaikinZoneSecondaryEnable != bVal)
@@ -121,7 +111,6 @@ void CDaikinCtrl::UpdateDaikinZoneSecondaryEnable(const bool bVal)
     m_bUpdateDaikinZoneSecondaryEnable = true;
   }
 }
-
 
 bool CDaikinCtrl::MQTTPublishValues()
 {
@@ -146,7 +135,7 @@ bool CDaikinCtrl::MQTTPublishValues()
   if (m_bUpdateZonePrimaryRealSetPoint)
   {
     m_bUpdateZonePrimaryRealSetPoint = false;
-    char strTemp[5] = { 0 };
+    char strTemp[5] = {0};
     Float2Str(m_fZonePrimaryRealSetPoint, strTemp);
 
     m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_ZONE_PRIMARY_REAL_SET_POINT, strTemp, true);
@@ -155,7 +144,7 @@ bool CDaikinCtrl::MQTTPublishValues()
   if (m_bUpdateZonePrimarySavedSetPoint)
   {
     m_bUpdateZonePrimarySavedSetPoint = false;
-    char strTemp[5] = { 0 };
+    char strTemp[5] = {0};
     Float2Str(m_fZonePrimarySavedSetPoint, strTemp);
 
     m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_ZONE_PRIMARY_SAVED_SET_POINT, strTemp, true);
@@ -194,7 +183,6 @@ bool CDaikinCtrl::MQTTPublishValues()
   return true;
 }
 
-
 void CDaikinCtrl::loop()
 {
   // Run timed control loop
@@ -212,11 +200,12 @@ void CDaikinCtrl::loop()
     //       This is due to (possible) modulation else it may take forever before we switch over.
     //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
     if (m_bP1P2HeatingOn &&
-       (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
-        m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
-        m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp &&
-       (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT) ||
-        m_bCtrlExtraZoneHeating || !digitalRead(EXTRA_ZONE_THERMOSTAT))) || m_bCtrlSecZoneForceHeating)
+            (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
+             m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
+             m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp &&
+             (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT) ||
+              m_bCtrlExtraZoneHeating || !digitalRead(EXTRA_ZONE_THERMOSTAT))) ||
+        m_bCtrlSecZoneForceHeating)
     {
       // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
       if (m_iPrimaryZoneDisableCounter < PRIMARY_ZONE_DISABLE_TIME)
@@ -255,7 +244,7 @@ void CDaikinCtrl::loop()
       // FIXME: When modulation is used this isn't true. We must probably check primary zone valve also
       //        In that case we can also lower the hysteresis value :-)
       //        Perhaps there's another P1P2 property we can use to determine primary zone requires heating?
-      if (m_fP1P2PrimaryZoneRoomTemp <= (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
+      if (m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
       {
         m_bDaikinPrimaryZoneOn = true;
         m_bPrimaryZoneDisable = false;
@@ -330,36 +319,38 @@ void CDaikinCtrl::loop()
   {
     // Enable primary zone heating relay on Daikin
     digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, HIGH);
-
+#if 0
+    // FIXME:
     // Restore temperature
-    if (m_fP1P2PrimaryZoneRoomTemp != -1 &&
-        m_fP1P2PrimaryZoneRoomTempSave != -1 &&
-        m_fP1P2PrimaryZoneRoomTemp != m_fP1P2PrimaryZoneRoomTempSave)
+    if (m_fP1P2PrimaryZoneTargetTemp != -1 &&
+        m_fP1P2PrimaryZoneTargetTempSave != -1 &&
+        m_fP1P2PrimaryZoneTargetTemp != m_fP1P2PrimaryZoneTargetTempSave)
     {
-      if (UpdateDaikinTargetTemperature(m_fP1P2PrimaryZoneRoomTempSave))
+      if (UpdateDaikinTargetTemperature(m_fP1P2PrimaryZoneTargetTempSave))
       {
-        m_fP1P2PrimaryZoneRoomTemp = m_fP1P2PrimaryZoneRoomTempSave; //FIXME
-        m_fP1P2PrimaryZoneRoomTempSave = -1;
-        UpdateZonePrimarySavedSetPoint(m_fP1P2PrimaryZoneRoomTempSave);
+        m_fP1P2PrimaryZoneTargetTemp = m_fP1P2PrimaryZoneTargetTempSave; // FIXME
+        m_fP1P2PrimaryZoneTargetTempSave = -1;
+        UpdateZonePrimarySavedSetPoint(m_fP1P2PrimaryZoneTargetTempSave);
       }
     }
-
+#endif
     UpdateDaikinZonePrimaryEnable(true);
   }
   else
   {
     // Disable primary zone heating on Daikin
     digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, LOW);
-
-    if (m_fP1P2PrimaryZoneRoomTemp != -1 && m_lastTempUpdateTimer > MIN_P1P2_WRITE_INTERVAL * 1000 * 60) // FIXME: Need to check last changed value instead
+#if 0
+    // FIXME:
+    if (m_fP1P2PrimaryZoneTargetTemp != -1 && m_lastTempUpdateTimer > MIN_P1P2_WRITE_INTERVAL * 1000 * 60) // FIXME: Need to check last changed value instead
     {
       if (UpdateDaikinTargetTemperature(DAIKIN_PRIMARY_ZONE_OFF_TEMPERATURE))
       {
-        m_fP1P2PrimaryZoneRoomTempSave = m_fP1P2PrimaryZoneRoomTemp;
-        UpdateZonePrimarySavedSetPoint(m_fP1P2PrimaryZoneRoomTempSave);
+        m_fP1P2PrimaryZoneTargetTempSave = m_fP1P2PrimaryZoneTargetTemp;
+        UpdateZonePrimarySavedSetPoint(m_fP1P2PrimaryZoneTargetTempSave);
       }
     }
-
+#endif
     UpdateDaikinZonePrimaryEnable(false);
   }
 

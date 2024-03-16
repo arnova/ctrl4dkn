@@ -89,7 +89,7 @@ class CDaikinCtrl
     float m_fP1P2LeavingWaterTemp = -1.0f;
     float m_fP1P2PrimaryZoneRoomTemp = -1.0f;       // Room temperature reported by P1P2/thermostat
     float m_fP1P2PrimaryZoneTargetTemp = -1.0f;     // Actual target temperature set on P1P2/thermostat
-    float m_fP1P2PrimaryZoneRoomTempSave = -1.0f;   // (Temporary) saved value for room temperature from P1P2/thermostat
+    float m_fP1P2PrimaryZoneTargetTempSave = -1.0f;   // (Temporary) saved value for target temperature for P1P2/thermostat
 
     float m_fCtrlPrimaryZoneRealSetPoint = -1.0f; //DEFAULT_SET_POINT; // Default
 
