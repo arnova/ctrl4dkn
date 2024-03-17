@@ -120,7 +120,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     if (bValidInt)
     {
       if (iVal == 0 || iVal == 1)
-        g_DaikinCtrl.SetCtrlPriZoneHeating(iVal);
+        g_DaikinCtrl.SetCtrlPriZoneHeating(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -131,8 +131,8 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   {
     if (bValidInt)
     {
-      if (iVal >= 0 && iVal <= 2)
-        g_DaikinCtrl.SetCtrlSecZoneHeating(iVal);
+      if (iVal == 0 || iVal == 1)
+        g_DaikinCtrl.SetCtrlSecZoneHeating(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -144,7 +144,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     if (bValidInt)
     {
       if (iVal == 0 || iVal == 1)
-        g_DaikinCtrl.SetCtrlExtraZoneHeating(iVal);
+        g_DaikinCtrl.SetCtrlExtraZoneHeating(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -198,7 +198,6 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
       root["payload_off"] = "0";
       root["state_on"] = "1";
       root["state_off"] = "0";
-
     }
     break;
 
@@ -290,11 +289,11 @@ void MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
 
   // Control topics
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING "/set", 0);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING "/set", 0);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_EXTRA_ZONE_HEATING "/set", 0);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_SET_POINT "/set", 0);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set", 0);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING "/set");
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING "/set");
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_EXTRA_ZONE_HEATING "/set");
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_SET_POINT "/set");
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set");
 
   // Publish MQTT config for eg. HA discovery
   MQTTPublishConfig(MQTT_PRIMARY_ZONE_HEATING, CDaikinCtrl::SWITCH);
