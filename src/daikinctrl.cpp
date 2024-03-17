@@ -199,7 +199,7 @@ void CDaikinCtrl::loop()
     // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hyseresis!).
     //       This is due to (possible) modulation else it may take forever before we switch over.
     //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
-    if (m_bP1P2HeatingOn &&
+    if (IsHeatingActive() &&
        (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
         m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
         m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp &&
@@ -239,15 +239,17 @@ void CDaikinCtrl::loop()
     {
       m_iPrimaryZoneDisableCounter = 0;
       m_iPrimaryZoneValveCounter = 0;
-      m_bDaikinSecondaryZoneOn = false; // FIXME?
+      m_bPrimaryZoneDisable = false; // FIXME: This should be delayed
+      m_bDaikinSecondaryZoneOn = false; // FIXME: This should be delayed, need to first enable primary zone again (below)
 
       // FIXME: When modulation is used this isn't true. We must probably check primary zone valve also
       //        In that case we can also lower the hysteresis value :-)
       //        Perhaps there's another P1P2 property we can use to determine primary zone requires heating?
-      if (m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)) || !(m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT)))
+      if (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
+          m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
+          m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
       {
         m_bDaikinPrimaryZoneOn = true;
-        m_bPrimaryZoneDisable = false;
       }
     }
 
