@@ -4,13 +4,13 @@
 
 bool BytesToFloat(const byte* bytes, const unsigned int len, float& fResult)
 {
-  char strBytes[8] = { 0 };
+  char strBytes[8];
 
   if (len >= sizeof(strBytes))
     return false;
 
   memcpy(strBytes, bytes, len);
-//  strPayLoad[length] = '\0';
+  strBytes[len] = '\0';
 
   char *end;
   fResult = strtof(strBytes, &end);
@@ -26,21 +26,22 @@ bool BytesToFloat(const byte* bytes, const unsigned int len, float& fResult)
 
 bool BytesToInt8(const byte* bytes, const unsigned int len, int8_t& iResult)
 {
-  char strBytes[8] = { 0 };
+  char strBytes[8];
 
   if (len >= sizeof(strBytes))
     return false;
 
   memcpy(strBytes, bytes, len);
-//  strPayLoad[length] = '\0';
+  strBytes[len] = '\0';
 
   char *end;
-  iResult = strtol(strBytes, &end, 0);
+  int32_t iResult32 = strtol(strBytes, &end, 0);
+  iResult = iResult32;
 
   // Make sure it's not zero-length and it's a proper number (not suffixed with anything):
   if (*end || end == strBytes)
     return false;
 
   // Check range
-  return (!(iResult == LONG_MIN || iResult == LONG_MAX));
+  return (!(iResult32 == LONG_MIN || iResult32 == LONG_MAX));
 }
