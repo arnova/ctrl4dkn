@@ -258,32 +258,22 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
 }
 
 
-void MQTTReconnect()
+bool MQTTReconnect()
 {
-  // Loop until we're reconnected
-  while (!g_MQTTClient.connected())
-  {
-    Serial.print("Attempting MQTT connection...");
-    // Create a random client ID
-    String clientId = "ESP32But-";
-    clientId += String(random(0xffff), HEX);
-    // Attempt to connect
+  Serial.print("Attempting MQTT connection...");
+  // Create a random client ID
+  String clientId = "ESP32But-";
+  clientId += String(random(0xffff), HEX);
+  // Attempt to connect
 //    if (MQTTClient.connect(clientId.c_str(), NULL, NULL, "test", 0, false, "not connected", false))
-    if (g_MQTTClient.connect(clientId.c_str()))
-    {
-      Serial.println("connected");
-      //Once connected, publish an announcement...
-      //MQTTClient.publish(MQTT_PUBLISH_TOPIC, "testing...");
-    }
-    else
-    {
-      Serial.print("failed, rc=");
-      Serial.print(g_MQTTClient.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
+  if (!g_MQTTClient.connect(clientId.c_str()))
+  {
+    Serial.print("failed, rc=");
+    Serial.print(g_MQTTClient.state());
+    return false;
   }
+
+  Serial.println("connected");
 
   // Subscribe to messages from p1p2serial etc.
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE, 0);
@@ -310,6 +300,8 @@ void MQTTReconnect()
   MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR);
+
+  return true;
 }
 
 
@@ -390,11 +382,15 @@ void setup()
 
   // Allow the hardware to sort itself out
   delay(1500);
+
+  MQTTReconnect();
 }
 
 
 void loop()
 {
+  static elapsedMillis MQTTReconnectTimer = 0;
+
   // Handle OTA-updates
   ArduinoOTA.handle();
 
@@ -403,7 +399,11 @@ void loop()
   {
     digitalWrite(LED_RED, HIGH); // Off
 
-    MQTTReconnect();
+    if (MQTTReconnectTimer > 5000)
+    {
+      MQTTReconnect();
+      MQTTReconnectTimer = 0;
+    }
   }
   else
   {

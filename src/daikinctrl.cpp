@@ -256,8 +256,8 @@ void CDaikinCtrl::loop()
     m_loopTimer = 0;
   }
 
-  // Publish new MQTT values (if any) when timer expires
-  if (m_MQTTTimer > MQTT_UPDATE_TIME * 1000)
+  // Publish new MQTT values (if any) when timer expires (and connected)
+  if (m_MQTTTimer > MQTT_UPDATE_TIME * 1000 && m_pMQTTClient->connected())
   {
     MQTTPublishValues();
 
