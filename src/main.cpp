@@ -28,8 +28,10 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   Serial.print("topic: ");
   Serial.println(topic);
   Serial.print("data: ");
-
-  Serial.write(payload, length);
+  for (int i = 0; i < length; i++)
+  {
+    Serial.print((char)payload[i]);
+  }
   Serial.println();
 
   float fVal;
@@ -343,7 +345,8 @@ void SetupWifi()
   });
   ArduinoOTA.begin();
 
-//  randomSeed(micros());
+  randomSeed(micros());
+
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.print("IP address: ");
@@ -379,9 +382,11 @@ void setup()
   SetupWifi();
 
   g_MQTTClient.setServer(mqtt_server, MQTT_PORT);
-  g_MQTTClient.setCallback(MQTTCallback);
   g_MQTTClient.setBufferSize(MQTT_MAX_SIZE);
-  MQTTReconnect();
+  g_MQTTClient.setCallback(MQTTCallback);
+
+  // Allow the hardware to sort itself out
+  delay(1500);
 }
 
 
