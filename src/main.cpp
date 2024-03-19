@@ -185,13 +185,7 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
   root["retain"] = true;
   root["qos"] = 1;
 
-//  root["value_template"] = "{{ value_json.state }}"; // FIXME?
-
-//  root["device_class"] = "sensor";
-//  root["unit_of_meas"] = "%";
-//  root["dev_cla"] = "humidity";
-//  root["frc_upd"] = true;
-  //root["val_tpl"] = "{{value_json['ESP32']['Humidity']}}";
+//  root["value_template"] = "{{ value_json.state }}"; // Not used
 
   switch(HAConfigType)
   {
@@ -359,7 +353,6 @@ void setup()
   pinMode(EXTRA_ZONE_OPEN_VALVE_RELAY, OUTPUT);
   pinMode(DAIKIN_PREFERENTIAL_RELAY, OUTPUT);
 
-  // FIXME: These should be set according to the previous state?
   digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, LOW);
   digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, LOW);
   digitalWrite(PRIMARY_ZONE_CLOSE_VALVE_RELAY, LOW);
