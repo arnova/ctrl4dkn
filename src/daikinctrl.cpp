@@ -200,6 +200,13 @@ void CDaikinCtrl::loop()
     {
       case STATE_IDLE:
       {
+        m_iPrimaryZoneDisableCounter = 0; // For the next round
+        m_iState = STATE_WAIT_STATE;
+      }
+      break;
+
+      case STATE_WAIT_STATE:
+      {
         // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hyseresis!).
         //       This is due to (possible) modulation else it may take forever before we switch over.
         //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
@@ -215,7 +222,6 @@ void CDaikinCtrl::loop()
             // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
             if (++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
             {
-              m_iPrimaryZoneDisableCounter = 0; // For the next round
               m_bPrimaryZoneValveClose = true;
               m_iState = STATE_PRIMARY_ZONE_CLOSE;
             }
@@ -223,34 +229,34 @@ void CDaikinCtrl::loop()
           else
           {
             m_bDaikinPrimaryZoneOn = false;
+            m_iState = STATE_IDLE;
+          }
+        }
+        else if (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
+                 m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
+                 m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
+        {
+          // FIXME: When modulation is used the above isn't true. We must probably check primary zone valve
+          //        In that case we can also lower the hysteresis value :-)
+          //        Perhaps there's another P1P2 property we can use to determine primary zone requires heating?
+          m_bDaikinPrimaryZoneOn = true;
+
+          if (m_bDaikinSecondaryZoneOn)
+          {
+            // Daikin secondary zone heating is enabled, so delay enabling/opening (daikin/valve) primary zone
+            m_iSMDelayCounter = DAIKIN_ZONE_SWITCH_TIME;
+            m_iState = STATE_DAIKIN_SEC_ZONE_DISABLE;
+          }
+          else
+          {
+            // Daikin secondary zone heating is not enabled, so immediately open primary zone again
+            m_bPrimaryZoneValveClose = false;
+            m_iState = STATE_IDLE;
           }
         }
         else
         {
-          m_iPrimaryZoneDisableCounter = 0;
-
-          // FIXME: When modulation is used this isn't true. We must probably check primary zone valve
-          //        In that case we can also lower the hysteresis value :-)
-          //        Perhaps there's another P1P2 property we can use to determine primary zone requires heating?
-          if (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
-              m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
-              m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
-          {
-            m_bDaikinPrimaryZoneOn = true;
-
-            if (m_bDaikinSecondaryZoneOn)
-            {
-              // Daikin secondary zone heating is enabled, so delay enabling/opening (daikin/valve) primary zone
-              m_iSMDelayCounter = DAIKIN_ZONE_SWITCH_TIME;
-              m_iState = STATE_DAIKIN_SEC_ZONE_DISABLE;
-            }
-            else
-            {
-              // Daikin secondary zone heating is not enabled, so immediately open primary zone again
-              m_bPrimaryZoneValveClose = false;
-              m_iState = STATE_IDLE;
-            }
-          }
+          m_iState = STATE_IDLE;
         }
       }
       break;

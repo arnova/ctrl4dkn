@@ -20,6 +20,7 @@ class CDaikinCtrl
     enum e_sm_state
     {
       STATE_IDLE,
+      STATE_WAIT_STATE,
       STATE_PRIMARY_ZONE_CLOSE,
       STATE_PRIMARY_VALVE_CLOSE,
       STATE_SECONDARY_ZONE_ON,
@@ -109,6 +110,6 @@ class CDaikinCtrl
     bool m_bP1P2HeatingOn = false;
     bool m_bP1P2ValveZoneMain = false;
 
-    e_sm_state m_iState = STATE_IDLE;
+    e_sm_state m_iState = STATE_WAIT_STATE;
 };
 #endif // DAIKIN_CTRL_H
