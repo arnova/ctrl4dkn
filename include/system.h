@@ -66,6 +66,7 @@ const char mqtt_server[] = "192.168.1.65";
 #define DEFAULT_SET_POINT                    18.0f  // FIXME: Not used
 #define LEAVING_WATER_MAX                    45.0f
 #define LEAVING_WATER_MAX_MARGIN              3.0f
+#define DAIKIN_ZONE_SWITCH_TIME               1     // Minute
 #define PRIMARY_ZONE_DISABLE_TIME             5     // Minutes
 #define PRIMARY_ZONE_VALVE_DELAY              5     // Minutes
 #define PRIMARY_ZONE_PROTECTION_DELAY         5     // Minutes

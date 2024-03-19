@@ -59,8 +59,9 @@ class CDaikinCtrl
     elapsedMillis m_loopTimer = 0;
     elapsedMillis m_MQTTTimer = 0;
     elapsedMillis m_lastTempUpdateTimer = 999;
+    uint16_t m_iSecondaryZoneDisableCounter = 0;
     uint16_t m_iPrimaryZoneDisableCounter = 0;
-    uint16_t m_iPrimaryZoneValveCounter = 0;
+    uint16_t m_iPrimaryZoneValveCloseCounter = 0;
     uint16_t m_iPrimaryZoneProtectionCounter = 0;
 
     bool m_bCtrlPriZoneHeating = false; //FIXME: Implement

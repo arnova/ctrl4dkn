@@ -224,9 +224,9 @@ void CDaikinCtrl::loop()
         if (m_bDaikinSecondaryZoneOn)
         {
           // Need to wait PRIMARY_ZONE_VALVE_DELAY minutes) before primary zone valve(s) are closed
-          if (m_iPrimaryZoneValveCounter < PRIMARY_ZONE_VALVE_DELAY)
+          if (m_iPrimaryZoneValveCloseCounter < PRIMARY_ZONE_VALVE_DELAY)
           {
-            m_iPrimaryZoneValveCounter++;
+            m_iPrimaryZoneValveCloseCounter++;
           }
           else
           {
@@ -238,18 +238,29 @@ void CDaikinCtrl::loop()
     else
     {
       m_iPrimaryZoneDisableCounter = 0;
-      m_iPrimaryZoneValveCounter = 0;
-      m_bPrimaryZoneDisable = false; // FIXME: This should be delayed
-      m_bDaikinSecondaryZoneOn = false; // FIXME: This should be delayed, need to first enable primary zone again (below)
+      m_iPrimaryZoneValveCloseCounter = 0;
 
       // FIXME: When modulation is used this isn't true. We must probably check primary zone valve also
       //        In that case we can also lower the hysteresis value :-)
       //        Perhaps there's another P1P2 property we can use to determine primary zone requires heating?
       if (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
           m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
+         !m_bDaikinPrimaryZoneOn &&
           m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
       {
         m_bDaikinPrimaryZoneOn = true;
+        if (m_bDaikinSecondaryZoneOn)
+          m_iSecondaryZoneDisableCounter = DAIKIN_ZONE_SWITCH_TIME;
+      }
+
+      if (m_iSecondaryZoneDisableCounter > 0)
+      {
+        m_iSecondaryZoneDisableCounter--;
+      }
+      else
+      {
+        m_bDaikinSecondaryZoneOn = false;
+        m_bPrimaryZoneDisable = false;
       }
     }
 
