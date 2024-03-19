@@ -20,8 +20,9 @@ class CDaikinCtrl
     enum e_sm_state
     {
       STATE_IDLE,
-      STATE_PRIMARY_ZONE_DISABLE,
+      STATE_PRIMARY_ZONE_CLOSE,
       STATE_PRIMARY_VALVE_CLOSE,
+      STATE_SECONDARY_ZONE_ON,
       STATE_DAIKIN_SEC_ZONE_DISABLE,
       STATE_PRIMARY_VALVE_OPEN
     };
@@ -69,9 +70,8 @@ class CDaikinCtrl
     elapsedMillis m_loopTimer = 0;
     elapsedMillis m_MQTTTimer = 0;
     elapsedMillis m_lastTempUpdateTimer = 999;
-    uint16_t m_iSecondaryZoneDisableCounter = 0;
+    uint16_t m_iSMDelayCounter = 0;
     uint16_t m_iPrimaryZoneDisableCounter = 0;
-    uint16_t m_iPrimaryZoneValveCloseCounter = 0;
     uint16_t m_iPrimaryZoneProtectionCounter = 0;
 
     bool m_bCtrlPriZoneHeating = false; //FIXME: Implement
