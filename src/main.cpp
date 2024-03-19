@@ -197,6 +197,7 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
       root["payload_off"] = "0";
       root["state_on"] = "1";
       root["state_off"] = "0";
+      root["enabled_by_default"] = false;
     }
     break;
 
