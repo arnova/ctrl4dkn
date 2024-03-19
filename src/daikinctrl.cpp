@@ -200,12 +200,11 @@ void CDaikinCtrl::loop()
     //       This is due to (possible) modulation else it may take forever before we switch over.
     //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
     if (IsHeatingActive() &&
-       (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
+      ((m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
         m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
-        m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp &&
-        (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT) ||
-        m_bCtrlExtraZoneHeating || !digitalRead(EXTRA_ZONE_THERMOSTAT))) ||
-        m_bCtrlSecZoneForceHeating)
+        m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp) || m_bCtrlSecZoneForceHeating) &&
+       (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT) ||
+        m_bCtrlExtraZoneHeating || !digitalRead(EXTRA_ZONE_THERMOSTAT)))
     {
       // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
       if (m_iPrimaryZoneDisableCounter < PRIMARY_ZONE_DISABLE_TIME)

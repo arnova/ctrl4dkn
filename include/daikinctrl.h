@@ -67,7 +67,7 @@ class CDaikinCtrl
     bool m_bCtrlPriZoneHeating = false; //FIXME: Implement
     bool m_bCtrlSecZoneHeating = false;
     bool m_bCtrlExtraZoneHeating = false;
-    bool m_bCtrlSecZoneForceHeating = false; // FIXME: Implement
+    bool m_bCtrlSecZoneForceHeating = false;
     bool m_bUpdateCtrlPriZoneHeating = true;
     bool m_bUpdateCtrlSecZoneHeating = true;
     bool m_bUpdateCtrlExtraZoneHeating = true;
