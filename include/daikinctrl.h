@@ -16,6 +16,16 @@ class CDaikinCtrl
       BINARY_SENSOR
     } HAConfigType_t;
 
+    // Statemachine states
+    enum e_sm_state
+    {
+      STATE_IDLE,
+      STATE_PRIMARY_ZONE_DISABLE,
+      STATE_PRIMARY_VALVE_CLOSE,
+      STATE_DAIKIN_SEC_ZONE_DISABLE,
+      STATE_PRIMARY_VALVE_OPEN
+    };
+
     CDaikinCtrl(PubSubClient* MQTTClient);
 
     void loop();
@@ -54,7 +64,7 @@ class CDaikinCtrl
     PubSubClient* m_pMQTTClient;
     bool m_bDaikinPrimaryZoneOn = false;
     bool m_bDaikinSecondaryZoneOn = false;
-    bool m_bPrimaryZoneDisable = false;
+    bool m_bPrimaryZoneValveClose = false;
     bool m_bPrimaryZoneProtection = false;
     elapsedMillis m_loopTimer = 0;
     elapsedMillis m_MQTTTimer = 0;
@@ -98,5 +108,7 @@ class CDaikinCtrl
     bool m_bP1P2CirculationPumpOn = false;
     bool m_bP1P2HeatingOn = false;
     bool m_bP1P2ValveZoneMain = false;
+
+    e_sm_state m_iState = STATE_IDLE;
 };
 #endif // DAIKIN_CTRL_H
