@@ -210,14 +210,13 @@ void CDaikinCtrl::loop()
         // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hyseresis!).
         //       This is due to (possible) modulation else it may take forever before we switch over.
         //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
-        if (IsHeatingActive() &&
-          ((m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
-            m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
-            m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp) || m_bCtrlSecZoneForceHeating))
+        if ((m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
+             m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
+             m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp) || m_bCtrlSecZoneForceHeating)
         {
           // Check if secondary / extra zone require heating
-          if (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT) ||
-              m_bCtrlExtraZoneHeating || !digitalRead(EXTRA_ZONE_THERMOSTAT))
+          if ((m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT) ||
+               m_bCtrlExtraZoneHeating || !digitalRead(EXTRA_ZONE_THERMOSTAT)))
           {
             // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
             if (++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
@@ -272,6 +271,7 @@ void CDaikinCtrl::loop()
         }
         else
         {
+          m_bDaikinPrimaryZoneOn = true;
           m_iState = STATE_IDLE;
         }
       }
