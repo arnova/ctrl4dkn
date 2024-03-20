@@ -214,8 +214,8 @@ void CDaikinCtrl::loop()
              m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
              m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp) || m_bCtrlSecZoneForceHeating)
         {
-          // Check if secondary / extra zone require heating
-          if ((m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT) ||
+          // Check if secondary + extra zone require heating
+          if ((m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT) &&
                m_bCtrlExtraZoneHeating || !digitalRead(EXTRA_ZONE_THERMOSTAT)))
           {
             // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
@@ -227,7 +227,9 @@ void CDaikinCtrl::loop()
           }
           else
           {
+            m_bPrimaryZoneValveClose = false;
             m_bDaikinPrimaryZoneOn = false;
+            m_bDaikinSecondaryZoneOn = false;
             m_iState = STATE_IDLE;
           }
         }
