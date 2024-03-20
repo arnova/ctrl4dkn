@@ -58,6 +58,7 @@ class CDaikinCtrl
     bool IsHeatingActive() { return m_bP1P2HeatingOn && m_bP1P2CirculationPumpOn; };
     bool IsPrimaryHeatingActive() { return IsHeatingActive() && m_bP1P2ValveZoneMain; };
 
+    void SetCtrlOnOff(const bool& bVal) { m_bCtrlEnable = bVal; m_bUpdateCtrlEnable = true; };
     void SetCtrlPriZoneHeating(const bool& bVal) { m_bCtrlPriZoneHeating = bVal; m_bUpdateCtrlPriZoneHeating = true; };
     void SetCtrlSecZoneHeating(const bool& bVal) { m_bCtrlSecZoneHeating = bVal; m_bUpdateCtrlSecZoneHeating = true; };
     void SetCtrlExtraZoneHeating(const bool& bVal) { m_bCtrlExtraZoneHeating = bVal; m_bUpdateCtrlExtraZoneHeating = true; };
@@ -75,10 +76,12 @@ class CDaikinCtrl
     uint16_t m_iPrimaryZoneDisableCounter = 0;
     uint16_t m_iPrimaryZoneProtectionCounter = 0;
 
+    bool m_bCtrlEnable = true;
     bool m_bCtrlPriZoneHeating = false; //FIXME: Implement
     bool m_bCtrlSecZoneHeating = false;
     bool m_bCtrlExtraZoneHeating = false;
     bool m_bCtrlSecZoneForceHeating = false;
+    bool m_bUpdateCtrlEnable = true;
     bool m_bUpdateCtrlPriZoneHeating = true;
     bool m_bUpdateCtrlSecZoneHeating = true;
     bool m_bUpdateCtrlExtraZoneHeating = true;

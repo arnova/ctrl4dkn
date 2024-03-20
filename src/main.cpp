@@ -117,6 +117,18 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set"))
+  {
+    if (bValidInt)
+    {
+      if (iVal == 0 || iVal == 1)
+        g_DaikinCtrl.SetCtrlOnOff(iVal == 1 ? true : false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING "/set"))
   {
     if (bValidInt)
@@ -177,7 +189,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
 }
 
 
-void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfigType)
+void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfigType, const bool default_value)
 {
   JsonDocument root;
   root["name"] = strItem;
@@ -197,7 +209,8 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
       root["payload_off"] = "0";
       root["state_on"] = "1";
       root["state_off"] = "0";
-      root["enabled_by_default"] = false;
+      if (!default_value)
+        root["enabled_by_default"] = false;
     }
     break;
 
@@ -279,6 +292,7 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
 
   // Control topics
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_EXTRA_ZONE_HEATING "/set", 1);
@@ -286,15 +300,16 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set", 1);
 
   // Publish MQTT config for eg. HA discovery
-  MQTTPublishConfig(MQTT_PRIMARY_ZONE_HEATING, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_SECONDARY_ZONE_HEATING, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_EXTRA_ZONE_HEATING, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_CONTROLLER_ON_OFF, CDaikinCtrl::SWITCH, true);
+  MQTTPublishConfig(MQTT_PRIMARY_ZONE_HEATING, CDaikinCtrl::SWITCH, false);
+  MQTTPublishConfig(MQTT_SECONDARY_ZONE_HEATING, CDaikinCtrl::SWITCH, false);
+  MQTTPublishConfig(MQTT_EXTRA_ZONE_HEATING, CDaikinCtrl::SWITCH, false);
 
-  MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_VALVE_ZONE_EXTRA_OPEN, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR, false);
+  MQTTPublishConfig(MQTT_VALVE_ZONE_EXTRA_OPEN, CDaikinCtrl::BINARY_SENSOR, false);
+  MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, CDaikinCtrl::BINARY_SENSOR, false);
+  MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, CDaikinCtrl::BINARY_SENSOR, false);
+  MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR, false);
 
   return true;
 }

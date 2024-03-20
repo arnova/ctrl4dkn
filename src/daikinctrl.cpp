@@ -114,6 +114,12 @@ void CDaikinCtrl::UpdateDaikinZoneSecondaryEnable(const bool bVal)
 
 bool CDaikinCtrl::MQTTPublishValues()
 {
+  if (m_bUpdateCtrlEnable)
+  {
+    m_bUpdateCtrlEnable = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF, m_bCtrlEnable ? "1" : "0", true);
+  }
+
   if (m_bUpdateCtrlPriZoneHeating)
   {
     m_bUpdateCtrlPriZoneHeating = false;
@@ -347,7 +353,7 @@ void CDaikinCtrl::loop()
   }
 #endif
 
-  if ((IsHeatingActive() && m_bPrimaryZoneValveClose) || m_bPrimaryZoneProtection)
+  if ((IsHeatingActive() && m_bPrimaryZoneValveClose && m_bCtrlEnable) || m_bPrimaryZoneProtection)
   {
     // Close primary zone valve
     digitalWrite(PRIMARY_ZONE_CLOSE_VALVE_RELAY, HIGH);
@@ -362,7 +368,7 @@ void CDaikinCtrl::loop()
     UpdateValveZonePrimaryOpen(true);
   }
 
-  if (IsHeatingActive() && !m_bPrimaryZoneProtection && (!digitalRead(EXTRA_ZONE_THERMOSTAT) || m_bCtrlExtraZoneHeating))
+  if (IsHeatingActive() && !m_bPrimaryZoneProtection && m_bCtrlEnable && (!digitalRead(EXTRA_ZONE_THERMOSTAT) || m_bCtrlExtraZoneHeating))
   {
     // Open extra zone valve
     digitalWrite(EXTRA_ZONE_OPEN_VALVE_RELAY, HIGH);
@@ -377,7 +383,7 @@ void CDaikinCtrl::loop()
     UpdateValveZoneExtraOpen(false);
   }
 
-  if (m_bDaikinPrimaryZoneOn && !m_bPrimaryZoneProtection)
+  if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bPrimaryZoneProtection)
   {
     // Enable primary zone heating relay on Daikin
     digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, HIGH);
@@ -416,7 +422,7 @@ void CDaikinCtrl::loop()
     UpdateDaikinZonePrimaryEnable(false);
   }
 
-  if (m_bDaikinSecondaryZoneOn)
+  if (m_bDaikinSecondaryZoneOn && m_bCtrlEnable)
   {
     // FIXME: Instead of selecting secondary curve, we can also increase AWT deviation but only when primary zone is active
     digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, HIGH); // Enable secondary zone heating on Daikin

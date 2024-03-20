@@ -46,6 +46,7 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE   MQTT_P1P2_P_PREFIX "T/1/Temperature_Room"
 
 // Control topics
+#define MQTT_CONTROLLER_ON_OFF                      "Controller_On_Off"
 #define MQTT_PRIMARY_ZONE_HEATING                   "Primary_Zone_Heating"
 #define MQTT_SECONDARY_ZONE_HEATING                 "Secondary_Zone_Heating"
 #define MQTT_EXTRA_ZONE_HEATING                     "Extra_Zone_Heating"
