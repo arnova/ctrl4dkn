@@ -119,10 +119,10 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   }
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set"))
   {
-    if (bValidInt)
+    if (bValidInt || length == 0)
     {
-      if (iVal == 0 || iVal == 1)
-        g_DaikinCtrl.SetCtrlOnOff(iVal == 1 ? true : false);
+      if (iVal == 0 || iVal == 1 || length == 0)
+        g_DaikinCtrl.SetCtrlOnOff((iVal == 1 || length == 0) ? true : false);
       else
         MQTTPrintError();
     }
@@ -131,9 +131,9 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   }
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING "/set"))
   {
-    if (bValidInt)
+    if (bValidInt || length == 0)
     {
-      if (iVal == 0 || iVal == 1)
+      if (iVal == 0 || iVal == 1 || length == 0)
         g_DaikinCtrl.SetCtrlPriZoneHeating(iVal == 1 ? true : false);
       else
         MQTTPrintError();
@@ -143,9 +143,9 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   }
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING "/set"))
   {
-    if (bValidInt)
+    if (bValidInt || length == 0)
     {
-      if (iVal == 0 || iVal == 1)
+      if (iVal == 0 || iVal == 1 || length == 0)
         g_DaikinCtrl.SetCtrlSecZoneHeating(iVal == 1 ? true : false);
       else
         MQTTPrintError();
@@ -155,9 +155,9 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   }
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_EXTRA_ZONE_HEATING "/set"))
   {
-    if (bValidInt)
+    if (bValidInt || length == 0)
     {
-      if (iVal == 0 || iVal == 1)
+      if (iVal == 0 || iVal == 1 || length == 0)
         g_DaikinCtrl.SetCtrlExtraZoneHeating(iVal == 1 ? true : false);
       else
         MQTTPrintError();
@@ -174,11 +174,11 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   }
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set"))
   {
-    if (bValidInt)
+    if (bValidInt || length == 0)
     {
       if (iVal == 1)
         digitalWrite(DAIKIN_PREFERENTIAL_RELAY, HIGH);
-      else if (iVal == 0)
+      else if (iVal == 0 || length == 0)
         digitalWrite(DAIKIN_PREFERENTIAL_RELAY, LOW);
       else
         MQTTPrintError();
