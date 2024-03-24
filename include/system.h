@@ -49,13 +49,13 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_CONTROLLER_ON_OFF                      "Controller_On_Off"
 #define MQTT_PRIMARY_ZONE_HEATING                   "Primary_Zone_Heating"
 #define MQTT_SECONDARY_ZONE_HEATING                 "Secondary_Zone_Heating"
-#define MQTT_EXTRA_ZONE_HEATING                     "Extra_Zone_Heating"
+#define MQTT_ROOM1_HEATING                          "Room1_Heating"
 #define MQTT_PRIMARY_ZONE_SET_POINT                 "Primary_Zone_Set_Point" //FIXME
 #define MQTT_GAS_ONLY_ON                            "Gas_Only" //FIXME
 
 // Status topics
 #define MQTT_VALVE_ZONE_PRIMARY_OPEN                "Valve_Zone_Primary_Open"
-#define MQTT_VALVE_ZONE_EXTRA_OPEN                  "Valve_Zone_Extra_Open"
+#define MQTT_VALVE_ROOM1_OPEN                       "Valve_Room1_Open"
 #define MQTT_DAIKIN_ZONE_PRIMARY_ENABLE             "Daikin_Zone_Primary_Enable"
 #define MQTT_DAIKIN_ZONE_SECONDARY_ENABLE           "Daikin_Zone_Secondary_Enable"
 #define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving_Water_Too_High"
@@ -82,14 +82,16 @@ const int LED_RED = 25;                         // Onboard LED
 const int DAIKIN_PREFERENTIAL_RELAY = 33;       // K1 relay: kWh preferential kWh (aka. gas only) rate relay (X5M 3/4) on the Daikin. NOT IMPLEMENTED (yet)
 
 // High voltage relais:
-const int DAIKIN_SECONDARY_ZONE_RELAY = 21;     // K5 relay: Enables the secondary zone input (X2M 1a+4) on the Daikin (if used. Requires configuration on Daikin)
-const int DAIKIN_PRIMARY_ZONE_RELAY = 19;       // K6 relay: Enables the primary zone input (X2M 1+4) on the Daikin (if used. Requires configuration on Daikin)
-const int EXTRA_ZONE_OPEN_VALVE_RELAY = 18;     // K7 relay: Used to open/close the (primary) extra zone (floor-heating)
+const int DAIKIN_SECONDARY_ZONE_RELAY = 32;     // K2 relay: Enables the secondary zone input (X2M 1a+4) on the Daikin (if used. Requires configuration on Daikin)
+const int DAIKIN_PRIMARY_ZONE_RELAY = 13;       // K3 relay: Enables the primary zone input (X2M 1+4) on the Daikin (if used. Requires configuration on Daikin)
+const int ROOM3_OPEN_VALVE_RELAY = 21;          // K5 relay: Used to open/close room 3 valve (floor-heating). FIXME: Not implemented
+const int ROOM2_OPEN_VALVE_RELAY = 19;          // K6 relay: Used to open/close room 2 valve (floor-heating). FIXME: Not Implemented
+const int ROOM1_OPEN_VALVE_RELAY = 18;          // K7 relay: Used to open/close room 1 valve (floor-heating)
 const int PRIMARY_ZONE_CLOSE_VALVE_RELAY = 5;   // K8 relay: Used to close/open the primary zone (floor-heating)
 
 // set input pin numbers
-const int SECONDARY_ZONE_THERMOSTAT = 22;       // Thermostat input for the secondary zone (low active)
-const int EXTRA_ZONE_THERMOSTAT = 23;           // Thermostat input for the extra zone (if used) (low active)
+const int ROOM1_THERMOSTAT = 22;                // Thermostat input for room 1 (if used) (low active)
+const int SECONDARY_ZONE_THERMOSTAT = 23;       // Thermostat input for the secondary zone (low active)
 const int HARDWARE_MAX_TEMP_SENSOR = 26;        // Hardware sensor (clixon) to detect maximum temperature exceeded (if used) (low active)
 
 #endif // SYSTEM_H

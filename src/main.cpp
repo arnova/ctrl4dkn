@@ -153,12 +153,12 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_EXTRA_ZONE_HEATING "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_HEATING "/set"))
   {
     if (bValidInt || length == 0)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlExtraZoneHeating(iVal == 1 ? true : false);
+        g_DaikinCtrl.SetCtrlRoom1Heating(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -189,7 +189,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
 }
 
 
-void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfigType, const bool default_value)
+void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfigType)
 {
   JsonDocument root;
   root["name"] = strItem;
@@ -209,8 +209,6 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
       root["payload_off"] = "0";
       root["state_on"] = "1";
       root["state_off"] = "0";
-      if (!default_value)
-        root["enabled_by_default"] = false;
     }
     break;
 
@@ -295,21 +293,21 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_EXTRA_ZONE_HEATING "/set", 1);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_HEATING "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_SET_POINT "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set", 1);
 
   // Publish MQTT config for eg. HA discovery
-  MQTTPublishConfig(MQTT_CONTROLLER_ON_OFF, CDaikinCtrl::SWITCH, true);
-  MQTTPublishConfig(MQTT_PRIMARY_ZONE_HEATING, CDaikinCtrl::SWITCH, false);
-  MQTTPublishConfig(MQTT_SECONDARY_ZONE_HEATING, CDaikinCtrl::SWITCH, false);
-  MQTTPublishConfig(MQTT_EXTRA_ZONE_HEATING, CDaikinCtrl::SWITCH, false);
+  MQTTPublishConfig(MQTT_CONTROLLER_ON_OFF, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_PRIMARY_ZONE_HEATING, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_SECONDARY_ZONE_HEATING, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_ROOM1_HEATING, CDaikinCtrl::SWITCH);
 
-  MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR, false);
-  MQTTPublishConfig(MQTT_VALVE_ZONE_EXTRA_OPEN, CDaikinCtrl::BINARY_SENSOR, false);
-  MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, CDaikinCtrl::BINARY_SENSOR, false);
-  MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, CDaikinCtrl::BINARY_SENSOR, false);
-  MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR, false);
+  MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_VALVE_ROOM1_OPEN, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR);
 
   return true;
 }
@@ -366,18 +364,18 @@ void setup()
   pinMode(DAIKIN_PRIMARY_ZONE_RELAY, OUTPUT);
   pinMode(DAIKIN_SECONDARY_ZONE_RELAY, OUTPUT);
   pinMode(PRIMARY_ZONE_CLOSE_VALVE_RELAY, OUTPUT);
-  pinMode(EXTRA_ZONE_OPEN_VALVE_RELAY, OUTPUT);
+  pinMode(ROOM1_OPEN_VALVE_RELAY, OUTPUT);
   pinMode(DAIKIN_PREFERENTIAL_RELAY, OUTPUT);
 
   digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, LOW);
   digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, LOW);
   digitalWrite(PRIMARY_ZONE_CLOSE_VALVE_RELAY, LOW);
-  digitalWrite(EXTRA_ZONE_OPEN_VALVE_RELAY, LOW);
+  digitalWrite(ROOM1_OPEN_VALVE_RELAY, LOW);
   digitalWrite(DAIKIN_PREFERENTIAL_RELAY, LOW);
 
   // Inputs
   pinMode(SECONDARY_ZONE_THERMOSTAT, INPUT_PULLUP);
-  pinMode(EXTRA_ZONE_THERMOSTAT, INPUT_PULLUP);
+  pinMode(ROOM1_THERMOSTAT, INPUT_PULLUP);
   pinMode(HARDWARE_MAX_TEMP_SENSOR, INPUT_PULLUP);
 
   Serial.begin(9600);
