@@ -69,7 +69,7 @@
 #define DAIKIN_ZONE_SWITCH_TIME               1     // Minute
 #define PRIMARY_ZONE_DISABLE_TIME             5     // Minutes
 #define PRIMARY_ZONE_VALVE_DELAY              3     // Minutes
-#define PRIMARY_ZONE_PROTECTION_DELAY         5     // Minutes
+#define FLOOR_PROTECTION_DELAY                5     // Minutes
 
 #define CONTROL_LOOP_TIME                    60     // Seconds
 #define MQTT_UPDATE_TIME                      1     // Seconds
@@ -141,13 +141,13 @@ class CDaikinCtrl
     bool m_bDaikinPrimaryZoneOn = false;
     bool m_bDaikinSecondaryZoneOn = false;
     bool m_bPrimaryZoneValveClose = false;
-    bool m_bPrimaryZoneProtection = false;
+    bool m_bFloorProtection = false;
     elapsedMillis m_loopTimer = 0;
     elapsedMillis m_MQTTTimer = 0;
     elapsedMillis m_lastTempUpdateTimer = 999;
     uint16_t m_iSMDelayCounter = 0;
     uint16_t m_iPrimaryZoneDisableCounter = 0;
-    uint16_t m_iPrimaryZoneProtectionCounter = 0;
+    uint16_t m_iFloorProtectionCounter = 0;
 
     bool m_bCtrlEnable = true;
     bool m_bCtrlPriZoneHeating = false;

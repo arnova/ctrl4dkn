@@ -223,11 +223,11 @@ void CDaikinCtrl::loop()
   // Run timed control loop
   if (m_loopTimer > CONTROL_LOOP_TIME * 1000)
   {
-    if (m_iPrimaryZoneProtectionCounter > 0)
+    if (m_iFloorProtectionCounter > 0)
     {
-      if (--m_iPrimaryZoneProtectionCounter)
+      if (--m_iFloorProtectionCounter)
       {
-        m_bPrimaryZoneProtection = false;
+        m_bFloorProtection = false;
       }
     }
 
@@ -249,7 +249,7 @@ void CDaikinCtrl::loop()
              (m_fP1P2PrimaryZoneRoomTemp == 0.0f ||
               m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
               m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)) ||
-              m_bCtrlSecZoneForceHeating)
+             (m_bCtrlSecZoneForceHeating && (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_ENABLE))))
         {
           // Check if secondary zone requires heating
           if (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_ENABLE))
@@ -366,10 +366,10 @@ void CDaikinCtrl::loop()
 
   if (m_fP1P2LeavingWaterTemp > LEAVING_WATER_MAX || !digitalRead(HARDWARE_MAX_TEMP_SENSOR))
   {
-    if (!m_bPrimaryZoneProtection)
+    if (!m_bFloorProtection)
     {
       // Leaving water temperature too high, enable protection
-      m_bPrimaryZoneProtection = true;
+      m_bFloorProtection = true;
 
       UpdateLeavingWaterTooHigh(true);
     }
@@ -378,14 +378,14 @@ void CDaikinCtrl::loop()
   {
     UpdateLeavingWaterTooHigh(false);
 
-    if (m_bPrimaryZoneProtection &&
+    if (m_bFloorProtection &&
         m_fP1P2LeavingWaterTemp < LEAVING_WATER_MAX - LEAVING_WATER_MAX_MARGIN)
     {
-      m_iPrimaryZoneProtectionCounter = PRIMARY_ZONE_PROTECTION_DELAY;
+      m_iFloorProtectionCounter = FLOOR_PROTECTION_DELAY;
     }
   }
 
-  if ((IsHeatingActive() && m_bPrimaryZoneValveClose && m_bCtrlEnable) || m_bPrimaryZoneProtection)
+  if ((IsHeatingActive() && m_bPrimaryZoneValveClose && m_bCtrlEnable) || m_bFloorProtection)
   {
     // Close primary zone valve
     digitalWrite(PRIMARY_ZONE_CLOSE_VALVE_RELAY, HIGH);
@@ -400,7 +400,7 @@ void CDaikinCtrl::loop()
     UpdateValveZonePrimaryOpen(true);
   }
 
-  if (IsHeatingActive() && !m_bPrimaryZoneProtection && m_bCtrlEnable && (!digitalRead(ROOM1_HEATING_ENABLE) || m_bCtrlRoom1Heating))
+  if (IsHeatingActive() && !m_bFloorProtection && m_bCtrlEnable && (!digitalRead(ROOM1_HEATING_ENABLE) || m_bCtrlRoom1Heating))
   {
     // Open room 1 valve
     digitalWrite(ROOM1_OPEN_VALVE_RELAY, HIGH);
@@ -415,7 +415,7 @@ void CDaikinCtrl::loop()
     UpdateRoom1ValveOpen(false);
   }
 
-  if (IsHeatingActive() && !m_bPrimaryZoneProtection && m_bCtrlEnable && (!digitalRead(ROOM2_HEATING_ENABLE) || m_bCtrlRoom2Heating))
+  if (IsHeatingActive() && !m_bFloorProtection && m_bCtrlEnable && (!digitalRead(ROOM2_HEATING_ENABLE) || m_bCtrlRoom2Heating))
   {
     // Open room 2 valve
     digitalWrite(ROOM2_OPEN_VALVE_RELAY, HIGH);
@@ -430,7 +430,7 @@ void CDaikinCtrl::loop()
     UpdateRoom2ValveOpen(false);
   }
 
-  if (IsHeatingActive() && !m_bPrimaryZoneProtection && m_bCtrlEnable && (!digitalRead(ROOM3_HEATING_ENABLE) || m_bCtrlRoom3Heating))
+  if (IsHeatingActive() && !m_bFloorProtection && m_bCtrlEnable && (!digitalRead(ROOM3_HEATING_ENABLE) || m_bCtrlRoom3Heating))
   {
     // Open room 3 valve
     digitalWrite(ROOM3_OPEN_VALVE_RELAY, HIGH);
@@ -445,7 +445,7 @@ void CDaikinCtrl::loop()
     UpdateRoom3ValveOpen(false);
   }
 
-  if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bPrimaryZoneProtection)
+  if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bFloorProtection)
   {
     // Enable primary zone heating relay on Daikin
     digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, HIGH);
