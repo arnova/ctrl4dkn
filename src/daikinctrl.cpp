@@ -1,5 +1,4 @@
 #include "daikinctrl.h"
-#include "system.h"
 
 CDaikinCtrl::CDaikinCtrl(PubSubClient *MQTTClient)
 {
