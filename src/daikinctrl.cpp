@@ -250,9 +250,8 @@ void CDaikinCtrl::loop()
              m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
              m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp) || m_bCtrlSecZoneForceHeating)
         {
-          // Check if secondary + room 1 require heating
-          if ((m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_ENABLE) &&
-               m_bCtrlFloor1Heating || !digitalRead(FLOOR1_HEATING_ENABLE)))
+          // Check if secondary zone requires heating
+          if (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_ENABLE))
           {
             // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
             if (++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
