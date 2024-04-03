@@ -85,12 +85,30 @@ void CDaikinCtrl::UpdateValveZonePrimaryOpen(const bool bVal)
   }
 }
 
-void CDaikinCtrl::UpdateValveZoneRoom1Open(const bool bVal)
+void CDaikinCtrl::UpdateRoom1ValveOpen(const bool bVal)
 {
-  if (m_bValveRoom1Open != bVal)
+  if (m_bRoom1ValveOpen != bVal)
   {
-    m_bValveRoom1Open = bVal;
-    m_bUpdateValveRoom1Open = true;
+    m_bRoom1ValveOpen = bVal;
+    m_bUpdateRoom1ValveOpen = true;
+  }
+}
+
+void CDaikinCtrl::UpdateRoom2ValveOpen(const bool bVal)
+{
+  if (m_bRoom2ValveOpen != bVal)
+  {
+    m_bRoom2ValveOpen = bVal;
+    m_bUpdateRoom2ValveOpen = true;
+  }
+}
+
+void CDaikinCtrl::UpdateRoom3ValveOpen(const bool bVal)
+{
+  if (m_bRoom3ValveOpen != bVal)
+  {
+    m_bRoom3ValveOpen = bVal;
+    m_bUpdateRoom3ValveOpen = true;
   }
 }
 
@@ -168,10 +186,22 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ZONE_PRIMARY_OPEN, m_bValveZonePrimaryOpen ? "1" : "0", true);
   }
 
-  if (m_bUpdateValveRoom1Open)
+  if (m_bUpdateRoom1ValveOpen)
   {
-    m_bUpdateValveRoom1Open = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM1_OPEN, m_bValveRoom1Open ? "1" : "0", true);
+    m_bUpdateRoom1ValveOpen = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM1_OPEN, m_bRoom1ValveOpen ? "1" : "0", true);
+  }
+
+  if (m_bUpdateRoom2ValveOpen)
+  {
+    m_bUpdateRoom2ValveOpen = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM2_OPEN, m_bRoom2ValveOpen ? "1" : "0", true);
+  }
+
+  if (m_bUpdateRoom3ValveOpen)
+  {
+    m_bUpdateRoom3ValveOpen = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM3_OPEN, m_bRoom3ValveOpen ? "1" : "0", true);
   }
 
   if (m_bUpdateDaikinZonePrimaryEnable)
@@ -221,8 +251,8 @@ void CDaikinCtrl::loop()
              m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp) || m_bCtrlSecZoneForceHeating)
         {
           // Check if secondary + room 1 require heating
-          if ((m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_THERMOSTAT) &&
-               m_bCtrlRoom1Heating || !digitalRead(ROOM1_THERMOSTAT)))
+          if ((m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_ENABLE) &&
+               m_bCtrlFloor1Heating || !digitalRead(FLOOR1_HEATING_ENABLE)))
           {
             // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
             if (++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
@@ -270,8 +300,11 @@ void CDaikinCtrl::loop()
 
       case STATE_PRIMARY_ZONE_CLOSE:
       {
-        // Enable secondary zone heating on Daikin but only when room 1 (vvw) isn't requesting heat
-        if (!(m_bCtrlRoom1Heating || !digitalRead(ROOM1_THERMOSTAT)))
+        // Enable secondary zone heating on Daikin but only when no rooms (with floor-heating) are requesting heat
+        // FIXME: Override for this
+        if (!(m_bCtrlRoom1Heating || !digitalRead(ROOM1_HEATING_ENABLE) ||
+              m_bCtrlRoom2Heating || !digitalRead(ROOM2_HEATING_ENABLE) ||
+              m_bCtrlRoom3Heating || !digitalRead(ROOM3_HEATING_ENABLE)))
         {
           // When secondary heating is enabled, disable primary:
           m_iSMDelayCounter = PRIMARY_ZONE_VALVE_DELAY;
@@ -368,19 +401,49 @@ void CDaikinCtrl::loop()
     UpdateValveZonePrimaryOpen(true);
   }
 
-  if (IsHeatingActive() && !m_bPrimaryZoneProtection && m_bCtrlEnable && (!digitalRead(ROOM1_THERMOSTAT) || m_bCtrlRoom1Heating))
+  if (IsHeatingActive() && !m_bPrimaryZoneProtection && m_bCtrlEnable && (!digitalRead(ROOM1_HEATING_ENABLE) || m_bCtrlRoom1Heating))
   {
     // Open room 1 valve
     digitalWrite(ROOM1_OPEN_VALVE_RELAY, HIGH);
 
-    UpdateValveZoneRoom1Open(true);
+    UpdateRoom1ValveOpen(true);
   }
   else
   {
     // Close room 1 valve
     digitalWrite(ROOM1_OPEN_VALVE_RELAY, LOW);
 
-    UpdateValveZoneRoom1Open(false);
+    UpdateRoom1ValveOpen(false);
+  }
+
+  if (IsHeatingActive() && !m_bPrimaryZoneProtection && m_bCtrlEnable && (!digitalRead(ROOM2_HEATING_ENABLE) || m_bCtrlRoom2Heating))
+  {
+    // Open room 2 valve
+    digitalWrite(ROOM2_OPEN_VALVE_RELAY, HIGH);
+
+    UpdateRoom2ValveOpen(true);
+  }
+  else
+  {
+    // Close room 2 valve
+    digitalWrite(ROOM2_OPEN_VALVE_RELAY, LOW);
+
+    UpdateRoom2ValveOpen(false);
+  }
+
+  if (IsHeatingActive() && !m_bPrimaryZoneProtection && m_bCtrlEnable && (!digitalRead(ROOM3_HEATING_ENABLE) || m_bCtrlRoom3Heating))
+  {
+    // Open room 3 valve
+    digitalWrite(ROOM3_OPEN_VALVE_RELAY, HIGH);
+
+    UpdateRoom3ValveOpen(true);
+  }
+  else
+  {
+    // Close room 3 valve
+    digitalWrite(ROOM3_OPEN_VALVE_RELAY, LOW);
+
+    UpdateRoom3ValveOpen(false);
   }
 
   if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bPrimaryZoneProtection)

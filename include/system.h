@@ -18,11 +18,11 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_P1P2_W_TOPIC                           "P1P2/W/" MQTT_P1P2_HOST_ID "/"  // FIXME: HOST_ID ?
 
 #define MQTT_CTRL4DKN_HOST_ID                       "067"
-#define MQTT_CTRL4DKN_CTRL_PREFIX                   "ctrl4dkn/C/"
-#define MQTT_CTRL4DKN_STATUS_PREFIX                 "ctrl4dkn/S/"
+#define MQTT_CTRL4DKN_CTRL_PREFIX                   "ctrl4dkn/c/"
+#define MQTT_CTRL4DKN_STATUS_PREFIX                 "ctrl4dkn/s/"
 
 // P1P2 write topics
-#define MQTT_P1P2_W_SET_POINT_CMD                   "E360"      // Room temperature setpoint.
+#define MQTT_P1P2_W_SET_POINT_CMD                   "E360"      // Room temperature setpoint
                                                                 // Suffixed with 2-digit temperature hex-value
 #define MQTT_P1P2_W_ON_OFF_CMD                      "E352F"     // Heating/cooling on/off
                                                                 // Suffixed with either 0 (off) or 1 (on)
@@ -46,21 +46,25 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE   MQTT_P1P2_P_PREFIX "T/1/Temperature_Room"
 
 // Control topics
-#define MQTT_CONTROLLER_ON_OFF                      "Controller_On_Off"
-#define MQTT_PRIMARY_ZONE_HEATING                   "Primary_Zone_Heating"
-#define MQTT_SECONDARY_ZONE_HEATING                 "Secondary_Zone_Heating"
-#define MQTT_ROOM1_HEATING                          "Room1_Heating"
-#define MQTT_PRIMARY_ZONE_SET_POINT                 "Primary_Zone_Set_Point" //FIXME
-#define MQTT_GAS_ONLY_ON                            "Gas_Only" //FIXME
+#define MQTT_CONTROLLER_ON_OFF                      "controller_on_off"
+#define MQTT_PRIMARY_ZONE_HEATING                   "primary_zone_heating"
+#define MQTT_SECONDARY_ZONE_HEATING                 "secondary_zone_heating"
+#define MQTT_ROOM1_HEATING                          "room1_heating"
+#define MQTT_ROOM2_HEATING                          "room2_heating"
+#define MQTT_ROOM3_HEATING                          "room3_heating"
+#define MQTT_PRIMARY_ZONE_SET_POINT                 "primary_zone_set_point" //FIXME
+#define MQTT_GAS_ONLY_ON                            "gas_only" //FIXME
 
 // Status topics
-#define MQTT_VALVE_ZONE_PRIMARY_OPEN                "Valve_Zone_Primary_Open"
-#define MQTT_VALVE_ROOM1_OPEN                       "Valve_Room1_Open"
-#define MQTT_DAIKIN_ZONE_PRIMARY_ENABLE             "Daikin_Zone_Primary_Enable"
-#define MQTT_DAIKIN_ZONE_SECONDARY_ENABLE           "Daikin_Zone_Secondary_Enable"
-#define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving_Water_Too_High"
-#define MQTT_ZONE_PRIMARY_REAL_SET_POINT            "Zone_Primary_Real_Set_Point" //FIXME
-#define MQTT_ZONE_PRIMARY_SAVED_SET_POINT           "Zone_Primary_Saved_Set_Point" //FIXME
+#define MQTT_VALVE_ZONE_PRIMARY_OPEN                "valve_zone_primary_open"
+#define MQTT_VALVE_ROOM1_OPEN                       "valve_room1_open"
+#define MQTT_VALVE_ROOM2_OPEN                       "valve_room2_open"
+#define MQTT_VALVE_ROOM3_OPEN                       "valve_room3_open"
+#define MQTT_DAIKIN_ZONE_PRIMARY_ENABLE             "daikin_zone_primary_enable"
+#define MQTT_DAIKIN_ZONE_SECONDARY_ENABLE           "daikin_zone_secondary_enable"
+#define MQTT_LEAVING_WATER_TOO_HIGH                 "leaving_water_too_high"
+#define MQTT_ZONE_PRIMARY_REAL_SET_POINT            "zone_primary_real_set_point" //FIXME
+#define MQTT_ZONE_PRIMARY_SAVED_SET_POINT           "zone_primary_saved_set_point" //FIXME
 
 #define DAIKIN_HYSTERESIS                     1.0f
 #define DAIKIN_PRIMARY_ZONE_OFF_TEMPERATURE  15.0f
@@ -84,14 +88,17 @@ const int DAIKIN_PREFERENTIAL_RELAY = 33;       // K1 relay: kWh preferential kW
 // High voltage relais:
 const int DAIKIN_SECONDARY_ZONE_RELAY = 32;     // K2 relay: Enables the secondary zone input (X2M 1a+4) on the Daikin (if used. Requires configuration on Daikin)
 const int DAIKIN_PRIMARY_ZONE_RELAY = 13;       // K3 relay: Enables the primary zone input (X2M 1+4) on the Daikin (if used. Requires configuration on Daikin)
-const int ROOM3_OPEN_VALVE_RELAY = 21;          // K5 relay: Used to open/close room 3 valve (floor-heating). FIXME: Not implemented
-const int ROOM2_OPEN_VALVE_RELAY = 19;          // K6 relay: Used to open/close room 2 valve (floor-heating). FIXME: Not Implemented
+const int ROOM3_OPEN_VALVE_RELAY = 21;          // K5 relay: Used to open/close room 3 valve (floor-heating)
+const int ROOM2_OPEN_VALVE_RELAY = 19;          // K6 relay: Used to open/close room 2 valve (floor-heating)
 const int ROOM1_OPEN_VALVE_RELAY = 18;          // K7 relay: Used to open/close room 1 valve (floor-heating)
 const int PRIMARY_ZONE_CLOSE_VALVE_RELAY = 5;   // K8 relay: Used to close/open the primary zone (floor-heating)
 
 // set input pin numbers
-const int ROOM1_THERMOSTAT = 22;                // Thermostat input for room 1 (if used) (low active)
-const int SECONDARY_ZONE_THERMOSTAT = 23;       // Thermostat input for the secondary zone (low active)
-const int HARDWARE_MAX_TEMP_SENSOR = 26;        // Hardware sensor (clixon) to detect maximum temperature exceeded (if used) (low active)
+const int SECONDARY_ZONE_ENABLE = 22;           // Enable (thermostat) input for the secondary zone (low active)
+const int ROOM1_HEATING_ENABLE = 23;            // Enable (thermostat) input for room 1 (floor-heating) (if used) (low active)
+const int ROOM2_HEATING_ENABLE = 26;            // Enable (thermostat) input for room 2 (floor-heating) (if used) (low active)
+const int ROOM3_HEATING_ENABLE = 27;            // Enable (thermostat) input for room 3 (floor-heating) (if used) (low active)
+
+const int HARDWARE_MAX_TEMP_SENSOR = 14;        // Hardware sensor (clixon) to detect maximum temperature exceeded (if used) (low active)
 
 #endif // SYSTEM_H

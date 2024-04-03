@@ -39,7 +39,9 @@ class CDaikinCtrl
     void UpdateZonePrimarySavedSetPoint(const float fSetPoint);
     void UpdateLeavingWaterTooHigh(const bool bVal);
     void UpdateValveZonePrimaryOpen(const bool bVal);
-    void UpdateValveZoneRoom1Open(const bool bVal);
+    void UpdateRoom1ValveOpen(const bool bVal);
+    void UpdateRoom2ValveOpen(const bool bVal);
+    void UpdateRoom3ValveOpen(const bool bVal);
     void UpdateDaikinZonePrimaryEnable(const bool bVal);
     void UpdateDaikinZoneSecondaryEnable(const bool bVal);
     bool MQTTPublishValues();
@@ -62,6 +64,8 @@ class CDaikinCtrl
     void SetCtrlPriZoneHeating(const bool& bVal) { m_bCtrlPriZoneHeating = bVal; m_bUpdateCtrlPriZoneHeating = true; };
     void SetCtrlSecZoneHeating(const bool& bVal) { m_bCtrlSecZoneHeating = bVal; m_bUpdateCtrlSecZoneHeating = true; };
     void SetCtrlRoom1Heating(const bool& bVal) { m_bCtrlRoom1Heating = bVal; m_bUpdateCtrlRoom1Heating = true; };
+    void SetCtrlRoom2Heating(const bool& bVal) { m_bCtrlRoom2Heating = bVal; m_bUpdateCtrlRoom2Heating = true; };
+    void SetCtrlRoom3Heating(const bool& bVal) { m_bCtrlRoom3Heating = bVal; m_bUpdateCtrlRoom3Heating = true; };
 
   private:
     PubSubClient* m_pMQTTClient;
@@ -80,11 +84,15 @@ class CDaikinCtrl
     bool m_bCtrlPriZoneHeating = false; //FIXME: Implement
     bool m_bCtrlSecZoneHeating = false;
     bool m_bCtrlRoom1Heating = false;
+    bool m_bCtrlRoom2Heating = false;
+    bool m_bCtrlRoom3Heating = false;
     bool m_bCtrlSecZoneForceHeating = false;
     bool m_bUpdateCtrlEnable = true;
     bool m_bUpdateCtrlPriZoneHeating = true;
     bool m_bUpdateCtrlSecZoneHeating = true;
     bool m_bUpdateCtrlRoom1Heating = true;
+    bool m_bUpdateCtrlRoom2Heating = true;
+    bool m_bUpdateCtrlRoom3Heating = true;
 
     float m_fZonePrimaryRealSetPoint = 0.0f;
     bool m_bUpdateZonePrimaryRealSetPoint = true;
@@ -94,8 +102,12 @@ class CDaikinCtrl
     bool m_bUpdateLeavingWaterTooHigh = true;
     bool m_bValveZonePrimaryOpen = true;
     bool m_bUpdateValveZonePrimaryOpen = true;
-    bool m_bValveRoom1Open = true;
-    bool m_bUpdateValveRoom1Open = true;
+    bool m_bRoom1ValveOpen = true;
+    bool m_bUpdateRoom1ValveOpen = true;
+    bool m_bRoom2ValveOpen = true;
+    bool m_bUpdateRoom2ValveOpen = true;
+    bool m_bRoom3ValveOpen = true;
+    bool m_bUpdateRoom3ValveOpen = true;
     bool m_bDaikinZonePrimaryEnable = false;
     bool m_bUpdateDaikinZonePrimaryEnable = true;
     bool m_bDaikinZoneSecondaryEnable = false;
