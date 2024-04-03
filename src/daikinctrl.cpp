@@ -363,8 +363,7 @@ void CDaikinCtrl::loop()
     m_MQTTTimer = 0;
   }
 
-#ifdef LEAVING_WATER_MAX
-  if (m_fP1P2LeavingWaterTemp > LEAVING_WATER_MAX)
+  if (m_fP1P2LeavingWaterTemp > LEAVING_WATER_MAX || !digitalRead(HARDWARE_MAX_TEMP_SENSOR))
   {
     if (!m_bPrimaryZoneProtection)
     {
@@ -384,7 +383,6 @@ void CDaikinCtrl::loop()
       m_iPrimaryZoneProtectionCounter = PRIMARY_ZONE_PROTECTION_DELAY;
     }
   }
-#endif
 
   if ((IsHeatingActive() && m_bPrimaryZoneValveClose && m_bCtrlEnable) || m_bPrimaryZoneProtection)
   {
