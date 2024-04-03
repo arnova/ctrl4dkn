@@ -150,12 +150,12 @@ class CDaikinCtrl
     uint16_t m_iPrimaryZoneProtectionCounter = 0;
 
     bool m_bCtrlEnable = true;
-    bool m_bCtrlPriZoneHeating = false; //FIXME: Implement
+    bool m_bCtrlPriZoneHeating = false;
     bool m_bCtrlSecZoneHeating = false;
     bool m_bCtrlRoom1Heating = false;
     bool m_bCtrlRoom2Heating = false;
     bool m_bCtrlRoom3Heating = false;
-    bool m_bCtrlSecZoneForceHeating = false;
+    bool m_bCtrlSecZoneForceHeating = false; // FIXME: Implement
     bool m_bUpdateCtrlEnable = true;
     bool m_bUpdateCtrlPriZoneHeating = true;
     bool m_bUpdateCtrlSecZoneHeating = true;
