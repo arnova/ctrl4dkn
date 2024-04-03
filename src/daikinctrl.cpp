@@ -245,9 +245,11 @@ void CDaikinCtrl::loop()
         // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hyseresis!).
         //       This is due to (possible) modulation else it may take forever before we switch over.
         //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
-        if ((m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
-             m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
-             m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp) || m_bCtrlSecZoneForceHeating)
+        if ((!m_bCtrlPriZoneHeating &&
+             (m_fP1P2PrimaryZoneRoomTemp == 0.0f ||
+              m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
+              m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)) ||
+              m_bCtrlSecZoneForceHeating)
         {
           // Check if secondary zone requires heating
           if (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_ENABLE))
@@ -267,9 +269,10 @@ void CDaikinCtrl::loop()
             m_iState = STATE_IDLE;
           }
         }
-        else if (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
+        else if (m_bCtrlPriZoneHeating ||
+                (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
                  m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
-                 m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
+                 m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))))
         {
           // FIXME: When modulation is used the above isn't true. We must probably check primary zone valve
           //        In that case we can also lower the hysteresis value :-)
