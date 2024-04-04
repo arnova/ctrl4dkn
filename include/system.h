@@ -22,12 +22,13 @@ const int LED_RED = 25;                         // Onboard LED
 const int DAIKIN_PREFERENTIAL_RELAY = 33;       // K1 relay: kWh preferential kWh (aka. gas only) rate relay (X5M 3/4) on the Daikin. NOT IMPLEMENTED (yet)
 
 // High voltage relais:
-const int DAIKIN_SECONDARY_ZONE_RELAY = 32;     // K2 relay: Enables the secondary zone input (X2M 1a+4) on the Daikin (if used. Requires configuration on Daikin)
-const int DAIKIN_PRIMARY_ZONE_RELAY = 13;       // K3 relay: Enables the primary zone input (X2M 1+4) on the Daikin (if used. Requires configuration on Daikin)
-const int ROOM3_OPEN_VALVE_RELAY = 21;          // K5 relay: Used to open/close room 3 valve (floor-heating)
-const int ROOM2_OPEN_VALVE_RELAY = 19;          // K6 relay: Used to open/close room 2 valve (floor-heating)
-const int ROOM1_OPEN_VALVE_RELAY = 18;          // K7 relay: Used to open/close room 1 valve (floor-heating)
-const int PRIMARY_ZONE_CLOSE_VALVE_RELAY = 5;   // K8 relay: Used to close/open the primary zone (floor-heating)
+                                                // K2 relay: Not used for now
+const int ROOM3_OPEN_VALVE_RELAY = 32;          // K3 relay: Used to open/close room 3 valve (floor-heating)
+const int ROOM2_OPEN_VALVE_RELAY = 13;          // K4 relay: Used to open/close room 2 valve (floor-heating)
+const int ROOM1_OPEN_VALVE_RELAY = 21;          // K5 relay: Used to open/close room 1 valve (floor-heating)
+const int PRIMARY_ZONE_CLOSE_VALVE_RELAY = 19;  // K6 relay: Used to close/open the primary zone (floor-heating)
+const int DAIKIN_SECONDARY_ZONE_RELAY = 18;     // K7 relay: Enables the secondary zone input (X2M 1a+4) on the Daikin (if used. Requires configuration on Daikin)
+const int DAIKIN_PRIMARY_ZONE_RELAY = 5;        // K8 relay: Enables the primary zone input (X2M 1+4) on the Daikin (if used. Requires configuration on Daikin)
 
 // set input pin numbers
 const int SECONDARY_ZONE_ENABLE = 22;           // Enable (thermostat) input for the secondary zone (low active)
