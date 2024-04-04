@@ -149,10 +149,22 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING, m_bCtrlSecZoneHeating ? "1" : "0", true);
   }
 
-  if (m_bUpdateCtrlRoom1Heating)
+  if (m_bUpdateCtrlRoom1Enable)
   {
-    m_bUpdateCtrlRoom1Heating = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_HEATING, m_bCtrlRoom1Heating ? "1" : "0", true);
+    m_bUpdateCtrlRoom1Enable = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE, m_bCtrlRoom1Enable ? "1" : "0", true);
+  }
+
+  if (m_bUpdateCtrlRoom2Enable)
+  {
+    m_bUpdateCtrlRoom2Enable = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE, m_bCtrlRoom2Enable ? "1" : "0", true);
+  }
+
+  if (m_bUpdateCtrlRoom3Enable)
+  {
+    m_bUpdateCtrlRoom3Enable = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE, m_bCtrlRoom3Enable ? "1" : "0", true);
   }
 
   if (m_bUpdateZonePrimaryRealSetPoint)
@@ -231,6 +243,11 @@ void CDaikinCtrl::loop()
       }
     }
 
+    // Check if rooms require heat
+    m_bRoom1HeatRq = (m_bCtrlRoom1Enable || !digitalRead(ROOM1_HEATING_ENABLE));
+    m_bRoom2HeatRq = (m_bCtrlRoom2Enable || !digitalRead(ROOM2_HEATING_ENABLE));
+    m_bRoom3HeatRq = (m_bCtrlRoom3Enable || !digitalRead(ROOM3_HEATING_ENABLE));
+
     switch (m_iState)
     {
       case STATE_IDLE:
@@ -254,11 +271,34 @@ void CDaikinCtrl::loop()
           // Check if secondary zone requires heating
           if (m_bCtrlSecZoneHeating || !digitalRead(SECONDARY_ZONE_ENABLE))
           {
-            // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
-            if (++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
+#ifndef LOW_TEMP_SECONDARY_ZONE
+            // When rooms (with floor-heating) are requesting heat, check whether Daikin secondary zone is enabled
+            if (m_bRoom1HeatRq || m_bRoom2HeatRq || m_bRoom3HeatRq)
             {
               m_bPrimaryZoneValveClose = true;
-              m_iState = STATE_PRIMARY_ZONE_CLOSE;
+              m_bDaikinPrimaryZoneOn = true;
+
+              if (m_bDaikinSecondaryZoneOn)
+              {
+                // Daikin secondary zone heating is enabled, so disable that first
+                m_iSMDelayCounter = DAIKIN_ZONE_SWITCH_TIME;
+                m_iState = STATE_DAIKIN_SEC_ZONE_DISABLE;
+              }
+            }
+            else
+#endif
+            if (!m_bDaikinSecondaryZoneOn)
+            {
+              // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
+              if (++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
+              {
+                m_bPrimaryZoneValveClose = true;
+
+                // When we want to enable secondary heating on Daikin, we need to wait
+                // until primary zone valve is closed:
+                m_iSMDelayCounter = PRIMARY_ZONE_VALVE_DELAY;
+                m_iState = STATE_PRIMARY_VALVE_CLOSING; // Wait for primary value to be closed & enable secondary zone on Daikin
+              }
             }
           }
           else
@@ -287,7 +327,7 @@ void CDaikinCtrl::loop()
           }
           else
           {
-            // Daikin secondary zone heating is not enabled, so immediately open primary zone again
+            // Daikin secondary zone heating is not enabled (anymore), so immediately open primary zone
             m_bPrimaryZoneValveClose = false;
             m_iState = STATE_IDLE;
           }
@@ -299,27 +339,7 @@ void CDaikinCtrl::loop()
       }
       break;
 
-      case STATE_PRIMARY_ZONE_CLOSE:
-      {
-        // Enable secondary zone heating on Daikin but only when no rooms (with floor-heating) are requesting heat
-        // FIXME: Override for this
-        if (!(m_bCtrlRoom1Heating || !digitalRead(ROOM1_HEATING_ENABLE) ||
-              m_bCtrlRoom2Heating || !digitalRead(ROOM2_HEATING_ENABLE) ||
-              m_bCtrlRoom3Heating || !digitalRead(ROOM3_HEATING_ENABLE)))
-        {
-          // When secondary heating is enabled, disable primary:
-          m_iSMDelayCounter = PRIMARY_ZONE_VALVE_DELAY;
-          m_iState = STATE_PRIMARY_VALVE_CLOSE;
-        }
-        else
-        {
-          m_bDaikinPrimaryZoneOn = true;
-          m_iState = STATE_IDLE;
-        }
-      }
-      break;
-
-      case STATE_PRIMARY_VALVE_CLOSE:
+      case STATE_PRIMARY_VALVE_CLOSING:
       {
         // Wait for primary zone valve to be closed:
         if (--m_iSMDelayCounter == 0)
@@ -400,7 +420,16 @@ void CDaikinCtrl::loop()
     UpdateValveZonePrimaryOpen(true);
   }
 
-  if (IsHeatingActive() && !m_bFloorProtection && m_bCtrlEnable && (!digitalRead(ROOM1_HEATING_ENABLE) || m_bCtrlRoom1Heating))
+  bool bAllowRoomHeating = (IsHeatingActive() &&
+                            m_bCtrlEnable &&
+                            !m_bFloorProtection);
+#ifndef LOW_TEMP_SECONDARY_ZONE
+  // When Daikin secondary zone uses high temperature, make sure we don't enable floor heated rooms
+  bAllowRoomHeating &= !m_bDaikinSecondaryZoneOn; // FIXME: Delay this from SM?
+#endif
+
+  if (bAllowRoomHeating &&
+      m_bRoom1HeatRq)
   {
     // Open room 1 valve
     digitalWrite(ROOM1_OPEN_VALVE_RELAY, HIGH);
@@ -415,7 +444,8 @@ void CDaikinCtrl::loop()
     UpdateRoom1ValveOpen(false);
   }
 
-  if (IsHeatingActive() && !m_bFloorProtection && m_bCtrlEnable && (!digitalRead(ROOM2_HEATING_ENABLE) || m_bCtrlRoom2Heating))
+  if (bAllowRoomHeating &&
+      m_bRoom2HeatRq)
   {
     // Open room 2 valve
     digitalWrite(ROOM2_OPEN_VALVE_RELAY, HIGH);
@@ -430,7 +460,8 @@ void CDaikinCtrl::loop()
     UpdateRoom2ValveOpen(false);
   }
 
-  if (IsHeatingActive() && !m_bFloorProtection && m_bCtrlEnable && (!digitalRead(ROOM3_HEATING_ENABLE) || m_bCtrlRoom3Heating))
+  if (bAllowRoomHeating &&
+      m_bRoom3HeatRq)
   {
     // Open room 3 valve
     digitalWrite(ROOM3_OPEN_VALVE_RELAY, HIGH);

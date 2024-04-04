@@ -153,36 +153,36 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_HEATING "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set"))
   {
     if (bValidInt || length == 0)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlRoom1Heating(iVal == 1 ? true : false);
+        g_DaikinCtrl.SetCtrlRoom1Enable(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_HEATING "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE "/set"))
   {
     if (bValidInt || length == 0)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlRoom2Heating(iVal == 1 ? true : false);
+        g_DaikinCtrl.SetCtrlRoom2Enable(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_HEATING "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE "/set"))
   {
     if (bValidInt || length == 0)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlRoom3Heating(iVal == 1 ? true : false);
+        g_DaikinCtrl.SetCtrlRoom3Enable(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -248,7 +248,7 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
 
   JsonObject device = root["device"].to<JsonObject>();
   device["name"] = "Ctrl4Dkn";
-  device["model"] = "Heat Controller";
+  device["model"] = "Daikin Floorheating Controller";
   device["manufacturer"] = "Arnova";
   device["identifiers"] = "Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID;
 
@@ -283,6 +283,8 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
     break;
   }
   strTopic += String("/ctrl4dkn_" MQTT_CTRL4DKN_HOST_ID "/") + strItem + "/config";
+  strTopic.toLowerCase();
+  strTopic.replace(' ', '_');
 
   g_MQTTClient.publish(strTopic.c_str(), message, true);
 }
@@ -317,9 +319,9 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_HEATING "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_HEATING "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_HEATING "/set", 1);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set", 1);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE "/set", 1);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_SET_POINT "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set", 1);
 
@@ -327,9 +329,9 @@ bool MQTTReconnect()
   MQTTPublishConfig(MQTT_CONTROLLER_ON_OFF, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_PRIMARY_ZONE_HEATING, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_SECONDARY_ZONE_HEATING, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_ROOM1_HEATING, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_ROOM2_HEATING, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_ROOM3_HEATING, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_ROOM1_ENABLE, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_ROOM2_ENABLE, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_ROOM3_ENABLE, CDaikinCtrl::SWITCH);
 
   MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_VALVE_ROOM1_OPEN, CDaikinCtrl::BINARY_SENSOR);

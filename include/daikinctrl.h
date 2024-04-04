@@ -41,25 +41,25 @@
 #define MQTT_CTRL4DKN_STATUS_PREFIX                 "ctrl4dkn/s/"
 
 // Control topics
-#define MQTT_CONTROLLER_ON_OFF                      "controller_on_off"
-#define MQTT_PRIMARY_ZONE_HEATING                   "primary_zone_heating"
-#define MQTT_SECONDARY_ZONE_HEATING                 "secondary_zone_heating"
-#define MQTT_ROOM1_HEATING                          "room1_heating"
-#define MQTT_ROOM2_HEATING                          "room2_heating"
-#define MQTT_ROOM3_HEATING                          "room3_heating"
-#define MQTT_PRIMARY_ZONE_SET_POINT                 "primary_zone_set_point" //FIXME
-#define MQTT_GAS_ONLY_ON                            "gas_only" //FIXME
+#define MQTT_CONTROLLER_ON_OFF                      "Controller Enable"
+#define MQTT_PRIMARY_ZONE_HEATING                   "Heating Primary Zone"
+#define MQTT_SECONDARY_ZONE_HEATING                 "Heating Secondary Zone"
+#define MQTT_ROOM1_ENABLE                           "Room 1 Enable"
+#define MQTT_ROOM2_ENABLE                           "Room 2 Enable"
+#define MQTT_ROOM3_ENABLE                           "Room 3 Enable"
+#define MQTT_PRIMARY_ZONE_SET_POINT                 "Setpoint Primary Zone" //FIXME
+#define MQTT_GAS_ONLY_ON                            "Gas Only" //FIXME
 
 // Status topics
-#define MQTT_VALVE_ZONE_PRIMARY_OPEN                "valve_zone_primary_open"
-#define MQTT_VALVE_ROOM1_OPEN                       "valve_room1_open"
-#define MQTT_VALVE_ROOM2_OPEN                       "valve_room2_open"
-#define MQTT_VALVE_ROOM3_OPEN                       "valve_room3_open"
-#define MQTT_DAIKIN_ZONE_PRIMARY_ENABLE             "daikin_zone_primary_enable"
-#define MQTT_DAIKIN_ZONE_SECONDARY_ENABLE           "daikin_zone_secondary_enable"
-#define MQTT_LEAVING_WATER_TOO_HIGH                 "leaving_water_too_high"
-#define MQTT_ZONE_PRIMARY_REAL_SET_POINT            "zone_primary_real_set_point" //FIXME
-#define MQTT_ZONE_PRIMARY_SAVED_SET_POINT           "zone_primary_saved_set_point" //FIXME
+#define MQTT_VALVE_ZONE_PRIMARY_OPEN                "Valve Primary Zone Open"
+#define MQTT_VALVE_ROOM1_OPEN                       "Valve Room 1 Open"
+#define MQTT_VALVE_ROOM2_OPEN                       "Valve Room 2 Open"
+#define MQTT_VALVE_ROOM3_OPEN                       "Valve Room 3 Open"
+#define MQTT_DAIKIN_ZONE_PRIMARY_ENABLE             "Daikin Primary Zone Enable"
+#define MQTT_DAIKIN_ZONE_SECONDARY_ENABLE           "Daikin Secondary Zone Enable"
+#define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving Water Too High"
+#define MQTT_ZONE_PRIMARY_REAL_SET_POINT            "Setpoint Real Primary Zone" //FIXME
+#define MQTT_ZONE_PRIMARY_SAVED_SET_POINT           "Setpoint Saved Primary Zone" //FIXME
 
 #define DAIKIN_HYSTERESIS                     1.0f
 #define DAIKIN_PRIMARY_ZONE_OFF_TEMPERATURE  15.0f
@@ -90,8 +90,7 @@ class CDaikinCtrl
     {
       STATE_IDLE,
       STATE_WAIT_STATE,
-      STATE_PRIMARY_ZONE_CLOSE,
-      STATE_PRIMARY_VALVE_CLOSE,
+      STATE_PRIMARY_VALVE_CLOSING,
       STATE_SECONDARY_ZONE_ON,
       STATE_DAIKIN_SEC_ZONE_DISABLE,
       STATE_PRIMARY_VALVE_OPEN
@@ -132,9 +131,9 @@ class CDaikinCtrl
     void SetCtrlOnOff(const bool& bVal) { m_bCtrlEnable = bVal; m_bUpdateCtrlEnable = true; };
     void SetCtrlPriZoneHeating(const bool& bVal) { m_bCtrlPriZoneHeating = bVal; m_bUpdateCtrlPriZoneHeating = true; };
     void SetCtrlSecZoneHeating(const bool& bVal) { m_bCtrlSecZoneHeating = bVal; m_bUpdateCtrlSecZoneHeating = true; };
-    void SetCtrlRoom1Heating(const bool& bVal) { m_bCtrlRoom1Heating = bVal; m_bUpdateCtrlRoom1Heating = true; };
-    void SetCtrlRoom2Heating(const bool& bVal) { m_bCtrlRoom2Heating = bVal; m_bUpdateCtrlRoom2Heating = true; };
-    void SetCtrlRoom3Heating(const bool& bVal) { m_bCtrlRoom3Heating = bVal; m_bUpdateCtrlRoom3Heating = true; };
+    void SetCtrlRoom1Enable(const bool& bVal) { m_bCtrlRoom1Enable = bVal; m_bUpdateCtrlRoom1Enable = true; };
+    void SetCtrlRoom2Enable(const bool& bVal) { m_bCtrlRoom2Enable = bVal; m_bUpdateCtrlRoom2Enable = true; };
+    void SetCtrlRoom3Enable(const bool& bVal) { m_bCtrlRoom3Enable = bVal; m_bUpdateCtrlRoom3Enable = true; };
 
   private:
     PubSubClient* m_pMQTTClient;
@@ -142,6 +141,9 @@ class CDaikinCtrl
     bool m_bDaikinSecondaryZoneOn = false;
     bool m_bPrimaryZoneValveClose = false;
     bool m_bFloorProtection = false;
+    bool m_bRoom1HeatRq = false;
+    bool m_bRoom2HeatRq = false;
+    bool m_bRoom3HeatRq = false;
     elapsedMillis m_loopTimer = 0;
     elapsedMillis m_MQTTTimer = 0;
     elapsedMillis m_lastTempUpdateTimer = 999;
@@ -152,16 +154,16 @@ class CDaikinCtrl
     bool m_bCtrlEnable = true;
     bool m_bCtrlPriZoneHeating = false;
     bool m_bCtrlSecZoneHeating = false;
-    bool m_bCtrlRoom1Heating = false;
-    bool m_bCtrlRoom2Heating = false;
-    bool m_bCtrlRoom3Heating = false;
+    bool m_bCtrlRoom1Enable = false;
+    bool m_bCtrlRoom2Enable = false;
+    bool m_bCtrlRoom3Enable = false;
     bool m_bCtrlSecZoneForceHeating = false; // FIXME: Implement
     bool m_bUpdateCtrlEnable = true;
     bool m_bUpdateCtrlPriZoneHeating = true;
     bool m_bUpdateCtrlSecZoneHeating = true;
-    bool m_bUpdateCtrlRoom1Heating = true;
-    bool m_bUpdateCtrlRoom2Heating = true;
-    bool m_bUpdateCtrlRoom3Heating = true;
+    bool m_bUpdateCtrlRoom1Enable = true;
+    bool m_bUpdateCtrlRoom2Enable = true;
+    bool m_bUpdateCtrlRoom3Enable = true;
 
     float m_fZonePrimaryRealSetPoint = 0.0f;
     bool m_bUpdateZonePrimaryRealSetPoint = true;
