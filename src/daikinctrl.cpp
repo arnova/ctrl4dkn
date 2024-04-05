@@ -77,6 +77,11 @@ void CDaikinCtrl::UpdateLeavingWaterTooHigh(const bool bVal)
 
 void CDaikinCtrl::UpdateValveZonePrimaryOpen(const bool bVal)
 {
+  if (bVal)
+    digitalWrite(PRIMARY_ZONE_VALVE_RELAY, PRIMARY_ZONE_VALVE_POLARITY ? LOW : HIGH);
+  else
+    digitalWrite(PRIMARY_ZONE_VALVE_RELAY, PRIMARY_ZONE_VALVE_POLARITY ? HIGH : LOW);
+
   if (m_bValveZonePrimaryOpen != bVal)
   {
     m_bValveZonePrimaryOpen = bVal;
@@ -86,6 +91,11 @@ void CDaikinCtrl::UpdateValveZonePrimaryOpen(const bool bVal)
 
 void CDaikinCtrl::UpdateRoom1ValveOpen(const bool bVal)
 {
+  if (bVal)
+    digitalWrite(ROOM1_VALVE_RELAY, ROOM1_VALVE_POLARITY ? LOW : HIGH);
+  else
+    digitalWrite(ROOM1_VALVE_RELAY, ROOM1_VALVE_POLARITY ? HIGH : LOW);
+
   if (m_bRoom1ValveOpen != bVal)
   {
     m_bRoom1ValveOpen = bVal;
@@ -95,6 +105,11 @@ void CDaikinCtrl::UpdateRoom1ValveOpen(const bool bVal)
 
 void CDaikinCtrl::UpdateRoom2ValveOpen(const bool bVal)
 {
+  if (bVal)
+    digitalWrite(ROOM2_VALVE_RELAY, ROOM2_VALVE_POLARITY ? LOW : HIGH);
+  else
+    digitalWrite(ROOM2_VALVE_RELAY, ROOM2_VALVE_POLARITY ? HIGH : LOW);
+
   if (m_bRoom2ValveOpen != bVal)
   {
     m_bRoom2ValveOpen = bVal;
@@ -104,6 +119,11 @@ void CDaikinCtrl::UpdateRoom2ValveOpen(const bool bVal)
 
 void CDaikinCtrl::UpdateRoom3ValveOpen(const bool bVal)
 {
+  if (bVal)
+    digitalWrite(ROOM3_VALVE_RELAY, ROOM3_VALVE_POLARITY ? LOW : HIGH);
+  else
+    digitalWrite(ROOM3_VALVE_RELAY, ROOM3_VALVE_POLARITY ? HIGH : LOW);
+
   if (m_bRoom3ValveOpen != bVal)
   {
     m_bRoom3ValveOpen = bVal;
@@ -113,6 +133,8 @@ void CDaikinCtrl::UpdateRoom3ValveOpen(const bool bVal)
 
 void CDaikinCtrl::UpdateDaikinZonePrimaryEnable(const bool bVal)
 {
+  digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, bVal ? HIGH : LOW);
+
   if (m_bDaikinZonePrimaryEnable != bVal)
   {
     m_bDaikinZonePrimaryEnable = bVal;
@@ -122,6 +144,8 @@ void CDaikinCtrl::UpdateDaikinZonePrimaryEnable(const bool bVal)
 
 void CDaikinCtrl::UpdateDaikinZoneSecondaryEnable(const bool bVal)
 {
+  digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, bVal ? HIGH : LOW);
+
   if (m_bDaikinZoneSecondaryEnable != bVal)
   {
     m_bDaikinZoneSecondaryEnable = bVal;
@@ -405,81 +429,50 @@ void CDaikinCtrl::loop()
     }
   }
 
-  if ((IsHeatingActive() && m_bPrimaryZoneValveClose && m_bCtrlEnable) || m_bFloorProtection)
+  if ((!IsHeatingActive() || !m_bCtrlEnable) && !m_bFloorProtection)
   {
-    // Close primary zone valve
-    digitalWrite(PRIMARY_ZONE_CLOSE_VALVE_RELAY, HIGH);
-
-    UpdateValveZonePrimaryOpen(false);
+    UpdateValveZonePrimaryOpen(PRIMARY_ZONE_VALVE_POLARITY ? false : true); // Idle state
   }
   else
   {
-    // Open primary zone valve
-    digitalWrite(PRIMARY_ZONE_CLOSE_VALVE_RELAY, LOW);
-
-    UpdateValveZonePrimaryOpen(true);
+    UpdateValveZonePrimaryOpen(!m_bFloorProtection && !m_bPrimaryZoneValveClose);
   }
 
-  bool bAllowRoomHeating = (IsHeatingActive() &&
-                            m_bCtrlEnable &&
-                            !m_bFloorProtection);
+  bool bAllowRoomValvesOpen = !m_bFloorProtection;
 #ifndef LOW_TEMP_SECONDARY_ZONE
   // When Daikin secondary zone uses high temperature, make sure we don't enable floor heated rooms
-  bAllowRoomHeating &= !m_bDaikinSecondaryZoneOn; // FIXME: Delay this from SM?
+  bAllowRoomValvesOpen &= !m_bDaikinSecondaryZoneOn; // FIXME: Delay this from SM?
 #endif
 
-  if (bAllowRoomHeating &&
-      m_bRoom1HeatRq)
+  if ((!IsHeatingActive() || !m_bCtrlEnable) && bAllowRoomValvesOpen)
   {
-    // Open room 1 valve
-    digitalWrite(ROOM1_OPEN_VALVE_RELAY, HIGH);
-
-    UpdateRoom1ValveOpen(true);
+    UpdateRoom1ValveOpen(ROOM1_VALVE_POLARITY ? false : true); // Idle state
   }
   else
   {
-    // Close room 1 valve
-    digitalWrite(ROOM1_OPEN_VALVE_RELAY, LOW);
-
-    UpdateRoom1ValveOpen(false);
+    UpdateRoom1ValveOpen(m_bRoom1HeatRq && bAllowRoomValvesOpen);
   }
 
-  if (bAllowRoomHeating &&
-      m_bRoom2HeatRq)
+  if ((!IsHeatingActive() || !m_bCtrlEnable) && bAllowRoomValvesOpen)
   {
-    // Open room 2 valve
-    digitalWrite(ROOM2_OPEN_VALVE_RELAY, HIGH);
-
-    UpdateRoom2ValveOpen(true);
+    UpdateRoom2ValveOpen(ROOM2_VALVE_POLARITY ? false : true); // Idle state
   }
   else
   {
-    // Close room 2 valve
-    digitalWrite(ROOM2_OPEN_VALVE_RELAY, LOW);
-
-    UpdateRoom2ValveOpen(false);
+    UpdateRoom2ValveOpen(m_bRoom2HeatRq && bAllowRoomValvesOpen);
   }
 
-  if (bAllowRoomHeating &&
-      m_bRoom3HeatRq)
+  if ((!IsHeatingActive() || !m_bCtrlEnable) && bAllowRoomValvesOpen)
   {
-    // Open room 3 valve
-    digitalWrite(ROOM3_OPEN_VALVE_RELAY, HIGH);
-
-    UpdateRoom3ValveOpen(true);
+    UpdateRoom3ValveOpen(ROOM3_VALVE_POLARITY ? false : true); // Idle state
   }
   else
   {
-    // Close room 3 valve
-    digitalWrite(ROOM3_OPEN_VALVE_RELAY, LOW);
-
-    UpdateRoom3ValveOpen(false);
+    UpdateRoom3ValveOpen(m_bRoom3HeatRq && bAllowRoomValvesOpen);
   }
 
   if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bFloorProtection)
   {
-    // Enable primary zone heating relay on Daikin
-    digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, HIGH);
 #if 0
     // FIXME:
     // Restore temperature
@@ -495,12 +488,11 @@ void CDaikinCtrl::loop()
       }
     }
 #endif
+    // Enable primary zone heating on Daikin
     UpdateDaikinZonePrimaryEnable(true);
   }
   else
   {
-    // Disable primary zone heating on Daikin
-    digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, LOW);
 #if 0
     // FIXME:
     if (m_fP1P2PrimaryZoneTargetTemp != -1 && m_lastTempUpdateTimer > MIN_P1P2_WRITE_INTERVAL * 1000 * 60) // FIXME: Need to check last changed value instead
@@ -512,20 +504,20 @@ void CDaikinCtrl::loop()
       }
     }
 #endif
+    // Disable primary zone heating on Daikin
     UpdateDaikinZonePrimaryEnable(false);
   }
 
   if (m_bDaikinSecondaryZoneOn && m_bCtrlEnable)
   {
     // FIXME?: Instead of selecting secondary curve, we can also increase AWT deviation but only when primary zone is active
-    digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, HIGH); // Enable secondary zone heating on Daikin
 
+    // Enable secondary zone heating on Daikin
     UpdateDaikinZoneSecondaryEnable(true);
   }
   else
   {
-    digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, LOW); // Disable secondary zone heating on Daikin
-
+    // Disable secondary zone heating on Daikin
     UpdateDaikinZoneSecondaryEnable(false);
   }
 }
