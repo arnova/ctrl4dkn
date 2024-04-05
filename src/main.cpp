@@ -117,6 +117,21 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
+  else if (STRIEQUALS(topic, MQTT_P1P2_P_COOLING_ON))
+  {
+    if (bValidInt)
+    {
+      if (iVal == 1)
+        g_DaikinCtrl.SetP1P2CoolingOn(true);
+      else if (iVal == 0)
+        g_DaikinCtrl.SetP1P2CoolingOn(false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
+
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set"))
   {
     if (bValidInt || length == 0)
@@ -129,24 +144,24 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_ENABLE "/set"))
   {
     if (bValidInt || length == 0)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlPriZoneHeating(iVal == 1 ? true : false);
+        g_DaikinCtrl.SetCtrlPriZoneEnable(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_ENABLE "/set"))
   {
     if (bValidInt || length == 0)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlSecZoneHeating(iVal == 1 ? true : false);
+        g_DaikinCtrl.SetCtrlSecZoneEnable(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -314,11 +329,12 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_P1P2_P_COMPRESSOR_ON, 0); // Use something else ?
   g_MQTTClient.subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
+  g_MQTTClient.subscribe(MQTT_P1P2_P_COOLING_ON, 0);
 
   // Control topics
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_HEATING "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_HEATING "/set", 1);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_ENABLE "/set", 1);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_ENABLE "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE "/set", 1);
@@ -327,8 +343,8 @@ bool MQTTReconnect()
 
   // Publish MQTT config for eg. HA discovery
   MQTTPublishConfig(MQTT_CONTROLLER_ON_OFF, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_PRIMARY_ZONE_HEATING, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_SECONDARY_ZONE_HEATING, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_PRIMARY_ZONE_ENABLE, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_SECONDARY_ZONE_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_ROOM1_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_ROOM2_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_ROOM3_ENABLE, CDaikinCtrl::SWITCH);
