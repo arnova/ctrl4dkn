@@ -24,13 +24,13 @@ const int LED_RED = 25;                         // Onboard LED
 // Low voltage relais:
 const int DAIKIN_PREFERENTIAL_RELAY = 33;       // K1 relay: kWh preferential kWh (aka. gas only) rate relay (X5M 3/4) on the Daikin. NOT IMPLEMENTED (yet)
 
-// High voltage relais:
-                                                // K2 relay: Not used for now
+// const int UNUSED_RELAY = 32                  // K2 relay: Not used for now
 
-const int ROOM3_VALVE_RELAY = 32;               // K3 relay: Used to open/close room 3 valve (floor-heating)
+// High voltage relais:
+const int ROOM3_VALVE_RELAY = 13;               // K3 relay: Used to open/close room 3 valve (floor-heating)
 #define ROOM3_VALVE_POLARITY 1                  // 1 = Normally closed, 0 = Normally open
 
-const int ROOM2_VALVE_RELAY = 13;               // K4 relay: Used to open/close room 2 valve (floor-heating)
+const int ROOM2_VALVE_RELAY = 12;               // K4 relay: Used to open/close room 2 valve (floor-heating)
 #define ROOM2_VALVE_POLARITY 0                  // 1 = Normally closed, 0 = Normally open
 
 const int ROOM1_VALVE_RELAY = 21;               // K5 relay: Used to open/close room 1 valve (floor-heating)
