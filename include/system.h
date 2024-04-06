@@ -44,9 +44,9 @@ const int DAIKIN_PRIMARY_ZONE_RELAY = 5;        // K8 relay: Enables the primary
 
 // set input pin numbers
 const int SECONDARY_ZONE_ENABLE = 22;           // Enable (thermostat) input for the secondary zone (low active)
-const int ROOM1_HEATING_ENABLE = 23;            // Enable (thermostat) input for room 1 (floor-heating) (if used) (low active)
-const int ROOM2_HEATING_ENABLE = 26;            // Enable (thermostat) input for room 2 (floor-heating) (if used) (low active)
-const int ROOM3_HEATING_ENABLE = 27;            // Enable (thermostat) input for room 3 (floor-heating) (if used) (low active)
+const int ROOM1_ENABLE = 23;                    // Enable (thermostat) input for room 1 (floor-heating) (if used) (low active)
+const int ROOM2_ENABLE = 26;                    // Enable (thermostat) input for room 2 (floor-heating) (if used) (low active)
+const int ROOM3_ENABLE = 27;                    // Enable (thermostat) input for room 3 (floor-heating) (if used) (low active)
 
 const int HARDWARE_MAX_TEMP_SENSOR = 14;        // Hardware sensor (clixon) to detect maximum temperature exceeded (if used) (low active)
 

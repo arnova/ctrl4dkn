@@ -258,18 +258,15 @@ bool CDaikinCtrl::MQTTPublishValues()
 void CDaikinCtrl::StateMachine()
 {
   // Update if room valves need to open
-  m_bRoom1ValveOpenRq = (m_bCtrlRoom1Enable || !digitalRead(ROOM1_HEATING_ENABLE));
-  m_bRoom2ValveOpenRq = (m_bCtrlRoom2Enable || !digitalRead(ROOM2_HEATING_ENABLE));
-  m_bRoom3ValveOpenRq = (m_bCtrlRoom3Enable || !digitalRead(ROOM3_HEATING_ENABLE));
+  m_bRoom1ValveOpenRq = (m_bCtrlRoom1Enable || !digitalRead(ROOM1_ENABLE));
+  m_bRoom2ValveOpenRq = (m_bCtrlRoom2Enable || !digitalRead(ROOM2_ENABLE));
+  m_bRoom3ValveOpenRq = (m_bCtrlRoom3Enable || !digitalRead(ROOM3_ENABLE));
 
   if (m_bP1P2CoolingOn)
   {
-    m_bPrimaryZoneValveClose = !m_bCtrlPriZoneEnable; // FIXME: Use MQTT cooling switch
+    m_bPrimaryZoneValveClose = false; // When cooling is enabled always open primary valve
     m_iState = STATE_IDLE;
     return; // FIXME: Perhaps keep StateMachine() reset?
-  }
-  else
-  {
   }
 
   switch (m_iState)
