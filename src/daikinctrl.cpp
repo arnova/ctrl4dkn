@@ -265,6 +265,8 @@ void CDaikinCtrl::StateMachine()
   if (m_bP1P2CoolingOn)
   {
     m_bPrimaryZoneValveClose = false; // When cooling is enabled always open primary valve
+    m_bDaikinPrimaryZoneOn = m_bCtrlPriZoneEnable;
+    m_bCtrlSecZoneEnable = false; // Not used when cooling
     m_iState = STATE_IDLE;
     return; // FIXME: Perhaps keep StateMachine() reset?
   }
@@ -505,7 +507,7 @@ void CDaikinCtrl::loop()
       }
     }
 
-    CDaikinCtrl::StateMachine();
+    StateMachine();
 
     m_loopTimer = 0;
   }
