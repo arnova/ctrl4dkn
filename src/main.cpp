@@ -204,6 +204,18 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM4_ENABLE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+        g_DaikinCtrl.SetCtrlRoom4Enable(iVal == 1 ? true : false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set"))
   {
     if (bValidInt || length == 0)
@@ -331,6 +343,7 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE "/set", 1);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM4_ENABLE "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set", 1);
 
   // Publish MQTT config for eg. HA discovery
@@ -340,11 +353,13 @@ bool MQTTReconnect()
   MQTTPublishConfig(MQTT_ROOM1_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_ROOM2_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_ROOM3_ENABLE, CDaikinCtrl::SWITCH);
+  MQTTPublishConfig(MQTT_ROOM4_ENABLE, CDaikinCtrl::SWITCH);
 
   MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_VALVE_ROOM1_OPEN, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_VALVE_ROOM2_OPEN, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_VALVE_ROOM3_OPEN, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_VALVE_ROOM4_OPEN, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR);
@@ -407,6 +422,7 @@ void setup()
   pinMode(ROOM1_VALVE_RELAY, OUTPUT);
   pinMode(ROOM2_VALVE_RELAY, OUTPUT);
   pinMode(ROOM3_VALVE_RELAY, OUTPUT);
+  pinMode(ROOM4_VALVE_RELAY, OUTPUT);
   pinMode(DAIKIN_PREFERENTIAL_RELAY, OUTPUT);
 
   digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, LOW);
@@ -415,6 +431,7 @@ void setup()
   digitalWrite(ROOM1_VALVE_RELAY, ROOM1_VALVE_POLARITY ? LOW : HIGH);
   digitalWrite(ROOM2_VALVE_RELAY, ROOM2_VALVE_POLARITY ? LOW : HIGH);
   digitalWrite(ROOM3_VALVE_RELAY, ROOM3_VALVE_POLARITY ? LOW : HIGH);
+  digitalWrite(ROOM4_VALVE_RELAY, ROOM4_VALVE_POLARITY ? LOW : HIGH);
   digitalWrite(DAIKIN_PREFERENTIAL_RELAY, LOW);
 
   // Inputs
@@ -422,6 +439,7 @@ void setup()
   pinMode(ROOM1_ENABLE, INPUT_PULLUP);
   pinMode(ROOM2_ENABLE, INPUT_PULLUP);
   pinMode(ROOM3_ENABLE, INPUT_PULLUP);
+  pinMode(ROOM4_ENABLE, INPUT_PULLUP);
   pinMode(HARDWARE_MAX_TEMP_SENSOR, INPUT_PULLUP);
 
   Serial.begin(9600);

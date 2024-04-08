@@ -48,6 +48,7 @@
 #define MQTT_ROOM1_ENABLE                           "Room 1 Enable"
 #define MQTT_ROOM2_ENABLE                           "Room 2 Enable"
 #define MQTT_ROOM3_ENABLE                           "Room 3 Enable"
+#define MQTT_ROOM4_ENABLE                           "Room 4 Enable"
 #define MQTT_GAS_ONLY_ON                            "Gas Only" //FIXME
 
 // Status topics
@@ -55,6 +56,7 @@
 #define MQTT_VALVE_ROOM1_OPEN                       "Valve Room 1 Open"
 #define MQTT_VALVE_ROOM2_OPEN                       "Valve Room 2 Open"
 #define MQTT_VALVE_ROOM3_OPEN                       "Valve Room 3 Open"
+#define MQTT_VALVE_ROOM4_OPEN                       "Valve Room 4 Open"
 #define MQTT_DAIKIN_ZONE_PRIMARY_ENABLE             "Daikin Zone Primary Enable"
 #define MQTT_DAIKIN_ZONE_SECONDARY_ENABLE           "Daikin Zone Secondary Enable"
 #define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving Water Too High"
@@ -104,6 +106,7 @@ class CDaikinCtrl
     void UpdateRoom1ValveOpen(const bool bVal);
     void UpdateRoom2ValveOpen(const bool bVal);
     void UpdateRoom3ValveOpen(const bool bVal);
+    void UpdateRoom4ValveOpen(const bool bVal);
     void UpdateDaikinZonePrimaryEnable(const bool bVal);
     void UpdateDaikinZoneSecondaryEnable(const bool bVal);
     bool MQTTPublishValues();
@@ -128,6 +131,7 @@ class CDaikinCtrl
     void SetCtrlRoom1Enable(const bool& bVal) { m_bCtrlRoom1Enable = bVal; m_bUpdateCtrlRoom1Enable = true; };
     void SetCtrlRoom2Enable(const bool& bVal) { m_bCtrlRoom2Enable = bVal; m_bUpdateCtrlRoom2Enable = true; };
     void SetCtrlRoom3Enable(const bool& bVal) { m_bCtrlRoom3Enable = bVal; m_bUpdateCtrlRoom3Enable = true; };
+    void SetCtrlRoom4Enable(const bool& bVal) { m_bCtrlRoom4Enable = bVal; m_bUpdateCtrlRoom4Enable = true; };
 
   private:
     void StateMachine();
@@ -141,6 +145,7 @@ class CDaikinCtrl
     bool m_bRoom1ValveOpenRq = false;
     bool m_bRoom2ValveOpenRq = false;
     bool m_bRoom3ValveOpenRq = false;
+    bool m_bRoom4ValveOpenRq = false;
     elapsedMillis m_loopTimer = 0;
     elapsedMillis m_MQTTTimer = 0;
     elapsedMillis m_lastTempUpdateTimer = 999;
@@ -154,6 +159,7 @@ class CDaikinCtrl
     bool m_bCtrlRoom1Enable = false;
     bool m_bCtrlRoom2Enable = false;
     bool m_bCtrlRoom3Enable = false;
+    bool m_bCtrlRoom4Enable = false;
     bool m_bCtrlSecZoneForce = false; // FIXME: Implement
     bool m_bUpdateCtrlEnable = true;
     bool m_bUpdateCtrlPriZoneEnable = true;
@@ -161,6 +167,7 @@ class CDaikinCtrl
     bool m_bUpdateCtrlRoom1Enable = true;
     bool m_bUpdateCtrlRoom2Enable = true;
     bool m_bUpdateCtrlRoom3Enable = true;
+    bool m_bUpdateCtrlRoom4Enable = true;
 
     bool m_bLeavingWaterTooHigh = false;
     bool m_bUpdateLeavingWaterTooHigh = true;
@@ -172,6 +179,8 @@ class CDaikinCtrl
     bool m_bUpdateRoom2ValveOpen = true;
     bool m_bRoom3ValveOpen = true;
     bool m_bUpdateRoom3ValveOpen = true;
+    bool m_bRoom4ValveOpen = true;
+    bool m_bUpdateRoom4ValveOpen = true;
     bool m_bDaikinZonePrimaryEnable = false;
     bool m_bUpdateDaikinZonePrimaryEnable = true;
     bool m_bDaikinZoneSecondaryEnable = false;

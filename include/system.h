@@ -24,9 +24,10 @@ const int LED_RED = 25;                         // Onboard LED
 // Low voltage relais:
 const int DAIKIN_PREFERENTIAL_RELAY = 33;       // K1 relay: kWh preferential kWh (aka. gas only) rate relay (X5M 3/4) on the Daikin. NOT IMPLEMENTED (yet)
 
-// const int UNUSED_RELAY = 32                  // K2 relay: Not used for now
+// High voltage relays:
+const int ROOM4_VALVE_RELAY = 32;               // K2 relay: Used to open/close room 4 valve (floor-heating)
+#define ROOM4_VALVE_POLARITY 1                  // 1 = Normally closed, 0 = Normally open
 
-// High voltage relais:
 const int ROOM3_VALVE_RELAY = 13;               // K3 relay: Used to open/close room 3 valve (floor-heating)
 #define ROOM3_VALVE_POLARITY 1                  // 1 = Normally closed, 0 = Normally open
 
@@ -47,6 +48,7 @@ const int SECONDARY_ZONE_ENABLE = 22;           // Enable (thermostat) input for
 const int ROOM1_ENABLE = 23;                    // Enable (thermostat) input for room 1 (floor-heating) (if used) (low active)
 const int ROOM2_ENABLE = 26;                    // Enable (thermostat) input for room 2 (floor-heating) (if used) (low active)
 const int ROOM3_ENABLE = 27;                    // Enable (thermostat) input for room 3 (floor-heating) (if used) (low active)
+const int ROOM4_ENABLE = 34;                    // Enable (thermostat) input for room 4 (floor-heating) (if used) (low active)
 
 const int HARDWARE_MAX_TEMP_SENSOR = 14;        // Hardware sensor (clixon) to detect maximum temperature exceeded (if used) (low active)
 
