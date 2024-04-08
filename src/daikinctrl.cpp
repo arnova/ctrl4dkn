@@ -268,7 +268,16 @@ void CDaikinCtrl::StateMachine()
     m_bDaikinPrimaryZoneOn = m_bCtrlPriZoneEnable;
     m_bCtrlSecZoneEnable = false; // Not used when cooling
     m_iState = STATE_IDLE;
-    return; // FIXME: Perhaps keep StateMachine() reset?
+    return;
+  }
+
+  if (!m_bP1P2HeatingOn)
+  {
+    m_bPrimaryZoneValveClose = false;
+    m_bDaikinPrimaryZoneOn = false;
+    m_bCtrlSecZoneEnable = false;
+    m_iState = STATE_IDLE;
+    return;
   }
 
   switch (m_iState)
