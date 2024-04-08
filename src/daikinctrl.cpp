@@ -368,15 +368,6 @@ void CDaikinCtrl::StateMachine()
 
 void CDaikinCtrl::UpdateRelays()
 {
-  if ((!IsDaikinActive() || !m_bCtrlEnable) && !m_bFloorProtection)
-  {
-    UpdateValveZonePrimaryOpen(PRIMARY_ZONE_VALVE_POLARITY ? false : true); // Idle state
-  }
-  else
-  {
-    UpdateValveZonePrimaryOpen(!m_bFloorProtection && !m_bPrimaryZoneValveClose);
-  }
-
   bool bAllowRoomValvesOpen = !m_bFloorProtection;
 #ifndef LOW_TEMP_SECONDARY_ZONE
   // When Daikin secondary zone uses high temperature, make sure we don't enable floor heated rooms
@@ -386,37 +377,25 @@ void CDaikinCtrl::UpdateRelays()
   if ((!IsDaikinActive() || !m_bCtrlEnable) && bAllowRoomValvesOpen)
   {
     UpdateRoom1ValveOpen(ROOM1_VALVE_POLARITY ? false : true); // Idle state
-  }
-  else
-  {
-    UpdateRoom1ValveOpen(m_bRoom1ValveOpenRq && bAllowRoomValvesOpen);
-  }
-
-  if ((!IsDaikinActive() || !m_bCtrlEnable) && bAllowRoomValvesOpen)
-  {
     UpdateRoom2ValveOpen(ROOM2_VALVE_POLARITY ? false : true); // Idle state
-  }
-  else
-  {
-    UpdateRoom2ValveOpen(m_bRoom2ValveOpenRq && bAllowRoomValvesOpen);
-  }
-
-  if ((!IsDaikinActive() || !m_bCtrlEnable) && bAllowRoomValvesOpen)
-  {
     UpdateRoom3ValveOpen(ROOM3_VALVE_POLARITY ? false : true); // Idle state
-  }
-  else
-  {
-    UpdateRoom3ValveOpen(m_bRoom3ValveOpenRq && bAllowRoomValvesOpen);
-  }
-
-  if ((!IsDaikinActive() || !m_bCtrlEnable) && bAllowRoomValvesOpen)
-  {
     UpdateRoom4ValveOpen(ROOM4_VALVE_POLARITY ? false : true); // Idle state
   }
   else
   {
+    UpdateRoom1ValveOpen(m_bRoom1ValveOpenRq && bAllowRoomValvesOpen);
+    UpdateRoom2ValveOpen(m_bRoom2ValveOpenRq && bAllowRoomValvesOpen);
+    UpdateRoom3ValveOpen(m_bRoom3ValveOpenRq && bAllowRoomValvesOpen);
     UpdateRoom4ValveOpen(m_bRoom4ValveOpenRq && bAllowRoomValvesOpen);
+  }
+
+  if ((!IsDaikinActive() || !m_bCtrlEnable) && !m_bFloorProtection)
+  {
+    UpdateValveZonePrimaryOpen(PRIMARY_ZONE_VALVE_POLARITY ? false : true); // Idle state
+  }
+  else
+  {
+    UpdateValveZonePrimaryOpen(!m_bFloorProtection && !m_bPrimaryZoneValveClose);
   }
 
   if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bFloorProtection)
