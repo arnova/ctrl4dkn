@@ -48,7 +48,6 @@
 #define MQTT_ROOM1_ENABLE                           "Room 1 Enable"
 #define MQTT_ROOM2_ENABLE                           "Room 2 Enable"
 #define MQTT_ROOM3_ENABLE                           "Room 3 Enable"
-#define MQTT_PRIMARY_ZONE_SET_POINT                 "Setpoint Primary Zone" //FIXME
 #define MQTT_GAS_ONLY_ON                            "Gas Only" //FIXME
 
 // Status topics
@@ -59,12 +58,8 @@
 #define MQTT_DAIKIN_ZONE_PRIMARY_ENABLE             "Daikin Zone Primary Enable"
 #define MQTT_DAIKIN_ZONE_SECONDARY_ENABLE           "Daikin Zone Secondary Enable"
 #define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving Water Too High"
-#define MQTT_ZONE_PRIMARY_REAL_SET_POINT            "Setpoint Real Primary Zone" //FIXME
-#define MQTT_ZONE_PRIMARY_SAVED_SET_POINT           "Setpoint Saved Primary Zone" //FIXME
 
 #define DAIKIN_HYSTERESIS                     1.0f
-#define DAIKIN_PRIMARY_ZONE_OFF_TEMPERATURE  15.0f
-#define DEFAULT_SET_POINT                    18.0f  // FIXME: Not used
 #define LEAVING_WATER_MAX                    45.0f
 #define LEAVING_WATER_MAX_MARGIN              3.0f
 #define DAIKIN_ZONE_SWITCH_TIME                 5   // Seconds
@@ -104,8 +99,6 @@ class CDaikinCtrl
     static bool Float2HexStr(const float& fVal, char* strVal);
     static bool Float2Str(const float& fVal, char* strVal);
 
-    void UpdateZonePrimaryRealSetPoint(const float fSetPoint);
-    void UpdateZonePrimarySavedSetPoint(const float fSetPoint);
     void UpdateLeavingWaterTooHigh(const bool bVal);
     void UpdateValveZonePrimaryOpen(const bool bVal);
     void UpdateRoom1ValveOpen(const bool bVal);
@@ -114,9 +107,6 @@ class CDaikinCtrl
     void UpdateDaikinZonePrimaryEnable(const bool bVal);
     void UpdateDaikinZoneSecondaryEnable(const bool bVal);
     bool MQTTPublishValues();
-
-    bool P1P2SetTargetTemp(const float& fTemp);
-    bool UpdateDaikinTargetTemperature(float fNewVal);
 
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
     void SetP1P2PrimaryZoneTargetTemp(const float& fVal) { m_fP1P2PrimaryZoneTargetTemp = fVal; };
@@ -172,10 +162,6 @@ class CDaikinCtrl
     bool m_bUpdateCtrlRoom2Enable = true;
     bool m_bUpdateCtrlRoom3Enable = true;
 
-    float m_fZonePrimaryRealSetPoint = 0.0f;
-    bool m_bUpdateZonePrimaryRealSetPoint = true;
-    float m_fZonePrimarySavedSetPoint = 0.0f;
-    bool m_bUpdateZonePrimarySavedSetPoint = true;
     bool m_bLeavingWaterTooHigh = false;
     bool m_bUpdateLeavingWaterTooHigh = true;
     bool m_bValveZonePrimaryOpen = true;
@@ -194,9 +180,6 @@ class CDaikinCtrl
     float m_fP1P2LeavingWaterTemp = -1.0f;
     float m_fP1P2PrimaryZoneRoomTemp = -1.0f;       // Room temperature reported by P1P2/thermostat
     float m_fP1P2PrimaryZoneTargetTemp = -1.0f;     // Actual target temperature set on P1P2/thermostat
-    float m_fP1P2PrimaryZoneTargetTempSave = -1.0f;   // (Temporary) saved value for target temperature for P1P2/thermostat
-
-    float m_fCtrlPrimaryZoneRealSetPoint = -1.0f; //DEFAULT_SET_POINT; // Default
 
     bool m_bP1P2CompressorOn = false;
     bool m_bP1P2CirculationPumpOn = false;

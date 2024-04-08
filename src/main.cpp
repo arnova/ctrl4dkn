@@ -50,7 +50,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   else if (STRIEQUALS(topic, MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE))
   {
     if (bValidFloat)
-      g_DaikinCtrl.SetP1P2PrimaryZoneTargetTemp(fVal); // FIXME: Need to only saved value
+      g_DaikinCtrl.SetP1P2PrimaryZoneTargetTemp(fVal);
     else
       MQTTPrintError();
   }
@@ -204,13 +204,6 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_SET_POINT "/set"))
-  {
-    if (bValidFloat)
-      g_DaikinCtrl.UpdateDaikinTargetTemperature(fVal); // FIXME: Need to only saved value
-    else
-      MQTTPrintError();
-  }
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set"))
   {
     if (bValidInt || length == 0)
@@ -338,7 +331,6 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_SET_POINT "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set", 1);
 
   // Publish MQTT config for eg. HA discovery

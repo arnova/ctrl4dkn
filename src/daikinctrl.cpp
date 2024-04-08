@@ -15,56 +15,6 @@ bool CDaikinCtrl::Float2Str(const float &fVal, char *strVal)
   return (snprintf(strVal, 4, "%f", fVal));
 }
 
-bool CDaikinCtrl::P1P2SetTargetTemp(const float &fTemp)
-{
-  char strPayLoad[10] = MQTT_P1P2_W_SET_POINT_CMD;
-
-  // Convert float value to hex string & send P1P2 MQTT command
-  if (Float2HexStr(fTemp, strPayLoad + sizeof(MQTT_P1P2_W_SET_POINT_CMD)))
-    return m_pMQTTClient->publish(MQTT_P1P2_W_TOPIC, strPayLoad); // FIXME
-
-  return false;
-}
-
-bool CDaikinCtrl::UpdateDaikinTargetTemperature(float fNewVal)
-{
-  if (fNewVal == m_fP1P2PrimaryZoneTargetTemp)
-    return false;
-
-  if (fNewVal == m_fCtrlPrimaryZoneRealSetPoint)
-    return false;
-
-  m_fCtrlPrimaryZoneRealSetPoint = fNewVal;
-
-  // When requested set point is the same as target, we're done
-  if (m_fP1P2PrimaryZoneTargetTemp == fNewVal)
-    return false;
-
-  // Reset last updated timer
-  m_lastTempUpdateTimer = 0;
-
-  P1P2SetTargetTemp(fNewVal);
-
-  return true;
-}
-
-void CDaikinCtrl::UpdateZonePrimaryRealSetPoint(const float fSetPoint)
-{
-  if (m_fZonePrimaryRealSetPoint != fSetPoint)
-  {
-    m_fZonePrimaryRealSetPoint = fSetPoint;
-    m_bUpdateZonePrimaryRealSetPoint = true;
-  }
-}
-
-void CDaikinCtrl::UpdateZonePrimarySavedSetPoint(const float fSetPoint)
-{
-  if (m_fZonePrimarySavedSetPoint != fSetPoint)
-  {
-    m_fZonePrimarySavedSetPoint = fSetPoint;
-    m_bUpdateZonePrimarySavedSetPoint = true;
-  }
-}
 
 void CDaikinCtrl::UpdateLeavingWaterTooHigh(const bool bVal)
 {
@@ -189,24 +139,6 @@ bool CDaikinCtrl::MQTTPublishValues()
   {
     m_bUpdateCtrlRoom3Enable = false;
     m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE, m_bCtrlRoom3Enable ? "1" : "0", true);
-  }
-
-  if (m_bUpdateZonePrimaryRealSetPoint)
-  {
-    m_bUpdateZonePrimaryRealSetPoint = false;
-    char strTemp[5] = {0};
-    Float2Str(m_fZonePrimaryRealSetPoint, strTemp);
-
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_ZONE_PRIMARY_REAL_SET_POINT, strTemp, true);
-  }
-
-  if (m_bUpdateZonePrimarySavedSetPoint)
-  {
-    m_bUpdateZonePrimarySavedSetPoint = false;
-    char strTemp[5] = {0};
-    Float2Str(m_fZonePrimarySavedSetPoint, strTemp);
-
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_ZONE_PRIMARY_SAVED_SET_POINT, strTemp, true);
   }
 
   if (m_bUpdateLeavingWaterTooHigh)
@@ -453,37 +385,11 @@ void CDaikinCtrl::UpdateRelays()
 
   if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bFloorProtection)
   {
-#if 0
-    // FIXME:
-    // Restore temperature
-    if (m_fP1P2PrimaryZoneTargetTemp != -1 &&
-        m_fP1P2PrimaryZoneTargetTempSave != -1 &&
-        m_fP1P2PrimaryZoneTargetTemp != m_fP1P2PrimaryZoneTargetTempSave)
-    {
-      if (UpdateDaikinTargetTemperature(m_fP1P2PrimaryZoneTargetTempSave))
-      {
-        m_fP1P2PrimaryZoneTargetTemp = m_fP1P2PrimaryZoneTargetTempSave; // FIXME
-        m_fP1P2PrimaryZoneTargetTempSave = -1;
-        UpdateZonePrimarySavedSetPoint(m_fP1P2PrimaryZoneTargetTempSave);
-      }
-    }
-#endif
     // Enable primary zone heating on Daikin
     UpdateDaikinZonePrimaryEnable(true);
   }
   else
   {
-#if 0
-    // FIXME:
-    if (m_fP1P2PrimaryZoneTargetTemp != -1 && m_lastTempUpdateTimer > MIN_P1P2_WRITE_INTERVAL * 1000 * 60) // FIXME: Need to check last changed value instead
-    {
-      if (UpdateDaikinTargetTemperature(DAIKIN_PRIMARY_ZONE_OFF_TEMPERATURE))
-      {
-        m_fP1P2PrimaryZoneTargetTempSave = m_fP1P2PrimaryZoneTargetTemp;
-        UpdateZonePrimarySavedSetPoint(m_fP1P2PrimaryZoneTargetTempSave);
-      }
-    }
-#endif
     // Disable primary zone heating on Daikin
     UpdateDaikinZonePrimaryEnable(false);
   }
