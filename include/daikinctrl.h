@@ -45,11 +45,12 @@
 #define MQTT_CONTROLLER_ON_OFF                      "Controller Enable"
 #define MQTT_PRIMARY_ZONE_ENABLE                    "Zone Primary Enable"
 #define MQTT_SECONDARY_ZONE_ENABLE                  "Zone Secondary Enable"
+#define MQTT_SECONDARY_ZONE_FORCE                   "Zone Secondary Force"
 #define MQTT_ROOM1_ENABLE                           "Room 1 Enable"
 #define MQTT_ROOM2_ENABLE                           "Room 2 Enable"
 #define MQTT_ROOM3_ENABLE                           "Room 3 Enable"
 #define MQTT_ROOM4_ENABLE                           "Room 4 Enable"
-#define MQTT_GAS_ONLY_ON                            "Gas Only" //FIXME
+#define MQTT_GAS_ONLY                               "Gas Only"
 
 // Status topics
 #define MQTT_VALVE_ZONE_PRIMARY_OPEN                "Valve Zone Primary Open"
@@ -128,6 +129,8 @@ class CDaikinCtrl
     void SetCtrlOnOff(const bool& bVal) { m_bCtrlEnable = bVal; m_bUpdateCtrlEnable = true; };
     void SetCtrlPriZoneEnable(const bool& bVal) { m_bCtrlPriZoneEnable = bVal; m_bUpdateCtrlPriZoneEnable = true; };
     void SetCtrlSecZoneEnable(const bool& bVal) { m_bCtrlSecZoneEnable = bVal; m_bUpdateCtrlSecZoneEnable = true; };
+    void SetCtrlSecZoneForce(const bool& bVal) { m_bCtrlSecZoneForce = bVal; m_bUpdateCtrlSecZoneForce = true; };
+    void SetCtrlGasOnly(const bool& bVal) { m_bCtrlGasOnly = bVal; m_bUpdateCtrlGasOnly = true; };
     void SetCtrlRoom1Enable(const bool& bVal) { m_bCtrlRoom1Enable = bVal; m_bUpdateCtrlRoom1Enable = true; };
     void SetCtrlRoom2Enable(const bool& bVal) { m_bCtrlRoom2Enable = bVal; m_bUpdateCtrlRoom2Enable = true; };
     void SetCtrlRoom3Enable(const bool& bVal) { m_bCtrlRoom3Enable = bVal; m_bUpdateCtrlRoom3Enable = true; };
@@ -156,14 +159,18 @@ class CDaikinCtrl
     bool m_bCtrlEnable = true;
     bool m_bCtrlPriZoneEnable = false;
     bool m_bCtrlSecZoneEnable = false;
+    bool m_bCtrlSecZoneForce = false;
+    bool m_bCtrlGasOnly = false;
     bool m_bCtrlRoom1Enable = false;
     bool m_bCtrlRoom2Enable = false;
     bool m_bCtrlRoom3Enable = false;
     bool m_bCtrlRoom4Enable = false;
-    bool m_bCtrlSecZoneForce = false; // FIXME: Implement
+
     bool m_bUpdateCtrlEnable = true;
     bool m_bUpdateCtrlPriZoneEnable = true;
     bool m_bUpdateCtrlSecZoneEnable = true;
+    bool m_bUpdateCtrlSecZoneForce = true;
+    bool m_bUpdateCtrlGasOnly = true;
     bool m_bUpdateCtrlRoom1Enable = true;
     bool m_bUpdateCtrlRoom2Enable = true;
     bool m_bUpdateCtrlRoom3Enable = true;

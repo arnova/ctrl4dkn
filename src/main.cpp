@@ -168,6 +168,18 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_FORCE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+        g_DaikinCtrl.SetCtrlSecZoneForce(iVal == 1 ? true : false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set"))
   {
     if (bValidInt || length == 0)
@@ -216,18 +228,14 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY "/set"))
   {
     if (bValidInt || length == 0)
     {
-#ifdef DAIKIN_PREFERENTIAL_RELAY
-      if (iVal == 1)
-        digitalWrite(DAIKIN_PREFERENTIAL_RELAY, HIGH);
-      else if (iVal == 0 || length == 0)
-        digitalWrite(DAIKIN_PREFERENTIAL_RELAY, LOW);
+      if (iVal == 0 || iVal == 1 || length == 0)
+        g_DaikinCtrl.SetCtrlGasOnly(iVal == 1 ? true : false);
       else
         MQTTPrintError();
-#endif
     }
     else
       MQTTPrintError();
@@ -338,16 +346,20 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_COOLING_ON, 0);
 
-  // Control topics
+  // Publish MQTT config for eg. HA discovery and subscribe to control topics
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_ENABLE "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_ENABLE "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set", 1);
-
-  // Publish MQTT config for eg. HA discovery
   MQTTPublishConfig(MQTT_CONTROLLER_ON_OFF, CDaikinCtrl::SWITCH);
+
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_ENABLE "/set", 1);
   MQTTPublishConfig(MQTT_PRIMARY_ZONE_ENABLE, CDaikinCtrl::SWITCH);
+
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_ENABLE "/set", 1);
   MQTTPublishConfig(MQTT_SECONDARY_ZONE_ENABLE, CDaikinCtrl::SWITCH);
+
+#ifdef DAIKIN_PREFERENTIAL_RELAY
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY "/set", 1);
+  MQTTPublishConfig(MQTT_GAS_ONLY, CDaikinCtrl::SWITCH);
+#endif
 
 #ifdef ROOM1_VALVE_RELAY
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set", 1);

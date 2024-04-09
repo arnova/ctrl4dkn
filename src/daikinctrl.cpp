@@ -149,6 +149,18 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_ENABLE, m_bCtrlSecZoneEnable ? "1" : "0", true);
   }
 
+  if (m_bUpdateCtrlSecZoneForce)
+  {
+    m_bUpdateCtrlSecZoneForce = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_FORCE, m_bCtrlSecZoneForce ? "1" : "0", true);
+  }
+
+  if (m_bUpdateCtrlGasOnly)
+  {
+    m_bUpdateCtrlGasOnly = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY, m_bCtrlGasOnly ? "1" : "0", true);
+  }
+
   if (m_bUpdateCtrlRoom1Enable)
   {
     m_bUpdateCtrlRoom1Enable = false;
@@ -453,6 +465,17 @@ void CDaikinCtrl::UpdateRelays()
     // Disable secondary zone heating on Daikin
     UpdateDaikinZoneSecondaryEnable(false);
   }
+
+#ifdef DAIKIN_PREFERENTIAL_RELAY
+  if (m_bCtrlGasOnly)
+  {
+    digitalWrite(DAIKIN_PREFERENTIAL_RELAY, HIGH);
+  }
+  else
+  {
+    digitalWrite(DAIKIN_PREFERENTIAL_RELAY, LOW);
+  }
+#endif
 }
 
 
