@@ -220,12 +220,14 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   {
     if (bValidInt || length == 0)
     {
+#ifdef DAIKIN_PREFERENTIAL_RELAY
       if (iVal == 1)
         digitalWrite(DAIKIN_PREFERENTIAL_RELAY, HIGH);
       else if (iVal == 0 || length == 0)
         digitalWrite(DAIKIN_PREFERENTIAL_RELAY, LOW);
       else
         MQTTPrintError();
+#endif
     }
     else
       MQTTPrintError();
@@ -340,26 +342,34 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_ENABLE "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_ENABLE "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE "/set", 1);
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM4_ENABLE "/set", 1);
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY_ON "/set", 1);
 
   // Publish MQTT config for eg. HA discovery
   MQTTPublishConfig(MQTT_CONTROLLER_ON_OFF, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_PRIMARY_ZONE_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_SECONDARY_ZONE_ENABLE, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_ROOM1_ENABLE, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_ROOM2_ENABLE, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_ROOM3_ENABLE, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_ROOM4_ENABLE, CDaikinCtrl::SWITCH);
 
-  MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR);
+#ifdef ROOM1_VALVE_RELAY
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set", 1);
+  MQTTPublishConfig(MQTT_ROOM1_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_VALVE_ROOM1_OPEN, CDaikinCtrl::BINARY_SENSOR);
+#endif
+#ifdef ROOM2_VALVE_RELAY
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE "/set", 1);
+  MQTTPublishConfig(MQTT_ROOM2_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_VALVE_ROOM2_OPEN, CDaikinCtrl::BINARY_SENSOR);
+#endif
+#ifdef ROOM3_VALVE_RELAY
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE "/set", 1);
+  MQTTPublishConfig(MQTT_ROOM3_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_VALVE_ROOM3_OPEN, CDaikinCtrl::BINARY_SENSOR);
+#endif
+#ifdef ROOM4_VALVE_RELAY
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM4_ENABLE "/set", 1);
+  MQTTPublishConfig(MQTT_ROOM4_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_VALVE_ROOM4_OPEN, CDaikinCtrl::BINARY_SENSOR);
+#endif
+  MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR);
@@ -415,32 +425,63 @@ void SetupWifi()
 void setup()
 {
   // Outputs
+#ifdef LED_RED
   pinMode(LED_RED, OUTPUT);
-  pinMode(DAIKIN_PRIMARY_ZONE_RELAY, OUTPUT);
-  pinMode(DAIKIN_SECONDARY_ZONE_RELAY, OUTPUT);
-  pinMode(PRIMARY_ZONE_VALVE_RELAY, OUTPUT);
-  pinMode(ROOM1_VALVE_RELAY, OUTPUT);
-  pinMode(ROOM2_VALVE_RELAY, OUTPUT);
-  pinMode(ROOM3_VALVE_RELAY, OUTPUT);
-  pinMode(ROOM4_VALVE_RELAY, OUTPUT);
-  pinMode(DAIKIN_PREFERENTIAL_RELAY, OUTPUT);
+#endif
 
+#ifdef DAIKIN_PRIMARY_ZONE_RELAY
+  pinMode(DAIKIN_PRIMARY_ZONE_RELAY, OUTPUT);
   digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, LOW);
+#endif
+
+#ifdef DAIKIN_SECONDARY_ZONE_RELAY
+  pinMode(DAIKIN_SECONDARY_ZONE_RELAY, OUTPUT);
   digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, LOW);
+#endif
+
+  pinMode(PRIMARY_ZONE_VALVE_RELAY, OUTPUT);
   digitalWrite(PRIMARY_ZONE_VALVE_RELAY, PRIMARY_ZONE_VALVE_POLARITY ? HIGH : LOW);
+  
+#ifdef ROOM1_VALVE_RELAY
+  pinMode(ROOM1_VALVE_RELAY, OUTPUT);
   digitalWrite(ROOM1_VALVE_RELAY, ROOM1_VALVE_POLARITY ? LOW : HIGH);
+#endif
+#ifdef ROOM2_VALVE_RELAY
+  pinMode(ROOM2_VALVE_RELAY, OUTPUT);
   digitalWrite(ROOM2_VALVE_RELAY, ROOM2_VALVE_POLARITY ? LOW : HIGH);
+#endif
+#ifdef ROOM3_VALVE_RELAY
+  pinMode(ROOM3_VALVE_RELAY, OUTPUT);
   digitalWrite(ROOM3_VALVE_RELAY, ROOM3_VALVE_POLARITY ? LOW : HIGH);
+#endif
+#ifdef ROOM4_VALVE_RELAY
+  pinMode(ROOM4_VALVE_RELAY, OUTPUT);
   digitalWrite(ROOM4_VALVE_RELAY, ROOM4_VALVE_POLARITY ? LOW : HIGH);
+#endif
+#ifdef DAIKIN_PREFERENTIAL_RELAY
+  pinMode(DAIKIN_PREFERENTIAL_RELAY, OUTPUT);
   digitalWrite(DAIKIN_PREFERENTIAL_RELAY, LOW);
+#endif
 
   // Inputs
+#ifdef SECONDARY_ZONE_ENABLE
   pinMode(SECONDARY_ZONE_ENABLE, INPUT_PULLUP);
+#endif
+#ifdef ROOM1_ENABLE
   pinMode(ROOM1_ENABLE, INPUT_PULLUP);
+#endif
+#ifdef ROOM2_ENABLE
   pinMode(ROOM2_ENABLE, INPUT_PULLUP);
+#endif
+#ifdef ROOM3_ENABLE
   pinMode(ROOM3_ENABLE, INPUT_PULLUP);
+#endif
+#ifdef ROOM4_ENABLE
   pinMode(ROOM4_ENABLE, INPUT_PULLUP);
+#endif
+#ifdef HARDWARE_MAX_TEMP_SENSOR
   pinMode(HARDWARE_MAX_TEMP_SENSOR, INPUT_PULLUP);
+#endif
 
   Serial.begin(9600);
   Serial.setTimeout(2000);
@@ -468,7 +509,9 @@ void loop()
   // Listen for mqtt message and reconnect if disconnected
   if (!g_MQTTClient.connected())
   {
+#ifdef LED_RED
     digitalWrite(LED_RED, HIGH); // Off
+#endif
 
     if (MQTTReconnectTimer > 5000)
     {
@@ -479,7 +522,9 @@ void loop()
   else
   {
     // Indicate we're running:
+#ifdef LED_RED
     digitalWrite(LED_RED, LOW); // On
+#endif
 
     g_MQTTClient.loop();
   }

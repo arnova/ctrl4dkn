@@ -41,6 +41,7 @@ void CDaikinCtrl::UpdateValveZonePrimaryOpen(const bool bVal)
 
 void CDaikinCtrl::UpdateRoom1ValveOpen(const bool bVal)
 {
+#ifdef ROOM1_VALVE_RELAY
   if (bVal)
     digitalWrite(ROOM1_VALVE_RELAY, ROOM1_VALVE_POLARITY ? HIGH : LOW);
   else
@@ -51,10 +52,12 @@ void CDaikinCtrl::UpdateRoom1ValveOpen(const bool bVal)
     m_bRoom1ValveOpen = bVal;
     m_bUpdateRoom1ValveOpen = true;
   }
+#endif
 }
 
 void CDaikinCtrl::UpdateRoom2ValveOpen(const bool bVal)
 {
+#ifdef ROOM2_VALVE_RELAY
   if (bVal)
     digitalWrite(ROOM2_VALVE_RELAY, ROOM2_VALVE_POLARITY ? HIGH : LOW);
   else
@@ -65,10 +68,12 @@ void CDaikinCtrl::UpdateRoom2ValveOpen(const bool bVal)
     m_bRoom2ValveOpen = bVal;
     m_bUpdateRoom2ValveOpen = true;
   }
+#endif
 }
 
 void CDaikinCtrl::UpdateRoom3ValveOpen(const bool bVal)
 {
+#ifdef ROOM3_VALVE_RELAY
   if (bVal)
     digitalWrite(ROOM3_VALVE_RELAY, ROOM3_VALVE_POLARITY ? HIGH : LOW);
   else
@@ -79,10 +84,12 @@ void CDaikinCtrl::UpdateRoom3ValveOpen(const bool bVal)
     m_bRoom3ValveOpen = bVal;
     m_bUpdateRoom3ValveOpen = true;
   }
+#endif
 }
 
 void CDaikinCtrl::UpdateRoom4ValveOpen(const bool bVal)
 {
+#ifdef ROOM4_VALVE_RELAY
   if (bVal)
     digitalWrite(ROOM4_VALVE_RELAY, ROOM4_VALVE_POLARITY ? HIGH : LOW);
   else
@@ -93,10 +100,12 @@ void CDaikinCtrl::UpdateRoom4ValveOpen(const bool bVal)
     m_bRoom4ValveOpen = bVal;
     m_bUpdateRoom4ValveOpen = true;
   }
+#endif
 }
 
 void CDaikinCtrl::UpdateDaikinZonePrimaryEnable(const bool bVal)
 {
+#ifdef DAIKIN_PRIMARY_ZONE_RELAY
   digitalWrite(DAIKIN_PRIMARY_ZONE_RELAY, bVal ? HIGH : LOW);
 
   if (m_bDaikinZonePrimaryEnable != bVal)
@@ -104,10 +113,12 @@ void CDaikinCtrl::UpdateDaikinZonePrimaryEnable(const bool bVal)
     m_bDaikinZonePrimaryEnable = bVal;
     m_bUpdateDaikinZonePrimaryEnable = true;
   }
+#endif
 }
 
 void CDaikinCtrl::UpdateDaikinZoneSecondaryEnable(const bool bVal)
 {
+#ifdef DAIKIN_SECONDARY_ZONE_RELAY
   digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, bVal ? HIGH : LOW);
 
   if (m_bDaikinZoneSecondaryEnable != bVal)
@@ -115,6 +126,7 @@ void CDaikinCtrl::UpdateDaikinZoneSecondaryEnable(const bool bVal)
     m_bDaikinZoneSecondaryEnable = bVal;
     m_bUpdateDaikinZoneSecondaryEnable = true;
   }
+#endif
 }
 
 bool CDaikinCtrl::MQTTPublishValues()
@@ -216,10 +228,30 @@ bool CDaikinCtrl::MQTTPublishValues()
 void CDaikinCtrl::StateMachine()
 {
   // Update if room valves need to open
-  m_bRoom1ValveOpenRq = (m_bCtrlRoom1Enable || !digitalRead(ROOM1_ENABLE));
-  m_bRoom2ValveOpenRq = (m_bCtrlRoom2Enable || !digitalRead(ROOM2_ENABLE));
-  m_bRoom3ValveOpenRq = (m_bCtrlRoom3Enable || !digitalRead(ROOM3_ENABLE));
-  m_bRoom4ValveOpenRq = (m_bCtrlRoom4Enable || !digitalRead(ROOM4_ENABLE));
+  m_bRoom1ValveOpenRq = m_bCtrlRoom1Enable;
+#ifdef ROOM1_ENABLE
+  m_bRoom1ValveOpenRq |= !digitalRead(ROOM1_ENABLE);
+#endif
+
+  m_bRoom2ValveOpenRq = m_bCtrlRoom2Enable;
+#ifdef ROOM2_ENABLE
+  m_bRoom2ValveOpenRq |= !digitalRead(ROOM2_ENABLE);
+#endif
+
+  m_bRoom3ValveOpenRq = m_bCtrlRoom3Enable;
+#ifdef ROOM3_ENABLE
+  m_bRoom3ValveOpenRq |= !digitalRead(ROOM3_ENABLE);
+#endif
+
+  m_bRoom4ValveOpenRq = m_bCtrlRoom4Enable;
+#ifdef ROOM4_ENABLE
+  m_bRoom4ValveOpenRq |= !digitalRead(ROOM4_ENABLE);
+#endif
+
+  bool bSecondaryZoneEnable = m_bCtrlSecZoneEnable;
+#ifdef SECONDARY_ZONE_ENABLE
+  bSecondaryZoneEnable |= !digitalRead(SECONDARY_ZONE_ENABLE);
+#endif
 
   if (m_bP1P2CoolingOn)
   {
@@ -257,10 +289,10 @@ void CDaikinCtrl::StateMachine()
            (m_fP1P2PrimaryZoneRoomTemp == 0.0f ||
             m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
             m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)) ||
-           (m_bCtrlSecZoneForce && (m_bCtrlSecZoneEnable || !digitalRead(SECONDARY_ZONE_ENABLE))))
+           (m_bCtrlSecZoneForce && bSecondaryZoneEnable))
       {
         // Check if secondary zone requires heating
-        if (m_bCtrlSecZoneEnable || !digitalRead(SECONDARY_ZONE_ENABLE))
+        if (bSecondaryZoneEnable)
         {
 #ifndef LOW_TEMP_SECONDARY_ZONE
           // When rooms (with floor-heating) are requesting heat, check whether Daikin secondary zone is enabled
@@ -450,7 +482,11 @@ void CDaikinCtrl::loop()
     m_MQTTTimer = 0;
   }
 
-  if (m_fP1P2LeavingWaterTemp > LEAVING_WATER_MAX || !digitalRead(HARDWARE_MAX_TEMP_SENSOR))
+  bool bLeavingWaterTooHigh = (m_fP1P2LeavingWaterTemp > LEAVING_WATER_MAX);
+#ifdef HARDWARE_MAX_TEMP_SENSOR
+  bLeavingWaterTooHigh |= !digitalRead(HARDWARE_MAX_TEMP_SENSOR);
+#endif
+  if (bLeavingWaterTooHigh)
   {
     if (!m_bFloorProtection)
     {
