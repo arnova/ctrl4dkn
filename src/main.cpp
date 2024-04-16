@@ -341,7 +341,8 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_LEAVING_WATER_TEMP, 0);
-  g_MQTTClient.subscribe(MQTT_P1P2_P_COMPRESSOR_ON, 0); // Use something else ?
+  g_MQTTClient.subscribe(MQTT_P1P2_P_COMPRESSOR_ON, 0);
+  g_MQTTClient.subscribe(MQTT_P1P2_P_VALVE_ZONE_MAIN, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_COOLING_ON, 0);

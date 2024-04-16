@@ -301,7 +301,8 @@ void CDaikinCtrl::StateMachine()
            (m_fP1P2PrimaryZoneRoomTemp == 0.0f ||
             m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
             m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)) ||
-           (m_bCtrlSecZoneForce && bSecondaryZoneEnable))
+           (m_bCtrlSecZoneForce && bSecondaryZoneEnable) ||
+           !m_bP1P2ValveZoneMain) // When primary zone valve isn't open, assume no primary heating
       {
         // Check if secondary zone requires heating
         if (bSecondaryZoneEnable)
@@ -349,9 +350,7 @@ void CDaikinCtrl::StateMachine()
                m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
                m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))))
       {
-        // FIXME: When modulation is used the above isn't true. We must probably check primary zone valve
-        //        In that case we can also lower the hysteresis value :-)
-        //        Perhaps there's another P1P2 property we can use to determine primary zone requires heating?
+        // NOTE: When modulation is used the above isn't true
         m_bDaikinPrimaryZoneOn = true;
 
         if (m_bDaikinSecondaryZoneOn)
