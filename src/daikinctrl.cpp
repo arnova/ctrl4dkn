@@ -414,7 +414,7 @@ void CDaikinCtrl::UpdateRelays()
   bool bAllowRoomValvesOpen = !m_bFloorProtection;
 #ifndef LOW_TEMP_SECONDARY_ZONE
   // When Daikin secondary zone uses high temperature, make sure we don't enable floor heated rooms
-  bAllowRoomValvesOpen &= !m_bDaikinSecondaryZoneOn || !m_bP1P2HeatingOn; // FIXME: Delay this from SM?
+  bAllowRoomValvesOpen &= (!m_bDaikinSecondaryZoneOn || m_bP1P2CoolingOn); // FIXME: Delay this from SM?
 #endif
 
   if ((!IsDaikinActive() || !m_bCtrlEnable) && bAllowRoomValvesOpen)
