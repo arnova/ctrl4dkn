@@ -283,7 +283,7 @@ void CDaikinCtrl::StateMachine()
     return;
   }
 
-  // NOTE: When modulation is used this may not be true:
+  // Primary zone requires heating when either room temp < target temp - (hyst * 0.5) or when requested via mqtt
   const bool bPrimaryZoneRequiresHeating = (m_bCtrlPriZoneEnable ||
                                            (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
                                             m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
@@ -366,7 +366,8 @@ void CDaikinCtrl::StateMachine()
           m_bDaikinPrimaryZoneOn = true;
         }
 
-        if (m_bDaikinPrimaryZoneOn || !bSecondaryZoneEnable)
+        // NOTE: Also check Daikin valve state (more reliable when modulation is used)
+        if (m_bDaikinPrimaryZoneOn || !bSecondaryZoneEnable || m_bP1P2ValveZoneMain)
         {
           if (m_bDaikinSecondaryZoneOn)
           {
