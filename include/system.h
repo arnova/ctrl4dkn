@@ -16,7 +16,7 @@ const char mqtt_server[] = "192.168.1.65";
 #define MQTT_CTRL4DKN_HOST_ID "067"             // NOTE: Need to customize this
 
 // Enable this when (Daikin) secondary zone uses low temperature AWT range that is safe for floor-heated rooms
-//#define LOW_TEMP_SECONDARY_ZONE
+#define LOW_TEMP_SECONDARY_ZONE
 
 /**************************
  * Output i/o pin numbers *
