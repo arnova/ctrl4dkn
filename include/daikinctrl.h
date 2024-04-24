@@ -145,6 +145,7 @@ class CDaikinCtrl
     bool m_bDaikinSecondaryZoneOn = false;
     bool m_bPrimaryZoneValveClose = false;
     bool m_bFloorProtection = false;
+    bool m_bSecZoneForceLast = false;
     bool m_bRoom1ValveOpenRq = false;
     bool m_bRoom2ValveOpenRq = false;
     bool m_bRoom3ValveOpenRq = false;
