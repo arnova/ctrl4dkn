@@ -334,7 +334,7 @@ void CDaikinCtrl::StateMachine()
           if (!m_bDaikinSecondaryZoneOn)
           {
             // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
-            if (++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
+            if (m_bCtrlSecZoneForce || ++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
             {
               m_bPrimaryZoneValveClose = true;
 
