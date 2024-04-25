@@ -137,22 +137,28 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF, m_bCtrlEnable ? "1" : "0", true);
   }
 
-  if (m_bUpdateCtrlPriZoneEnable)
+  if (m_bUpdateCtrlZonePriEnable)
   {
-    m_bUpdateCtrlPriZoneEnable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_ENABLE, m_bCtrlPriZoneEnable ? "1" : "0", true);
+    m_bUpdateCtrlZonePriEnable = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_PRIMARY_ENABLE, m_bCtrlZonePriEnable ? "1" : "0", true);
   }
 
-  if (m_bUpdateCtrlSecZoneEnable)
+  if (m_bUpdateCtrlZoneSecEnable)
   {
-    m_bUpdateCtrlSecZoneEnable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_ENABLE, m_bCtrlSecZoneEnable ? "1" : "0", true);
+    m_bUpdateCtrlZoneSecEnable = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE, m_bCtrlZoneSecEnable ? "1" : "0", true);
   }
 
-  if (m_bUpdateCtrlSecZoneForce)
+  if (m_bUpdateCtrlZoneSecForce)
   {
-    m_bUpdateCtrlSecZoneForce = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_FORCE, m_bCtrlSecZoneForce ? "1" : "0", true);
+    m_bUpdateCtrlZoneSecForce = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE, m_bCtrlZoneSecForce ? "1" : "0", true);
+  }
+
+  if (m_bUpdateCtrlDaikinSecForce)
+  {
+    m_bUpdateCtrlDaikinSecForce = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_FORCE, m_bCtrlDaikinSecForce ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlGasOnly)
@@ -260,7 +266,7 @@ void CDaikinCtrl::StateMachine()
   m_bRoom4ValveOpenRq |= !digitalRead(ROOM4_ENABLE);
 #endif
 
-  bool bSecondaryZoneEnable = m_bCtrlSecZoneEnable;
+  bool bSecondaryZoneEnable = m_bCtrlZoneSecEnable;
 #ifdef SECONDARY_ZONE_ENABLE
   bSecondaryZoneEnable |= !digitalRead(SECONDARY_ZONE_ENABLE);
 #endif
@@ -268,8 +274,8 @@ void CDaikinCtrl::StateMachine()
   if (m_bP1P2CoolingOn)
   {
     m_bPrimaryZoneValveClose = false; // When cooling is enabled always open primary valve
-    m_bDaikinPrimaryZoneOn = m_bCtrlPriZoneEnable;
-    m_bCtrlSecZoneEnable = false; // Not used when cooling
+    m_bDaikinPrimaryZoneOn = m_bCtrlZonePriEnable;
+    m_bCtrlZoneSecEnable = false; // Not used when cooling
     m_iState = STATE_IDLE;
     return;
   }
@@ -278,13 +284,13 @@ void CDaikinCtrl::StateMachine()
   {
     m_bPrimaryZoneValveClose = false;
     m_bDaikinPrimaryZoneOn = false;
-    m_bCtrlSecZoneEnable = false;
+    m_bCtrlZoneSecEnable = false;
     m_iState = STATE_IDLE;
     return;
   }
 
   // Primary zone requires heating when either room temp < target temp - (hyst * 0.5) or when requested via mqtt
-  const bool bPrimaryZoneRequiresHeating = (m_bCtrlPriZoneEnable ||
+  const bool bPrimaryZoneRequiresHeating = (m_bCtrlZonePriEnable ||
                                            (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
                                             m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
                                             m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))));
@@ -324,10 +330,10 @@ void CDaikinCtrl::StateMachine()
       //       This is due to (possible) modulation else it may take forever before we switch over.
       //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
       if (bPrimaryZoneNoHeat ||
-         (m_bCtrlSecZoneForce && bSecondaryZoneEnable))
+         (m_bCtrlZoneSecForce && bSecondaryZoneEnable))
       {
         // Remember forced state:
-        m_bSecZoneForceLast = m_bCtrlSecZoneForce;
+        m_bSecZoneForceLast = m_bCtrlZoneSecForce;
 
         // Check if secondary zone requires heating
         if (bSecondaryZoneEnable)
@@ -491,7 +497,7 @@ void CDaikinCtrl::UpdateRelays()
     UpdateDaikinZonePrimaryEnable(false);
   }
 
-  if (m_bDaikinSecondaryZoneOn && m_bCtrlEnable)
+  if ((m_bDaikinSecondaryZoneOn || m_bUpdateCtrlDaikinSecForce) && m_bCtrlEnable)
   {
     // FIXME?: Instead of selecting secondary curve, we can also increase AWT deviation but only when primary zone is active
 

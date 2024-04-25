@@ -144,36 +144,48 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_ENABLE "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_PRIMARY_ENABLE "/set"))
   {
     if (bValidInt || length == 0)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlPriZoneEnable(iVal == 1 ? true : false);
+        g_DaikinCtrl.SetCtrlZonePriEnable(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_ENABLE "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE "/set"))
   {
     if (bValidInt || length == 0)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlSecZoneEnable(iVal == 1 ? true : false);
+        g_DaikinCtrl.SetCtrlZoneSecEnable(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_FORCE "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE "/set"))
   {
     if (bValidInt || length == 0)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlSecZoneForce(iVal == 1 ? true : false);
+        g_DaikinCtrl.SetCtrlZoneSecForce(iVal == 1 ? true : false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_FORCE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+        g_DaikinCtrl.SetCtrlDaikinSecForce(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -351,14 +363,17 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set", 1);
   MQTTPublishConfig(MQTT_CONTROLLER_ON_OFF, CDaikinCtrl::SWITCH);
 
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_PRIMARY_ZONE_ENABLE "/set", 1);
-  MQTTPublishConfig(MQTT_PRIMARY_ZONE_ENABLE, CDaikinCtrl::SWITCH);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_PRIMARY_ENABLE "/set", 1);
+  MQTTPublishConfig(MQTT_ZONE_PRIMARY_ENABLE, CDaikinCtrl::SWITCH);
 
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_ENABLE "/set", 1);
-  MQTTPublishConfig(MQTT_SECONDARY_ZONE_ENABLE, CDaikinCtrl::SWITCH);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE "/set", 1);
+  MQTTPublishConfig(MQTT_ZONE_SECONDARY_ENABLE, CDaikinCtrl::SWITCH);
 
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SECONDARY_ZONE_FORCE "/set", 1);
-  MQTTPublishConfig(MQTT_SECONDARY_ZONE_FORCE, CDaikinCtrl::SWITCH);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE "/set", 1);
+  MQTTPublishConfig(MQTT_ZONE_SECONDARY_FORCE, CDaikinCtrl::SWITCH);
+
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_FORCE "/set", 1);
+  MQTTPublishConfig(MQTT_DAIKIN_SECONDARY_FORCE, CDaikinCtrl::SWITCH);
 
 #ifdef DAIKIN_PREFERENTIAL_RELAY
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY "/set", 1);
