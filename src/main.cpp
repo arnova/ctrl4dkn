@@ -10,6 +10,8 @@
 #include "util.h"
 #include "system.h"
 
+// Version string:
+#define MY_VERSION "0.2"
 
 // Globals
 WiFiClient g_wifiClient;
@@ -18,7 +20,7 @@ CDaikinCtrl g_DaikinCtrl(&g_MQTTClient);
 
 void MQTTPrintError(void)
 {
-  Serial.println("ERROR: Invalid MQTT data for topic.");
+  Serial.println("ERROR: Invalid MQTT data for topic");
 }
 
 
@@ -404,6 +406,9 @@ bool MQTTReconnect()
   MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR);
+
+  // Publish our f/w version
+  g_MQTTClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_FW_VERSION, MY_VERSION, true);
 
   return true;
 }

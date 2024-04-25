@@ -54,6 +54,7 @@
 #define MQTT_GAS_ONLY                               "Gas Only"
 
 // Status topics
+#define MQTT_FW_VERSION                             "Firmware Version"
 #define MQTT_VALVE_ZONE_PRIMARY_OPEN                "Valve Zone Primary Open"
 #define MQTT_VALVE_ROOM1_OPEN                       "Valve Room 1 Open"
 #define MQTT_VALVE_ROOM2_OPEN                       "Valve Room 2 Open"
