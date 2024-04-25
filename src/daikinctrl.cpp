@@ -289,11 +289,31 @@ void CDaikinCtrl::StateMachine()
                                             m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
                                             m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))));
 
+  // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes
+  bool bPrimaryZoneNoHeat = false;
+  if ((m_fP1P2PrimaryZoneRoomTemp == 0.0f ||
+       m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
+       m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)
+       && !bPrimaryZoneRequiresHeating)
+  {
+    if (m_iPrimaryZoneNoHeatCounter < PRIMARY_ZONE_DISABLE_TIME)
+    {
+      m_iPrimaryZoneNoHeatCounter++;
+    }
+    else
+    {
+      bPrimaryZoneNoHeat = true;
+    }
+  }
+  else
+  {
+    m_iPrimaryZoneNoHeatCounter = 0;
+  }
+
   switch (m_iState)
   {
     case STATE_IDLE:
     {
-      m_iPrimaryZoneDisableCounter = 0; // For the next round
       m_iState = STATE_WAIT_STATE;
     }
     break;
@@ -303,11 +323,8 @@ void CDaikinCtrl::StateMachine()
       // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hyseresis!).
       //       This is due to (possible) modulation else it may take forever before we switch over.
       //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
-      if ((!bPrimaryZoneRequiresHeating &&
-           (m_fP1P2PrimaryZoneRoomTemp == 0.0f ||
-            m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
-            m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)) ||
-           (m_bCtrlSecZoneForce && bSecondaryZoneEnable))
+      if (bPrimaryZoneNoHeat ||
+         (m_bCtrlSecZoneForce && bSecondaryZoneEnable))
       {
         // Remember forced state:
         m_bSecZoneForceLast = m_bCtrlSecZoneForce;
@@ -331,17 +348,22 @@ void CDaikinCtrl::StateMachine()
           }
           else
 #endif
-          if (!m_bDaikinSecondaryZoneOn)
+          if (!m_bDaikinSecondaryZoneOn || m_bDaikinPrimaryZoneOn)
           {
-            // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes!
-            if (m_bCtrlSecZoneForce || ++m_iPrimaryZoneDisableCounter >= PRIMARY_ZONE_DISABLE_TIME)
+            if (!m_bPrimaryZoneValveClose)
             {
               m_bPrimaryZoneValveClose = true;
 
               // When we want to enable secondary heating on Daikin, we need to wait
-              // until primary zone valve is closed:
+              // until primary zone valve is closed
               m_iSMDelayCounter = PRIMARY_ZONE_VALVE_DELAY;
-              m_iState = STATE_PRIMARY_VALVE_CLOSING; // Wait for primary value to be closed & enable secondary zone on Daikin
+              m_iState = STATE_PRIMARY_VALVE_CLOSING; // Wait for primary valve to be closed & enable secondary zone on Daikin
+            }
+            else
+            {
+              m_iSMDelayCounter = DAIKIN_ZONE_SWITCH_TIME;
+              m_bDaikinSecondaryZoneOn = true;
+              m_iState = STATE_SECONDARY_ZONE_ON;
             }
           }
         }

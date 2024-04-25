@@ -154,7 +154,7 @@ class CDaikinCtrl
     elapsedMillis m_MQTTTimer = 0;
     elapsedMillis m_lastTempUpdateTimer = 999;
     uint16_t m_iSMDelayCounter = 0;
-    uint16_t m_iPrimaryZoneDisableCounter = 0;
+    uint16_t m_iPrimaryZoneNoHeatCounter = 0;
     uint16_t m_iFloorProtectionCounter = 0;
 
     bool m_bCtrlEnable = true;
