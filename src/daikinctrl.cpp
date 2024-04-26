@@ -300,7 +300,7 @@ void CDaikinCtrl::StateMachine()
   if ((m_fP1P2PrimaryZoneRoomTemp == 0.0f ||
        m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
        m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)
-       && !bPrimaryZoneRequiresHeating)
+       && !m_bCtrlZonePriEnable)
   {
     if (m_iPrimaryZoneNoHeatCounter < PRIMARY_ZONE_DISABLE_TIME)
     {
