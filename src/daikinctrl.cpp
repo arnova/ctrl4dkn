@@ -456,34 +456,28 @@ void CDaikinCtrl::StateMachine()
 
 void CDaikinCtrl::UpdateRelays()
 {
-  bool bAllowRoomValvesOpen = !m_bFloorProtection;
+  bool bSafeForFloorHeating = !m_bFloorProtection;
 #ifndef LOW_TEMP_SECONDARY_ZONE
   // When Daikin secondary zone uses high temperature, make sure we don't enable floor heated rooms
-  bAllowRoomValvesOpen &= (!m_bDaikinSecondaryZoneOn || m_bP1P2CoolingOn); // FIXME: Delay this from SM?
+  bSafeForFloorHeating &= (!m_bDaikinSecondaryZoneOn || m_bP1P2CoolingOn); // FIXME: Delay this from SM?
 #endif
 
-  if ((!IsDaikinActive() || !m_bCtrlEnable) && bAllowRoomValvesOpen)
+  if ((!IsDaikinActive() || !m_bCtrlEnable) && bSafeForFloorHeating)
   {
-    UpdateRoom1ValveOpen(ROOM1_VALVE_POLARITY ? false : true); // Idle state
-    UpdateRoom2ValveOpen(ROOM2_VALVE_POLARITY ? false : true); // Idle state
-    UpdateRoom3ValveOpen(ROOM3_VALVE_POLARITY ? false : true); // Idle state
-    UpdateRoom4ValveOpen(ROOM4_VALVE_POLARITY ? false : true); // Idle state
+    // Idle states:
+    UpdateValveZonePrimaryOpen(PRIMARY_ZONE_VALVE_POLARITY ? false : true);
+    UpdateRoom1ValveOpen(ROOM1_VALVE_POLARITY ? false : true);
+    UpdateRoom2ValveOpen(ROOM2_VALVE_POLARITY ? false : true);
+    UpdateRoom3ValveOpen(ROOM3_VALVE_POLARITY ? false : true);
+    UpdateRoom4ValveOpen(ROOM4_VALVE_POLARITY ? false : true);
   }
   else
   {
-    UpdateRoom1ValveOpen(m_bRoom1ValveOpenRq && bAllowRoomValvesOpen);
-    UpdateRoom2ValveOpen(m_bRoom2ValveOpenRq && bAllowRoomValvesOpen);
-    UpdateRoom3ValveOpen(m_bRoom3ValveOpenRq && bAllowRoomValvesOpen);
-    UpdateRoom4ValveOpen(m_bRoom4ValveOpenRq && bAllowRoomValvesOpen);
-  }
-
-  if ((!IsDaikinActive() || !m_bCtrlEnable) && !m_bFloorProtection)
-  {
-    UpdateValveZonePrimaryOpen(PRIMARY_ZONE_VALVE_POLARITY ? false : true); // Idle state
-  }
-  else
-  {
-    UpdateValveZonePrimaryOpen(!m_bFloorProtection && !m_bPrimaryZoneValveClose);
+    UpdateValveZonePrimaryOpen(!m_bPrimaryZoneValveClose && bSafeForFloorHeating);
+    UpdateRoom1ValveOpen(m_bRoom1ValveOpenRq && bSafeForFloorHeating);
+    UpdateRoom2ValveOpen(m_bRoom2ValveOpenRq && bSafeForFloorHeating);
+    UpdateRoom3ValveOpen(m_bRoom3ValveOpenRq && bSafeForFloorHeating);
+    UpdateRoom4ValveOpen(m_bRoom4ValveOpenRq && bSafeForFloorHeating);
   }
 
   if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bFloorProtection)
