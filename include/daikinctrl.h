@@ -97,7 +97,7 @@ class CDaikinCtrl
       STATE_PRIMARY_VALVE_OPEN
     };
 
-    CDaikinCtrl(PubSubClient* MQTTClient);
+    CDaikinCtrl(PubSubClient& MQTTClient);
 
     void loop();
 

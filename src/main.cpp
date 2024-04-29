@@ -16,7 +16,7 @@
 // Globals
 WiFiClient g_wifiClient;
 PubSubClient g_MQTTClient(g_wifiClient);
-CDaikinCtrl g_DaikinCtrl(&g_MQTTClient);
+CDaikinCtrl g_DaikinCtrl(g_MQTTClient);
 
 void MQTTPrintError(void)
 {

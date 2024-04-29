@@ -1,8 +1,8 @@
 #include "daikinctrl.h"
 
-CDaikinCtrl::CDaikinCtrl(PubSubClient *MQTTClient)
+CDaikinCtrl::CDaikinCtrl(PubSubClient& MQTTClient)
 {
-  m_pMQTTClient = MQTTClient;
+  m_pMQTTClient = &MQTTClient;
 }
 
 bool CDaikinCtrl::Float2HexStr(const float &fVal, char *strVal)
