@@ -480,7 +480,8 @@ void CDaikinCtrl::UpdateRelays()
     UpdateRoom4ValveOpen(m_bRoom4ValveOpenRq && bSafeForFloorHeating);
   }
 
-  if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bFloorProtection)
+  const bool bShutdown = m_bFloorProtection && !m_bPrimaryZoneValveClose;
+  if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !bShutdown)
   {
     // Enable primary zone heating on Daikin
     UpdateDaikinZonePrimaryEnable(true);
@@ -491,7 +492,7 @@ void CDaikinCtrl::UpdateRelays()
     UpdateDaikinZonePrimaryEnable(false);
   }
 
-  if ((m_bDaikinSecondaryZoneOn || m_bCtrlDaikinSecForce) && m_bCtrlEnable)
+  if ((m_bDaikinSecondaryZoneOn || m_bCtrlDaikinSecForce) && m_bCtrlEnable && !bShutdown)
   {
     // FIXME?: Instead of selecting secondary curve, we can also increase AWT deviation but only when primary zone is active
 
