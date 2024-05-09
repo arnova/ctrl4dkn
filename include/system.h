@@ -7,13 +7,18 @@
 const char ssid[] = WIFI_SSID;          // Need to create + define in secrets.h
 const char password[] = WIFI_PASSWORD;  // Need to create + define in secrets.h
 
+#define MQTT_CTRL4DKN_HOST_ID "067"             // NOTE: Need to customize this
+
 // MQTT server settings
 const char mqtt_server[] = "192.168.1.65";
 #define MQTT_PORT 1883
 
-#define MQTT_P1P2_HOST_ID "066"                 // NOTE: Need to customize this
+// Select the appropriate one below (depends on P1P2Serial/bridge firmware) 
+//#define MQTT_P1P2_HOST_ID "066"               // v0.9.44 or older. NOTE: Need to customize this
+#define MQTT_P1P2_HOST_ID "P1P2MQTT/bridge0"    // v0.9.45 or newer. NOTE: *May* need to customize this
 
-#define MQTT_CTRL4DKN_HOST_ID "067"             // NOTE: Need to customize this
+// Enable below when a bridge with firmware v0.9.45 (or newer) used
+#define MQTT_P1P2_V0945_BRIDGE
 
 // Enable this when (Daikin) secondary zone uses low temperature AWT range that is safe for floor-heated rooms
 #define LOW_TEMP_SECONDARY_ZONE

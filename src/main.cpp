@@ -11,7 +11,7 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.2"
+#define MY_VERSION "0.3"
 
 // Globals
 WiFiClient g_wifiClient;
@@ -60,20 +60,6 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   {
     if (bValidFloat)
       g_DaikinCtrl.SetP1P2LeavingWaterTemp(fVal);
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_P1P2_P_COMPRESSOR_ON))
-  {
-    if (bValidInt)
-    {
-      if (iVal == 1)
-        g_DaikinCtrl.SetP1P2CompressorOn(true);
-      else if (iVal == 0)
-        g_DaikinCtrl.SetP1P2CompressorOn(false);
-      else
-        MQTTPrintError();
-    }
     else
       MQTTPrintError();
   }
@@ -355,7 +341,6 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_LEAVING_WATER_TEMP, 0);
-  g_MQTTClient.subscribe(MQTT_P1P2_P_COMPRESSOR_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_VALVE_ZONE_MAIN, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);

@@ -10,9 +10,6 @@
 
 #define MIN_P1P2_WRITE_INTERVAL   120   // Minutes
 
-#define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
-#define MQTT_P1P2_W_TOPIC                           "P1P2/W/" MQTT_P1P2_HOST_ID "/"  // FIXME: HOST_ID ?
-
 // P1P2 write topics
 #define MQTT_P1P2_W_SET_POINT_CMD                   "E360"      // Room temperature setpoint
                                                                 // Suffixed with 2-digit temperature hex-value
@@ -27,15 +24,24 @@
 #define MQTT_P1P2_W_SILENT_LEVEL_CMD                "E3500010"  // Silent level
                                                                 // Suffixed with 1, 2 or 3 to select level
 
-// Subscribe topics
-#define MQTT_P1P2_P_POWER_HEATPUMP                  MQTT_P1P2_P_PREFIX "M/9/Power_Heatpump" // Not used
+#define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
+#define MQTT_P1P2_W_TOPIC                           "P1P2/W/" MQTT_P1P2_HOST_ID "/"  // FIXME: HOST_ID ?
+
+// Define P1P2Serial / bridge topics
+#ifndef MQTT_P1P2_V0945_BRIDGE
 #define MQTT_P1P2_P_HEATING_ON                      MQTT_P1P2_P_PREFIX "S/0/Heating_OnOff"
 #define MQTT_P1P2_P_COOLING_ON                      MQTT_P1P2_P_PREFIX "S/0/Cooling_OnOff"
 #define MQTT_P1P2_P_CIRCULATION_PUMP_ON             MQTT_P1P2_P_PREFIX "S/1/Circulation_Pump_OnOff"
-#define MQTT_P1P2_P_COMPRESSOR_ON                   MQTT_P1P2_P_PREFIX "S/1/Compressor_OnOff" // Not used
 #define MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE MQTT_P1P2_P_PREFIX "S/1/Target_Temperature_Room"
-#define MQTT_P1P2_P_VALVE_ZONE_MAIN                 MQTT_P1P2_P_PREFIX "S/1/Valve_Zone_Main"
 #define MQTT_P1P2_P_LEAVING_WATER_TEMP              MQTT_P1P2_P_PREFIX "T/1/Temperature_Leaving_Water"
+#else
+#define MQTT_P1P2_P_HEATING_ON                      MQTT_P1P2_P_PREFIX "S/1/Heating"
+#define MQTT_P1P2_P_COOLING_ON                      MQTT_P1P2_P_PREFIX "S/1/Cooling"
+#define MQTT_P1P2_P_CIRCULATION_PUMP_ON             MQTT_P1P2_P_PREFIX "S/1/Circulation_Pump"
+#define MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE MQTT_P1P2_P_PREFIX "S/0/Room_Heating"
+#define MQTT_P1P2_P_LEAVING_WATER_TEMP              MQTT_P1P2_P_PREFIX "T/1/Temperature_R2T_Leaving_Water"
+#endif
+#define MQTT_P1P2_P_VALVE_ZONE_MAIN                 MQTT_P1P2_P_PREFIX "S/1/Valve_Zone_Main"
 #define MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE   MQTT_P1P2_P_PREFIX "T/1/Temperature_Room"
 
 #define MQTT_CTRL4DKN_CTRL_PREFIX                   "ctrl4dkn/c/"
@@ -117,7 +123,6 @@ class CDaikinCtrl
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
     void SetP1P2PrimaryZoneTargetTemp(const float& fVal) { m_fP1P2PrimaryZoneTargetTemp = fVal; };
     void SetP1P2LeavingWaterTemp(const float& fVal) { m_fP1P2LeavingWaterTemp = fVal; };
-    void SetP1P2CompressorOn(const bool& bVal) { m_bP1P2CompressorOn = bVal; };
     void SetP1P2CirculationPumpOn(const bool& bVal) { m_bP1P2CirculationPumpOn = bVal; };
     void SetP1P2HeatingOn(const bool& bVal) { m_bP1P2HeatingOn = bVal; };
     void SetP1P2CoolingOn(const bool& bVal) { m_bP1P2CoolingOn = bVal; };
