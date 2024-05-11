@@ -8,24 +8,7 @@
 
 #define MQTT_MAX_SIZE 1024
 
-#define MIN_P1P2_WRITE_INTERVAL   120   // Minutes
-
-// P1P2 write topics
-#define MQTT_P1P2_W_SET_POINT_CMD                   "E360"      // Room temperature setpoint
-                                                                // Suffixed with 2-digit temperature hex-value
-#define MQTT_P1P2_W_ON_OFF_CMD                      "E352F"     // Heating/cooling on/off
-                                                                // Suffixed with either 0 (off) or 1 (on)
-#define MQTT_P1P2_W_AWT_DEV_CMD                     "E368"      // AWT temperature deviation
-                                                                // Suffixed with temperature:
-                                                                // E36 8 A sets deviation to +1 C
-                                                                // E36 8 FFF6 sets deviation to -1 C
-#define MQTT_P1P2_W_SILENT_ON_OFF_CMD               "E3500030"  // Silent mode on/off
-                                                                // Suffixed with either 0 (off) or 1 (on)
-#define MQTT_P1P2_W_SILENT_LEVEL_CMD                "E3500010"  // Silent level
-                                                                // Suffixed with 1, 2 or 3 to select level
-
 #define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
-#define MQTT_P1P2_W_TOPIC                           "P1P2/W/" MQTT_P1P2_HOST_ID "/"  // FIXME: HOST_ID ?
 
 // Define P1P2Serial / bridge topics
 #ifndef MQTT_P1P2_V0945_BRIDGE
@@ -160,7 +143,6 @@ class CDaikinCtrl
     bool m_bRoom4ValveOpenRq = false;
     elapsedMillis m_loopTimer = 0;
     elapsedMillis m_MQTTTimer = 0;
-    elapsedMillis m_lastTempUpdateTimer = 999;
     uint16_t m_iSMDelayCounter = 0;
     uint16_t m_iPrimaryZoneNoHeatCounter = 0;
     uint16_t m_iFloorProtectionCounter = 0;
