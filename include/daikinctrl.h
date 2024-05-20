@@ -11,7 +11,7 @@
 #define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
 
 // Define P1P2Serial / bridge topics
-#ifndef MQTT_P1P2_V0945_BRIDGE
+#ifndef MQTT_P1P2_OLD_BRIDGE
 #define MQTT_P1P2_P_HEATING_ON                      MQTT_P1P2_P_PREFIX "S/0/Heating_OnOff"
 #define MQTT_P1P2_P_COOLING_ON                      MQTT_P1P2_P_PREFIX "S/0/Cooling_OnOff"
 #define MQTT_P1P2_P_CIRCULATION_PUMP_ON             MQTT_P1P2_P_PREFIX "S/1/Circulation_Pump_OnOff"

@@ -17,8 +17,8 @@ const char mqtt_server[] = "192.168.1.65";
 //#define MQTT_P1P2_HOST_ID "066"               // v0.9.44 or older. NOTE: Need to customize this
 #define MQTT_P1P2_HOST_ID "P1P2MQTT/bridge0"    // v0.9.45 or newer. NOTE: *May* need to customize this
 
-// Enable below when a bridge with firmware v0.9.45 (or older) is used
-#define MQTT_P1P2_V0945_BRIDGE
+// Enable below when a bridge with older firmware (<v0.9.45) is used
+#define MQTT_P1P2_OLD_BRIDGE
 
 // Enable this when (Daikin) secondary zone uses low temperature AWT range that is safe for floor-heated rooms
 #define LOW_TEMP_SECONDARY_ZONE
@@ -29,7 +29,7 @@ const char mqtt_server[] = "192.168.1.65";
 #define LED_RED 25                              // Onboard LED
 
 // Low voltage relais:
-//#define DAIKIN_PREFERENTIAL_RELAY 33            // K1 relay: kWh preferential kWh (aka. gas only) rate relay (X5M 3/4) on the Daikin. NOT IMPLEMENTED (yet)
+//#define DAIKIN_PREFERENTIAL_RELAY 33            // K1 relay: kWh preferential kWh (aka. gas only) rate relay (X5M 3/4) on the Daikin
 
 // High voltage relays:
 //#define ROOM4_VALVE_RELAY 32                    // K2 relay: Used to open/close room 4 valve (floor-heating)
