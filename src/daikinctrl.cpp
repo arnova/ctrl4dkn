@@ -352,7 +352,7 @@ void CDaikinCtrl::StateMachine()
           }
           else
 #endif
-          if (!m_bDaikinSecondaryZoneOn || m_bDaikinPrimaryZoneOn) // FIXME: Review primary zone close logic?
+          if (!m_bPrimaryZoneValveClose || !m_bDaikinSecondaryZoneOn || m_bDaikinPrimaryZoneOn)
           {
             if (!m_bPrimaryZoneValveClose)
             {
