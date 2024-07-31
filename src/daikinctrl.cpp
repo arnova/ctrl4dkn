@@ -273,20 +273,18 @@ void CDaikinCtrl::StateMachine()
 
   if (m_bP1P2CoolingOn)
   {
-    m_bPrimaryZoneValveClose = false; // When cooling is enabled always open primary valve
+    m_bPrimaryZoneValveClose = m_bCtrlZoneSecForce && bSecondaryZoneEnable;
     m_bDaikinPrimaryZoneOn = m_bCtrlZonePriEnable;
-    m_bCtrlZoneSecEnable = false; // Not used when cooling
     m_iState = STATE_IDLE;
-    return;
+    return; // Cooling: Bypass statemachine
   }
 
   if (!m_bP1P2HeatingOn)
   {
     m_bPrimaryZoneValveClose = false;
     m_bDaikinPrimaryZoneOn = false;
-    m_bCtrlZoneSecEnable = false;
     m_iState = STATE_IDLE;
-    return;
+    return; // Not heating (or cooling): Bypass statemachine
   }
 
   // Primary zone requires heating when either room temp < target temp - (hyst * 0.5) or when requested via mqtt
@@ -354,7 +352,7 @@ void CDaikinCtrl::StateMachine()
           }
           else
 #endif
-          if (!m_bDaikinSecondaryZoneOn || m_bDaikinPrimaryZoneOn)
+          if (!m_bDaikinSecondaryZoneOn || m_bDaikinPrimaryZoneOn) // FIXME: Review primary zone close logic?
           {
             if (!m_bPrimaryZoneValveClose)
             {
