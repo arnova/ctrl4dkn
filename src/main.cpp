@@ -523,6 +523,7 @@ void setup()
 void loop()
 {
   static elapsedMillis MQTTReconnectTimer = 0;
+  static elapsedMillis ledTimer = 0;
 
   // Handle OTA-updates
   ArduinoOTA.handle();
@@ -531,7 +532,15 @@ void loop()
   if (!g_MQTTClient.connected())
   {
 #ifdef LED_RED
-    digitalWrite(LED_RED, HIGH); // Off
+    if (ledTimer > 1000)
+    {
+      digitalWrite(LED_RED, LOW); // On
+    }
+    else if (ledTimer > 2000)
+    {
+      digitalWrite(LED_RED, HIGH); // Off
+      ledTimer = 0;
+    }
 #endif
 
     if (MQTTReconnectTimer > 5000)
