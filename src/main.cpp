@@ -11,7 +11,7 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.3"
+#define MY_VERSION "0.31"
 
 // Globals
 WiFiClient g_wifiClient;
@@ -406,13 +406,12 @@ void SetupWifi()
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
+
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {
-    delay(500);
+    delay(1000);
     Serial.print(".");
-//    delay(5000);
-//    ESP.restart();
   }
 
   ArduinoOTA.onStart([]() {
@@ -523,24 +522,30 @@ void setup()
 void loop()
 {
   static elapsedMillis MQTTReconnectTimer = 0;
+  static elapsedMillis WifiReconnectTimer = 0;
   static elapsedMillis ledTimer = 0;
 
-  // Handle OTA-updates
-  ArduinoOTA.handle();
-
-  // Listen for mqtt message and reconnect if disconnected
-  if (!g_MQTTClient.connected())
+  if (WiFi.status() != WL_CONNECTED) // Check for wifi disconnects
   {
 #ifdef LED_RED
-    if (ledTimer > 1000)
+    digitalWrite(LED_RED, LOW); // Always on: failure
+#endif
+
+    if (WifiReconnectTimer > 5000)
     {
-      digitalWrite(LED_RED, LOW); // On
+      Serial.print(millis());
+      Serial.println("Reconnecting to WiFi...");
+      WiFi.disconnect();
+      WiFi.reconnect();
+      MQTTReconnect();
+      WifiReconnectTimer = 0;
+      MQTTReconnectTimer = 0;
     }
-    else if (ledTimer > 2000)
-    {
-      digitalWrite(LED_RED, HIGH); // Off
-      ledTimer = 0;
-    }
+  }
+  else if (!g_MQTTClient.connected()) // Check for MQTT disconnects
+  {
+#ifdef LED_RED
+    digitalWrite(LED_RED, LOW); // Always on: failure
 #endif
 
     if (MQTTReconnectTimer > 5000)
@@ -553,10 +558,21 @@ void loop()
   {
     // Indicate we're running:
 #ifdef LED_RED
-    digitalWrite(LED_RED, LOW); // On
+    if (ledTimer > 1000)
+    {
+      digitalWrite(LED_RED, LOW); // On
+    }
+    else if (ledTimer > 2000)
+    {
+      digitalWrite(LED_RED, HIGH); // Off
+      ledTimer = 0;
+    }
 #endif
 
     g_MQTTClient.loop();
+
+    // Handle OTA-updates
+    ArduinoOTA.handle();
   }
 
   g_DaikinCtrl.loop();
