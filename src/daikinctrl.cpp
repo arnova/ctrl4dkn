@@ -290,18 +290,25 @@ void CDaikinCtrl::StateMachine()
   }
 
   // Primary zone requires heating when either room temp < target temp - (hyst * 0.5) or when requested via mqtt
-  const bool bPrimaryZoneRequiresHeating = (m_bCtrlZonePriEnable ||
-                                           (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
-                                            m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
-                                            m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))));
-
-  // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes
-  bool bPrimaryZoneNoHeat = false;
   if ((m_fP1P2PrimaryZoneRoomTemp == 0.0f ||
        m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
        m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)
        && !m_bCtrlZonePriEnable)
   {
+    m_bPrimaryZoneRequiresHeating = false;
+  }
+  else if (m_bCtrlZonePriEnable ||
+          (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
+           m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
+           m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))))
+  {
+    m_bPrimaryZoneRequiresHeating = true;
+  }
+
+  bool bPrimaryZoneNoHeat = false;
+  if (!m_bPrimaryZoneRequiresHeating)
+  {
+    // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes
     if (m_iPrimaryZoneNoHeatCounter < PRIMARY_ZONE_DISABLE_TIME)
     {
       m_iPrimaryZoneNoHeatCounter++;
@@ -388,7 +395,7 @@ void CDaikinCtrl::StateMachine()
         // - Primary zone temperature is below target temperature OR MQTT Primary zone enable = 1
         // - Secondary zone is not forced and secondary zone heating is disabled
 
-        if (bPrimaryZoneRequiresHeating || m_bSecZoneForceLast)
+        if (m_bPrimaryZoneRequiresHeating || m_bSecZoneForceLast)
         {
           m_bSecZoneForceLast = false;
           m_bDaikinPrimaryZoneOn = true;
