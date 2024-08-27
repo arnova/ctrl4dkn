@@ -1,7 +1,30 @@
+/*
+  Ctrl4Dkn - Floor Heating(/Cooling) Controller For Daikin (Hybrid) Heatpump Systems
+  Last update: August 27, 2024
+  (C) Copyright 2024 by Arno van Amersfoort
+  Web                   : https://github.com/arnova/ctrl4dkn
+  Email                 : a r n o DOT v a n DOT a m e r s f o o r t AT g m a i l DOT c o m
+                          (note: you must remove all spaces and substitute the @ and the . at the proper locations!)
+  ----------------------------------------------------------------------------------------------------------------------
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License
+  version 2 as published by the Free Software Foundation.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+  ---------------------------------------------------------------------------------------------------------------------- 
+*/
+
 #include <Arduino.h>
 #include <WiFi.h>
 //#include <WiFiSTA.h>
-//#include <mDNS.h>
+#include <ESPmDNS.h>
 #include <PubSubClient.h>
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h>
@@ -11,7 +34,7 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.31"
+#define MY_VERSION "0.32"
 
 // Globals
 WiFiClient g_wifiClient;
@@ -405,13 +428,28 @@ void SetupWifi()
   // We start by connecting to a WiFi network
   Serial.println();
   Serial.print("Connecting to ");
-  Serial.println(ssid);
+  Serial.println(SSID);
 
-  WiFi.begin(ssid, password);
+  WiFi.begin(SSID, PASSWORD);
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(1000);
     Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  // Initialize mDNS
+  if (!MDNS.begin(HOSTNAME))
+  {
+    Serial.println("Error setting up MDNS responder!");
+  }
+  else
+  {
+    Serial.println("mDNS responder started");
   }
 
   ArduinoOTA.onStart([]() {
@@ -434,11 +472,6 @@ void SetupWifi()
   ArduinoOTA.begin();
 
   randomSeed(micros());
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
 }
 
 

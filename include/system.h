@@ -4,8 +4,9 @@
 #include "secrets.h"
 
 // WiFi settings
-const char ssid[] = WIFI_SSID;          // Need to create + define in secrets.h
-const char password[] = WIFI_PASSWORD;  // Need to create + define in secrets.h
+const char HOSTNAME[] = "ctrl4dkn";
+const char SSID[] = WIFI_SSID;          // Need to create + define in secrets.h
+const char PASSWORD[] = WIFI_PASSWORD;  // Need to create + define in secrets.h
 
 #define MQTT_CTRL4DKN_HOST_ID "067"             // NOTE: Need to customize this
 
