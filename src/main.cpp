@@ -591,15 +591,16 @@ void loop()
   {
     // Indicate we're running:
 #ifdef LED_RED
-    if (ledTimer > 1000)
-    {
-      digitalWrite(LED_RED, LOW); // On
-    }
-    else if (ledTimer > 2000)
+    if (ledTimer > 2000)
     {
       digitalWrite(LED_RED, HIGH); // Off
       ledTimer = 0;
     }
+    else if (ledTimer > 1000)
+    {
+      digitalWrite(LED_RED, LOW); // On
+    }
+
 #endif
 
     g_MQTTClient.loop();
