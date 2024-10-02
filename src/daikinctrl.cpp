@@ -298,9 +298,7 @@ void CDaikinCtrl::StateMachine()
     m_bPrimaryZoneRequiresHeating = false;
   }
   else if (m_bCtrlZonePriEnable ||
-          (m_fP1P2PrimaryZoneRoomTemp > 0.0f &&
-           m_fP1P2PrimaryZoneTargetTemp > 0.0f &&
-           m_fP1P2PrimaryZoneRoomTemp < (m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))))
+          (m_fP1P2PrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
   {
     m_bPrimaryZoneRequiresHeating = true;
   }
@@ -339,9 +337,6 @@ void CDaikinCtrl::StateMachine()
       if (bPrimaryZoneNoHeat ||
          (m_bCtrlZoneSecForce && bSecondaryZoneEnable))
       {
-        // Remember forced state:
-        m_bSecZoneForceLast = m_bCtrlZoneSecForce;
-
         // Check if secondary zone requires heating
         if (bSecondaryZoneEnable)
         {
@@ -392,12 +387,11 @@ void CDaikinCtrl::StateMachine()
       {
         // We arrive in this block when we *may* start heating primary zone again
         // The following conditions must be met:
-        // - Primary zone temperature is below target temperature OR MQTT Primary zone enable = 1
+        // - Primary zone is requesting heat
         // - Secondary zone is not forced and secondary zone heating is disabled
 
-        if (m_bPrimaryZoneRequiresHeating || m_bSecZoneForceLast)
+        if (m_bPrimaryZoneRequiresHeating)
         {
-          m_bSecZoneForceLast = false;
           m_bDaikinPrimaryZoneOn = true;
         }
 

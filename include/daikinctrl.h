@@ -82,8 +82,7 @@ class CDaikinCtrl
       STATE_WAIT_STATE,
       STATE_PRIMARY_VALVE_CLOSING,
       STATE_SECONDARY_ZONE_ON,
-      STATE_DAIKIN_SEC_ZONE_DISABLE,
-      STATE_PRIMARY_VALVE_OPEN
+      STATE_DAIKIN_SEC_ZONE_DISABLE
     };
 
     CDaikinCtrl(PubSubClient& MQTTClient);
@@ -137,7 +136,6 @@ class CDaikinCtrl
     bool m_bPrimaryZoneRequiresHeating = false;
     bool m_bPrimaryZoneValveClose = false;
     bool m_bFloorProtection = false;
-    bool m_bSecZoneForceLast = false;
     bool m_bRoom1ValveOpenRq = false;
     bool m_bRoom2ValveOpenRq = false;
     bool m_bRoom3ValveOpenRq = false;
