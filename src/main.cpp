@@ -34,7 +34,7 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.33"
+#define MY_VERSION "0.34"
 
 // Globals
 WiFiClient g_wifiClient;
@@ -451,6 +451,9 @@ void SetupWifi()
   {
     Serial.println("mDNS responder started");
   }
+
+  // Need to explicitly set hostname as ArduinoOTA will override our mdns-name set above
+  ArduinoOTA.setHostname(HOSTNAME);
 
   ArduinoOTA.onStart([]() {
     Serial.println("Start");
