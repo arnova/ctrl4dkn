@@ -290,8 +290,8 @@ void CDaikinCtrl::StateMachine()
   }
 
   // Primary zone requires heating when either room temp < target temp - (hyst * 0.5) or when requested via mqtt
-  if ((m_fP1P2PrimaryZoneRoomTemp == 0.0f ||
-       m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
+  if ((m_fP1P2PrimaryZoneRoomTemp <= 0.0f ||
+       m_fP1P2PrimaryZoneTargetTemp <= 0.0f ||
        m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)
        && !m_bCtrlZonePriEnable)
   {
