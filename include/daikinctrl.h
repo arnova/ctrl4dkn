@@ -4,6 +4,7 @@
 #include <elapsedMillis.h>
 #include <PubSubClient.h>
 
+#include "RollingAverage.h"
 #include "system.h"
 
 #define MQTT_MAX_SIZE 1024
@@ -51,12 +52,13 @@
 #define MQTT_DAIKIN_ZONE_PRIMARY_ENABLE             "Daikin Zone Primary Enable"
 #define MQTT_DAIKIN_ZONE_SECONDARY_ENABLE           "Daikin Zone Secondary Enable"
 #define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving Water Too High"
+#define MQTT_AVG_ROOM_TEMPERATURE                   "Averaged Room Temperature"
 
 #define DAIKIN_HYSTERESIS                     1.0f
 #define LEAVING_WATER_MAX                    45.0f
 #define LEAVING_WATER_MAX_MARGIN              3.0f
 #define DAIKIN_ZONE_SWITCH_TIME                 5   // Seconds
-#define PRIMARY_ZONE_DISABLE_TIME             900   // Seconds = 15 minutes
+#define PRIMARY_ZONE_ROOM_TEMP_AVG_TIME       900   // Seconds = 15 minutes
 #define PRIMARY_ZONE_VALVE_DELAY              180   // Seconds = 3 minutes
 #define FLOOR_PROTECTION_DELAY                300   // Seconds = 5 minutes
 
@@ -99,6 +101,7 @@ class CDaikinCtrl
     void UpdateRoom4ValveOpen(const bool bVal);
     void UpdateDaikinZonePrimaryEnable(const bool bVal);
     void UpdateDaikinZoneSecondaryEnable(const bool bVal);
+    void UpdateAveragePrimaryZoneRoomTemp(const float fVal);
     bool MQTTPublishValues();
 
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
@@ -141,8 +144,8 @@ class CDaikinCtrl
     elapsedMillis m_loopTimer = 0;
     elapsedMillis m_MQTTTimer = 0;
     uint16_t m_iSMDelayCounter = 0;
-    uint16_t m_iPrimaryZoneNoHeatCounter = 0;
     uint16_t m_iFloorProtectionCounter = 0;
+    CRollingAverage m_roomTempRollingAverager;
 
     bool m_bCtrlEnable = true;
     bool m_bCtrlZonePriEnable = false;
@@ -182,6 +185,8 @@ class CDaikinCtrl
     bool m_bUpdateDaikinZonePrimaryEnable = true;
     bool m_bDaikinZoneSecondaryEnable = false;
     bool m_bUpdateDaikinZoneSecondaryEnable = true;
+    char m_strAveragePrimaryZoneRoomTemp[5] = "";
+    bool m_bUpdateAveragePrimaryZoneRoomTemp = true;
 
     float m_fP1P2LeavingWaterTemp = -1.0f;
     float m_fP1P2PrimaryZoneRoomTemp = -1.0f;       // Room temperature reported by P1P2/thermostat

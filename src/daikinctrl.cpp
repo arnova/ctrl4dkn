@@ -1,8 +1,10 @@
 #include "daikinctrl.h"
+#include "util.h"
 
 CDaikinCtrl::CDaikinCtrl(PubSubClient& MQTTClient)
 {
   m_pMQTTClient = &MQTTClient;
+  m_roomTempRollingAverager.SetAvgCount(PRIMARY_ZONE_ROOM_TEMP_AVG_TIME);
 }
 
 bool CDaikinCtrl::Float2HexStr(const float &fVal, char *strVal)
@@ -129,6 +131,18 @@ void CDaikinCtrl::UpdateDaikinZoneSecondaryEnable(const bool bVal)
 #endif
 }
 
+void CDaikinCtrl::UpdateAveragePrimaryZoneRoomTemp(const float fVal)
+{
+  char strTemperature[5];
+  snprintf(strTemperature, 5, "%.1f", fVal);
+
+  if (!STRIEQUALS(strTemperature, m_strAveragePrimaryZoneRoomTemp))
+  {
+    strcpy(m_strAveragePrimaryZoneRoomTemp, strTemperature);
+    m_bUpdateAveragePrimaryZoneRoomTemp = true;
+  }
+}
+
 bool CDaikinCtrl::MQTTPublishValues()
 {
   if (m_bUpdateCtrlEnable)
@@ -239,6 +253,12 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, m_bDaikinZoneSecondaryEnable ? "1" : "0", true);
   }
 
+  if (m_bUpdateAveragePrimaryZoneRoomTemp)
+  {
+    m_bUpdateAveragePrimaryZoneRoomTemp = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_AVG_ROOM_TEMPERATURE, m_strAveragePrimaryZoneRoomTemp, true);
+  }
+
   return true;
 }
 
@@ -289,36 +309,26 @@ void CDaikinCtrl::StateMachine()
     return; // Not heating (or cooling): Bypass statemachine
   }
 
+  float fAveragePrimaryZoneRoomTemp;
+  if (m_fP1P2PrimaryZoneRoomTemp <= 0.0f)
+    fAveragePrimaryZoneRoomTemp = m_roomTempRollingAverager.RemoveValue();
+  else
+    fAveragePrimaryZoneRoomTemp = m_roomTempRollingAverager.UpdateValue(m_fP1P2PrimaryZoneRoomTemp);
+
+  UpdateAveragePrimaryZoneRoomTemp(fAveragePrimaryZoneRoomTemp);
+
   // Primary zone requires heating when either room temp < target temp - (hyst * 0.5) or when requested via mqtt
-  if ((m_fP1P2PrimaryZoneRoomTemp <= 0.0f ||
-       m_fP1P2PrimaryZoneTargetTemp <= 0.0f ||
-       m_fP1P2PrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)
+  if ((!m_roomTempRollingAverager.HasValue() ||
+       m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
+       fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)
        && !m_bCtrlZonePriEnable)
   {
     m_bPrimaryZoneRequiresHeating = false;
   }
   else if (m_bCtrlZonePriEnable ||
-          (m_fP1P2PrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
+          (fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
   {
     m_bPrimaryZoneRequiresHeating = true;
-  }
-
-  bool bPrimaryZoneNoHeat = false;
-  if (!m_bPrimaryZoneRequiresHeating)
-  {
-    // Primary zone should be at target temperature for at least PRIMARY_ZONE_DISABLE_TIME minutes
-    if (m_iPrimaryZoneNoHeatCounter < PRIMARY_ZONE_DISABLE_TIME)
-    {
-      m_iPrimaryZoneNoHeatCounter++;
-    }
-    else
-    {
-      bPrimaryZoneNoHeat = true;
-    }
-  }
-  else
-  {
-    m_iPrimaryZoneNoHeatCounter = 0;
   }
 
   switch (m_iState)
@@ -334,7 +344,7 @@ void CDaikinCtrl::StateMachine()
       // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hysteresis!).
       //       This is due to (possible) modulation else it may take forever before we switch over.
       //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
-      if (bPrimaryZoneNoHeat ||
+      if (!m_bPrimaryZoneRequiresHeating ||
          (m_bCtrlZoneSecForce && bSecondaryZoneEnable))
       {
         // Check if secondary zone requires heating
