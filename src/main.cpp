@@ -290,11 +290,16 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
     break;
 
     case CDaikinCtrl::BINARY_SENSOR:
-    case CDaikinCtrl::SENSOR:
     {
       root["state_topic"] = String(MQTT_CTRL4DKN_STATUS_PREFIX) + strItem;
       root["payload_on"] = "1";
       root["payload_off"] = "0";
+    }
+    break;    
+
+    case CDaikinCtrl::SENSOR:
+    {
+      root["state_topic"] = String(MQTT_CTRL4DKN_STATUS_PREFIX) + strItem;
     }
     break;    
   }
