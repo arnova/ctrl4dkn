@@ -24,7 +24,6 @@
 #define MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE MQTT_P1P2_P_PREFIX "S/0/Room_Heating_Setpoint"
 #define MQTT_P1P2_P_LEAVING_WATER_TEMP              MQTT_P1P2_P_PREFIX "T/1/Temperature_R2T_Leaving_Water"
 #endif
-#define MQTT_P1P2_P_VALVE_ZONE_MAIN                 MQTT_P1P2_P_PREFIX "S/1/Valve_Zone_Main"
 #define MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE   MQTT_P1P2_P_PREFIX "T/1/Temperature_Room"
 
 #define MQTT_CTRL4DKN_CTRL_PREFIX                   "ctrl4dkn/c/"
@@ -108,7 +107,6 @@ class CDaikinCtrl
     void SetP1P2CirculationPumpOn(const bool& bVal) { m_bP1P2CirculationPumpOn = bVal; };
     void SetP1P2HeatingOn(const bool& bVal) { m_bP1P2HeatingOn = bVal; };
     void SetP1P2CoolingOn(const bool& bVal) { m_bP1P2CoolingOn = bVal; };
-    void SetP1P2ValveZoneMain(const bool& bVal) { m_bP1P2ValveZoneMain = bVal; };
 
 //    bool IsDaikinHeatingActive() { return m_bP1P2HeatingOn && m_bP1P2CirculationPumpOn; };
 //    bool IsDaikinCoolingActive() { return m_bP1P2CoolingOn && m_bP1P2CirculationPumpOn; };
@@ -193,7 +191,6 @@ class CDaikinCtrl
     bool m_bP1P2CirculationPumpOn = false;
     bool m_bP1P2HeatingOn = false;
     bool m_bP1P2CoolingOn = false;
-    bool m_bP1P2ValveZoneMain = false;
 
     e_sm_state m_iState = STATE_WAIT_STATE;
 };

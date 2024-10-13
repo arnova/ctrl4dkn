@@ -395,8 +395,7 @@ void CDaikinCtrl::StateMachine()
           m_bDaikinPrimaryZoneOn = true;
         }
 
-        // NOTE: Also check Daikin valve state (more reliable when modulation is used)
-        if (m_bDaikinPrimaryZoneOn || !bSecondaryZoneEnable || m_bP1P2ValveZoneMain)
+        if (m_bDaikinPrimaryZoneOn || !bSecondaryZoneEnable)
         {
           if (m_bDaikinSecondaryZoneOn)
           {
