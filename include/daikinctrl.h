@@ -72,7 +72,7 @@ class CDaikinCtrl
     typedef enum HAConfigType_e
     {
       SWITCH,
-      SENSOR,
+      TEMP_SENSOR,
       BINARY_SENSOR
     } HAConfigType_t;
 

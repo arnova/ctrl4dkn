@@ -281,13 +281,15 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
       root["payload_on"] = "1";
       root["payload_off"] = "0";
     }
-    break;    
+    break;
 
-    case CDaikinCtrl::SENSOR:
+    case CDaikinCtrl::TEMP_SENSOR:
     {
       root["state_topic"] = String(MQTT_CTRL4DKN_STATUS_PREFIX) + strItem;
+      root["unit_of_meas"] = "°C";
+      root["dev_cla"] = "temperature";
     }
-    break;    
+    break;
   }
 
   JsonObject device = root["device"].to<JsonObject>();
@@ -314,7 +316,7 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfig
     }
     break;
 
-    case CDaikinCtrl::SENSOR:
+    case CDaikinCtrl::TEMP_SENSOR:
     {
       strTopic += "sensor";
     }
@@ -404,7 +406,7 @@ bool MQTTReconnect()
   MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_AVG_ROOM_TEMPERATURE, CDaikinCtrl::SENSOR);
+  MQTTPublishConfig(MQTT_AVG_ROOM_TEMPERATURE, CDaikinCtrl::TEMP_SENSOR);
 
   // Publish our f/w version
   g_MQTTClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_FW_VERSION, MY_VERSION, true);
