@@ -331,7 +331,7 @@ void CDaikinCtrl::StateMachine()
 
     case STATE_WAIT_STATE:
     {
-      // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hyseresis!).
+      // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hysteresis!).
       //       This is due to (possible) modulation else it may take forever before we switch over.
       //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
       if (bPrimaryZoneNoHeat ||

@@ -56,7 +56,7 @@
 #define LEAVING_WATER_MAX                    45.0f
 #define LEAVING_WATER_MAX_MARGIN              3.0f
 #define DAIKIN_ZONE_SWITCH_TIME                 5   // Seconds
-#define PRIMARY_ZONE_DISABLE_TIME             300   // Seconds = 5 minutes
+#define PRIMARY_ZONE_DISABLE_TIME             900   // Seconds = 15 minutes
 #define PRIMARY_ZONE_VALVE_DELAY              180   // Seconds = 3 minutes
 #define FLOOR_PROTECTION_DELAY                300   // Seconds = 5 minutes
 
