@@ -1,6 +1,6 @@
 /*
   Ctrl4Dkn - Floor Heating(/Cooling) Controller For Daikin (Hybrid) Heatpump Systems
-  Last update: October 8, 2024
+  Last update: December 8, 2024
   (C) Copyright 2024 by Arno van Amersfoort
   Web                   : https://github.com/arnova/ctrl4dkn
   Email                 : a r n o DOT v a n DOT a m e r s f o o r t AT g m a i l DOT c o m
@@ -34,7 +34,7 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.34"
+#define MY_VERSION "0.35"
 
 // Globals
 WiFiClient g_wifiClient;
@@ -171,6 +171,18 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
         g_DaikinCtrl.SetCtrlZoneSecForce(iVal == 1 ? true : false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_ENABLE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+        g_DaikinCtrl.SetCtrlDaikinSecEnable(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -374,6 +386,9 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE "/set", 1);
   MQTTPublishConfig(MQTT_ZONE_SECONDARY_FORCE, CDaikinCtrl::SWITCH);
 
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_ENABLE "/set", 1);
+  MQTTPublishConfig(MQTT_DAIKIN_SECONDARY_ENABLE, CDaikinCtrl::SWITCH);
+
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_FORCE "/set", 1);
   MQTTPublishConfig(MQTT_DAIKIN_SECONDARY_FORCE, CDaikinCtrl::SWITCH);
 
@@ -403,8 +418,8 @@ bool MQTTReconnect()
   MQTTPublishConfig(MQTT_VALVE_ROOM4_OPEN, CDaikinCtrl::BINARY_SENSOR);
 #endif
   MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLED, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLED, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_AVG_ROOM_TEMPERATURE, CDaikinCtrl::TEMP_SENSOR);
 

@@ -169,6 +169,12 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE, m_bCtrlZoneSecForce ? "1" : "0", true);
   }
 
+  if (m_bUpdateCtrlDaikinSecEnable)
+  {
+    m_bUpdateCtrlDaikinSecEnable = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_ENABLE, m_bCtrlDaikinSecEnable ? "1" : "0", true);
+  }
+
   if (m_bUpdateCtrlDaikinSecForce)
   {
     m_bUpdateCtrlDaikinSecForce = false;
@@ -244,13 +250,13 @@ bool CDaikinCtrl::MQTTPublishValues()
   if (m_bUpdateDaikinZonePrimaryEnable)
   {
     m_bUpdateDaikinZonePrimaryEnable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_ZONE_PRIMARY_ENABLE, m_bDaikinZonePrimaryEnable ? "1" : "0", true);
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_ZONE_PRIMARY_ENABLED, m_bDaikinZonePrimaryEnable ? "1" : "0", true);
   }
 
   if (m_bUpdateDaikinZoneSecondaryEnable)
   {
     m_bUpdateDaikinZoneSecondaryEnable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_ZONE_SECONDARY_ENABLE, m_bDaikinZoneSecondaryEnable ? "1" : "0", true);
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_ZONE_SECONDARY_ENABLED, m_bDaikinZoneSecondaryEnable ? "1" : "0", true);
   }
 
   if (m_bUpdateAveragePrimaryZoneRoomTemp)
@@ -295,7 +301,7 @@ void CDaikinCtrl::StateMachine()
   {
     m_bPrimaryZoneValveClose = m_bCtrlZoneSecForce && bSecondaryZoneEnable;
     m_bDaikinPrimaryZoneOn = m_bCtrlZonePriEnable && !m_bPrimaryZoneValveClose;
-    m_bDaikinSecondaryZoneOn = !m_bDaikinPrimaryZoneOn && bSecondaryZoneEnable;
+    m_bDaikinSecondaryZoneOn = !m_bDaikinPrimaryZoneOn && bSecondaryZoneEnable && m_bDaikinZoneSecondaryEnable;
     m_iState = STATE_IDLE;
     return; // Cooling: Bypass statemachine
   }

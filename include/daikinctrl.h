@@ -35,6 +35,7 @@
 #define MQTT_ZONE_PRIMARY_ENABLE                    "Zone Primary Enable"
 #define MQTT_ZONE_SECONDARY_ENABLE                  "Zone Secondary Enable"
 #define MQTT_ZONE_SECONDARY_FORCE                   "Zone Secondary Force"
+#define MQTT_DAIKIN_SECONDARY_ENABLE                "Daikin Secondary Enable"
 #define MQTT_DAIKIN_SECONDARY_FORCE                 "Daikin Secondary Force"
 #define MQTT_ROOM1_ENABLE                           "Room 1 Enable"
 #define MQTT_ROOM2_ENABLE                           "Room 2 Enable"
@@ -49,8 +50,8 @@
 #define MQTT_VALVE_ROOM2_OPEN                       "Valve Room 2 Open"
 #define MQTT_VALVE_ROOM3_OPEN                       "Valve Room 3 Open"
 #define MQTT_VALVE_ROOM4_OPEN                       "Valve Room 4 Open"
-#define MQTT_DAIKIN_ZONE_PRIMARY_ENABLE             "Daikin Zone Primary Enable"
-#define MQTT_DAIKIN_ZONE_SECONDARY_ENABLE           "Daikin Zone Secondary Enable"
+#define MQTT_DAIKIN_ZONE_PRIMARY_ENABLED            "Daikin Zone Primary Enabled"
+#define MQTT_DAIKIN_ZONE_SECONDARY_ENABLED          "Daikin Zone Secondary Enabled"
 #define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving Water Too High"
 #define MQTT_AVG_ROOM_TEMPERATURE                   "Averaged Room Temperature"
 
@@ -120,6 +121,7 @@ class CDaikinCtrl
     void SetCtrlZonePriEnable(const bool& bVal) { m_bCtrlZonePriEnable = bVal; m_bUpdateCtrlZonePriEnable = true; };
     void SetCtrlZoneSecEnable(const bool& bVal) { m_bCtrlZoneSecEnable = bVal; m_bUpdateCtrlZoneSecEnable = true; };
     void SetCtrlZoneSecForce(const bool& bVal) { m_bCtrlZoneSecForce = bVal; m_bUpdateCtrlZoneSecForce = true; };
+    void SetCtrlDaikinSecEnable(const bool& bVal) { m_bCtrlDaikinSecEnable = bVal; m_bUpdateCtrlDaikinSecEnable = true; };
     void SetCtrlDaikinSecForce(const bool& bVal) { m_bCtrlDaikinSecForce = bVal; m_bUpdateCtrlDaikinSecForce = true; };
     void SetCtrlGasOnly(const bool& bVal) { m_bCtrlGasOnly = bVal; m_bUpdateCtrlGasOnly = true; };
     void SetCtrlRoom1Enable(const bool& bVal) { m_bCtrlRoom1Enable = bVal; m_bUpdateCtrlRoom1Enable = true; };
@@ -151,6 +153,7 @@ class CDaikinCtrl
     bool m_bCtrlZonePriEnable = false;
     bool m_bCtrlZoneSecEnable = false;
     bool m_bCtrlZoneSecForce = false;
+    bool m_bCtrlDaikinSecEnable = false;
     bool m_bCtrlDaikinSecForce = false;
     bool m_bCtrlGasOnly = false;
     bool m_bCtrlRoom1Enable = false;
@@ -162,6 +165,7 @@ class CDaikinCtrl
     bool m_bUpdateCtrlZonePriEnable = true;
     bool m_bUpdateCtrlZoneSecEnable = true;
     bool m_bUpdateCtrlZoneSecForce = true;
+    bool m_bUpdateCtrlDaikinSecEnable = true;
     bool m_bUpdateCtrlDaikinSecForce = true;
     bool m_bUpdateCtrlGasOnly = true;
     bool m_bUpdateCtrlRoom1Enable = true;
