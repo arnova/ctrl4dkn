@@ -62,6 +62,7 @@
 #define PRIMARY_ZONE_ROOM_TEMP_AVG_TIME      1800   // Seconds = 30 minutes
 #define PRIMARY_ZONE_VALVE_DELAY              180   // Seconds = 3 minutes
 #define FLOOR_PROTECTION_DELAY                300   // Seconds = 5 minutes
+#define DAIKIN_ACTIVE_OFF_TIME                600   // Seconds = 10 minutes
 
 #define CONTROL_LOOP_TIME                       1   // Seconds
 #define MQTT_UPDATE_TIME                        1   // Seconds
@@ -114,7 +115,7 @@ class CDaikinCtrl
 
 //    bool IsDaikinHeatingActive() { return m_bP1P2HeatingOn && m_bP1P2CirculationPumpOn; };
 //    bool IsDaikinCoolingActive() { return m_bP1P2CoolingOn && m_bP1P2CirculationPumpOn; };
-    bool IsDaikinActive() { return m_bP1P2CirculationPumpOn; };
+    bool IsDaikinActive() { return m_bDaikinActive; };
 //    bool IsPrimaryHeatingActive() { return IsDaikinHeatingActive() && m_bP1P2ValveZoneMain; };
 
     void SetCtrlOnOff(const bool& bVal) { m_bCtrlEnable = bVal; m_bUpdateCtrlEnable = true; };
@@ -139,6 +140,7 @@ class CDaikinCtrl
     bool m_bPrimaryZoneRequiresHeating = false;
     bool m_bPrimaryZoneValveClose = false;
     bool m_bFloorProtection = false;
+    bool m_bDaikinActive = false;
     bool m_bRoom1ValveOpenRq = false;
     bool m_bRoom2ValveOpenRq = false;
     bool m_bRoom3ValveOpenRq = false;
@@ -147,6 +149,7 @@ class CDaikinCtrl
     elapsedMillis m_MQTTTimer = 0;
     uint16_t m_iSMDelayCounter = 0;
     uint16_t m_iFloorProtectionCounter = 0;
+    uint16_t m_iDaikinActiveOffCounter = 0;
     CRollingAverage m_roomTempRollingAverager;
 
     bool m_bCtrlEnable = true;

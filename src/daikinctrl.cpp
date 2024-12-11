@@ -337,6 +337,24 @@ void CDaikinCtrl::StateMachine()
     m_bPrimaryZoneRequiresHeating = true;
   }
 
+  if (m_bP1P2CirculationPumpOn)
+  {
+    m_iDaikinActiveOffCounter = 0;
+    m_bDaikinActive = true;
+  }
+  else
+  {
+    // Consider Daikin inactive after DAIKIN_ACTIVE_OFF_TIME seconds
+    if (m_iDaikinActiveOffCounter < DAIKIN_ACTIVE_OFF_TIME)
+    {
+      m_iDaikinActiveOffCounter++;
+    }
+    else
+    {
+      m_bDaikinActive = false;
+    }
+  }
+
   switch (m_iState)
   {
     case STATE_IDLE:
