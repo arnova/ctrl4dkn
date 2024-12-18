@@ -301,7 +301,7 @@ void CDaikinCtrl::StateMachine()
   {
     m_bPrimaryZoneValveClose = m_bCtrlZoneSecForce && bSecondaryZoneEnable;
     m_bDaikinPrimaryZoneOn = m_bCtrlZonePriEnable && !m_bPrimaryZoneValveClose;
-    m_bDaikinSecondaryZoneOn = !m_bDaikinPrimaryZoneOn && bSecondaryZoneEnable && m_bDaikinZoneSecondaryEnable;
+    m_bDaikinSecondaryZoneOn = !m_bDaikinPrimaryZoneOn && bSecondaryZoneEnable && m_bCtrlDaikinSecEnable;
     m_iState = STATE_IDLE;
     return; // Cooling: Bypass statemachine
   }
@@ -367,46 +367,63 @@ void CDaikinCtrl::StateMachine()
       // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hysteresis!).
       //       This is due to (possible) modulation else it may take forever before we switch over.
       //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
-      if (!m_bPrimaryZoneRequiresHeating ||
-         (m_bCtrlZoneSecForce && bSecondaryZoneEnable))
+      if (!m_bPrimaryZoneRequiresHeating || m_bCtrlZoneSecForce)
       {
         // Check if secondary zone requires heating
         if (bSecondaryZoneEnable)
         {
-#ifndef LOW_TEMP_SECONDARY_ZONE
+#ifdef LOW_TEMP_SECONDARY_ZONE
+          if (m_bCtrlDaikinSecEnable)
+          {
+            m_bDaikinSecondaryZoneOn = true;
+          }
+          if (!m_bPrimaryZoneValveClose)
+          {
+            m_bPrimaryZoneValveClose = true;
+
+            // We need to wait until primary zone valve is closed
+            m_iState = STATE_PRIMARY_VALVE_DELAY; 
+          }
+          else if (m_bDaikinSecondaryZoneOn)
+          {
+            m_bDaikinPrimaryZoneOn = false;
+            m_iState = STATE_WAIT_STATE;
+          }
+#else
           // When rooms (with floor-heating) are requesting heat, check whether Daikin secondary zone is enabled
-          if (m_bRoom1ValveOpenRq || m_bRoom2ValveOpenRq || m_bRoom3ValveOpenRq || m_bRoom4ValveOpenRq)
+          if (m_bDaikinSecondaryZoneOn && (m_bRoom1ValveOpenRq || m_bRoom2ValveOpenRq || m_bRoom3ValveOpenRq || m_bRoom4ValveOpenRq))
           {
             m_bPrimaryZoneValveClose = true;
             m_bDaikinPrimaryZoneOn = true;
 
-            if (m_bDaikinSecondaryZoneOn)
+            if (m_bDaikinSecondaryZoneOn && m_bCtrlDaikinSecEnable)
             {
               // Daikin secondary zone heating is enabled, so disable that first
-              m_iSMDelayCounter = DAIKIN_ZONE_SWITCH_TIME;
-              m_iState = STATE_DAIKIN_SEC_ZONE_DISABLE;
-            }
-          }
-          else
-#endif
-          if (!m_bPrimaryZoneValveClose || !m_bDaikinSecondaryZoneOn || m_bDaikinPrimaryZoneOn)
-          {
-            if (!m_bPrimaryZoneValveClose)
-            {
-              m_bPrimaryZoneValveClose = true;
-
-              // When we want to enable secondary heating on Daikin, we need to wait
-              // until primary zone valve is closed
-              m_iSMDelayCounter = PRIMARY_ZONE_VALVE_DELAY;
-              m_iState = STATE_PRIMARY_VALVE_CLOSING; // Wait for primary valve to be closed & enable secondary zone on Daikin
+              m_iState = STATE_DAIKIN_ZONE_SWITCH_DELAY;
             }
             else
             {
-              m_iSMDelayCounter = DAIKIN_ZONE_SWITCH_TIME;
-              m_bDaikinSecondaryZoneOn = true;
-              m_iState = STATE_SECONDARY_ZONE_ON;
+              m_bDaikinSecondaryZoneOn = false;
             }
           }
+          else if (!m_bPrimaryZoneValveClose)
+          {
+            m_bPrimaryZoneValveClose = true;
+
+            // We need to wait until primary zone valve is closed
+            m_iState = STATE_PRIMARY_VALVE_DELAY; // Wait for primary valve to be closed
+          }
+          else (!m_bDaikinSecondaryZoneOn && m_bCtrlDaikinSecEnable)
+          {
+            m_bDaikinSecondaryZoneOn = true;
+
+            m_iState = STATE_DAIKIN_ZONE_SWITCH_DELAY;
+          }
+          else if (m_bDaikinSecondaryZoneOn)
+          {
+            m_bDaikinPrimaryZoneOn = false;
+          }
+#endif
         }
         else
         {
@@ -419,67 +436,70 @@ void CDaikinCtrl::StateMachine()
       else
       {
         // We arrive in this block when we *may* start heating primary zone again
-        // The following conditions must be met:
+        // The following conditions were met:
         // - Primary zone is requesting heat
         // - Secondary zone is not forced and secondary zone heating is disabled
-
-        if (m_bPrimaryZoneRequiresHeating)
+#ifdef LOW_TEMP_SECONDARY_ZONE
+        if (m_bPrimaryZoneValveClose)
+        {
+          m_bPrimaryZoneValveClose = false;
+          m_iState = STATE_PRIMARY_VALVE_DELAY;
+        }
+        else if (!m_bDaikinPrimaryZoneOn)
         {
           m_bDaikinPrimaryZoneOn = true;
-        }
-
-        if (m_bDaikinPrimaryZoneOn || !bSecondaryZoneEnable)
-        {
           if (m_bDaikinSecondaryZoneOn)
-          {
-            // Daikin secondary zone heating is enabled, so delay enabling/opening (daikin/valve) primary zone
-            m_iSMDelayCounter = DAIKIN_ZONE_SWITCH_TIME;
-            m_iState = STATE_DAIKIN_SEC_ZONE_DISABLE;
-          }
-          else
-          {
-            // Daikin secondary zone heating is not enabled (anymore), so immediately open primary zone
-            m_bPrimaryZoneValveClose = false;
-            m_iState = STATE_IDLE;
-          }
+            m_iState = STATE_DAIKIN_ZONE_SWITCH_DELAY;
+        }
+        else
+        {
+          m_bDaikinSecondaryZoneOn = false;
+          m_iState = STATE_IDLE;
+        }
+#else
+        // FIXME bel
+        if (!m_bDaikinPrimaryZoneOn)
+        {
+          m_bDaikinPrimaryZoneOn = true;
+          m_iState = STATE_DAIKIN_ZONE_SWITCH_DELAY;
+        }
+        else if (m_bDaikinSecondaryZoneOn)
+        {
+          m_bDaikinSecondaryZoneOn = false;
+        }
+        else if (m_bPrimaryZoneValveClose)
+        {
+          m_bPrimaryZoneValveClose = false;
+          m_iState = STATE_PRIMARY_VALVE_DELAY;
         }
         else
         {
           m_iState = STATE_IDLE;
         }
+#endif
       }
     }
     break;
 
-    case STATE_PRIMARY_VALVE_CLOSING:
+    case STATE_PRIMARY_VALVE_DELAY:
     {
-      // Wait for primary zone valve to be closed:
-      if (--m_iSMDelayCounter == 0)
-      {
-        m_iSMDelayCounter = DAIKIN_ZONE_SWITCH_TIME;
-        m_bDaikinSecondaryZoneOn = true;
-        m_iState = STATE_SECONDARY_ZONE_ON;
-      }
+      m_iSMDelayCounter = PRIMARY_ZONE_VALVE_DELAY;
+      m_iState = STATE_DELAY_WAIT;
     }
     break;
 
-    case STATE_SECONDARY_ZONE_ON:
+    case STATE_DAIKIN_ZONE_SWITCH_DELAY:
     {
-      if (--m_iSMDelayCounter == 0)
-      {
-        m_bDaikinPrimaryZoneOn = false;
-        m_iState = STATE_IDLE;
-      }
+      m_iSMDelayCounter = DAIKIN_ZONE_SWITCH_TIME;
+      m_iState = STATE_DELAY_WAIT;
     }
     break;
 
-    case STATE_DAIKIN_SEC_ZONE_DISABLE:
+    case STATE_DELAY_WAIT:
     {
-      // Wait for primary heating to be enabled (again):
+      // Wait for delay counter to expire
       if (--m_iSMDelayCounter == 0)
       {
-        m_bDaikinSecondaryZoneOn = false;
-        m_bPrimaryZoneValveClose = false;
         m_iState = STATE_IDLE;
       }
     }
