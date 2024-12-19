@@ -1,6 +1,6 @@
 /*
   Ctrl4Dkn - Floor Heating(/Cooling) Controller For Daikin (Hybrid) Heatpump Systems
-  Last update: December 8, 2024
+  Last update: December 19, 2024
   (C) Copyright 2024 by Arno van Amersfoort
   Web                   : https://github.com/arnova/ctrl4dkn
   Email                 : a r n o DOT v a n DOT a m e r s f o o r t AT g m a i l DOT c o m
@@ -83,6 +83,20 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   {
     if (bValidFloat)
       g_DaikinCtrl.SetP1P2LeavingWaterTemp(fVal);
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_P1P2_P_VALVE_ZONE_MAIN))
+  {
+    if (bValidInt)
+    {
+      if (iVal == 1)
+        g_DaikinCtrl.SetP1P2ValveZoneMain(true);
+      else if (iVal == 0)
+        g_DaikinCtrl.SetP1P2ValveZoneMain(false);
+      else
+        MQTTPrintError();
+    }
     else
       MQTTPrintError();
   }
@@ -369,7 +383,8 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_LEAVING_WATER_TEMP, 0);
-    g_MQTTClient.subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
+  g_MQTTClient.subscribe(MQTT_P1P2_P_VALVE_ZONE_MAIN, 0);
+  g_MQTTClient.subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_COOLING_ON, 0);
 

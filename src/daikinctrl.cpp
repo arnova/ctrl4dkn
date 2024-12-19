@@ -323,11 +323,11 @@ void CDaikinCtrl::StateMachine()
 
   UpdateAveragePrimaryZoneRoomTemp(fAveragePrimaryZoneRoomTemp);
 
-  // Primary zone requires heating when either room temp < target temp - (hyst * 0.5) or when requested via mqtt
+  // Primary zone requires heating when either room temp < target temp and main valve is enabled from Daikin or when requested via mqtt
   if (!m_roomTempRollingAverager.HasValue() ||
        m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
        m_bCtrlZonePriEnable ||
-      (fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)))
+      ((fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp) && m_bP1P2ValveZoneMain))
   {
     m_bPrimaryZoneRequiresHeating = true;
   }
