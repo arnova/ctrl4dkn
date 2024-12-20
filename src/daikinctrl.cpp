@@ -163,10 +163,10 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE, m_bCtrlZoneSecEnable ? "1" : "0", true);
   }
 
-  if (m_bUpdateCtrlZoneSecForce)
+  if (m_bUpdateCtrlZoneSecOnly)
   {
-    m_bUpdateCtrlZoneSecForce = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE, m_bCtrlZoneSecForce ? "1" : "0", true);
+    m_bUpdateCtrlZoneSecOnly = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ONLY, m_bCtrlZoneSecOnly ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlDaikinSecEnable)
@@ -299,7 +299,7 @@ void CDaikinCtrl::StateMachine()
 
   if (m_bP1P2CoolingOn)
   {
-    m_bPrimaryZoneValveClose = m_bCtrlZoneSecForce && bSecondaryZoneEnable;
+    m_bPrimaryZoneValveClose = m_bCtrlZoneSecOnly;// && bSecondaryZoneEnable;
     m_bDaikinPrimaryZoneOn = m_bCtrlZonePriEnable && !m_bPrimaryZoneValveClose;
     m_bDaikinSecondaryZoneOn = !m_bDaikinPrimaryZoneOn && bSecondaryZoneEnable && m_bCtrlDaikinSecEnable;
     m_iState = STATE_IDLE;
@@ -367,10 +367,10 @@ void CDaikinCtrl::StateMachine()
       // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hysteresis!).
       //       This is due to (possible) modulation else it may take forever before we switch over.
       //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
-      if (!m_bPrimaryZoneRequiresHeating || m_bCtrlZoneSecForce)
+      if (!m_bPrimaryZoneRequiresHeating || m_bCtrlZoneSecOnly)
       {
         // Check if secondary zone requires heating
-        if (bSecondaryZoneEnable)
+        if (bSecondaryZoneEnable || m_bCtrlZoneSecOnly)
         {
 #ifdef LOW_TEMP_SECONDARY_ZONE
           if (m_bCtrlDaikinSecEnable)
@@ -438,7 +438,7 @@ void CDaikinCtrl::StateMachine()
         // We arrive in this block when we *may* start heating primary zone again
         // The following conditions were met:
         // - Primary zone is requesting heat
-        // - Secondary zone is not forced and secondary zone heating is disabled
+        // - Secondary zone only is not enabled and secondary zone heating is disabled
 #ifdef LOW_TEMP_SECONDARY_ZONE
         if (m_bPrimaryZoneValveClose)
         {
@@ -457,7 +457,6 @@ void CDaikinCtrl::StateMachine()
           m_iState = STATE_IDLE;
         }
 #else
-        // FIXME bel
         if (!m_bDaikinPrimaryZoneOn)
         {
           m_bDaikinPrimaryZoneOn = true;
