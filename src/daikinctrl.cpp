@@ -327,11 +327,11 @@ void CDaikinCtrl::StateMachine()
   if (!m_roomTempRollingAverager.HasValue() ||
        m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
        m_bCtrlZonePriEnable ||
-      ((fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp) && m_bP1P2ValveZoneMain))
+      ((fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)) && m_bP1P2ValveZoneMain))
   {
     m_bPrimaryZoneRequiresHeating = true;
   }
-  else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp)
+  else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bP1P2ValveZoneMain)
   {
     m_bPrimaryZoneRequiresHeating = false;
   }
