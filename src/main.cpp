@@ -1,6 +1,6 @@
 /*
   Ctrl4Dkn - Floor Heating(/Cooling) Controller For Daikin (Hybrid) Heatpump Systems
-  Last update: December 23, 2024
+  Last update: December 27, 2024
   (C) Copyright 2024 by Arno van Amersfoort
   Web                   : https://github.com/arnova/ctrl4dkn
   Email                 : a r n o DOT v a n DOT a m e r s f o o r t AT g m a i l DOT c o m
@@ -34,7 +34,7 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.36"
+#define MY_VERSION "0.37"
 
 // Globals
 WiFiClient g_wifiClient;
@@ -433,8 +433,8 @@ bool MQTTReconnect()
   MQTTPublishConfig(MQTT_VALVE_ROOM4_OPEN, CDaikinCtrl::BINARY_SENSOR);
 #endif
   MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_DAIKIN_ZONE_PRIMARY_ENABLED, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_DAIKIN_ZONE_SECONDARY_ENABLED, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_DAIKIN_PRIMARY_ENABLED, CDaikinCtrl::BINARY_SENSOR);
+  MQTTPublishConfig(MQTT_DAIKIN_SECONDARY_ENABLED, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR);
   MQTTPublishConfig(MQTT_AVG_ROOM_TEMPERATURE, CDaikinCtrl::TEMP_SENSOR);
 

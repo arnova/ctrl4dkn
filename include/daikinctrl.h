@@ -51,10 +51,10 @@
 #define MQTT_VALVE_ROOM2_OPEN                       "Valve Room 2 Open"
 #define MQTT_VALVE_ROOM3_OPEN                       "Valve Room 3 Open"
 #define MQTT_VALVE_ROOM4_OPEN                       "Valve Room 4 Open"
-#define MQTT_DAIKIN_ZONE_PRIMARY_ENABLED            "Daikin Zone Primary Enabled"
-#define MQTT_DAIKIN_ZONE_SECONDARY_ENABLED          "Daikin Zone Secondary Enabled"
+#define MQTT_DAIKIN_PRIMARY_ENABLED                 "Daikin Primary Enabled"
+#define MQTT_DAIKIN_SECONDARY_ENABLED               "Daikin Secondary Enabled"
 #define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving Water Too High"
-#define MQTT_AVG_ROOM_TEMPERATURE                   "Averaged Room Temperature"
+#define MQTT_AVG_ROOM_TEMPERATURE                   "Temperature Room Averaged"
 
 #define DAIKIN_HYSTERESIS                     1.0f
 #define LEAVING_WATER_MAX                    45.0f

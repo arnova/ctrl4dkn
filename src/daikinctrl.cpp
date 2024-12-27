@@ -250,13 +250,13 @@ bool CDaikinCtrl::MQTTPublishValues()
   if (m_bUpdateDaikinZonePrimaryEnable)
   {
     m_bUpdateDaikinZonePrimaryEnable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_ZONE_PRIMARY_ENABLED, m_bDaikinZonePrimaryEnable ? "1" : "0", true);
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_PRIMARY_ENABLED, m_bDaikinZonePrimaryEnable ? "1" : "0", true);
   }
 
   if (m_bUpdateDaikinZoneSecondaryEnable)
   {
     m_bUpdateDaikinZoneSecondaryEnable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_ZONE_SECONDARY_ENABLED, m_bDaikinZoneSecondaryEnable ? "1" : "0", true);
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_SECONDARY_ENABLED, m_bDaikinZoneSecondaryEnable ? "1" : "0", true);
   }
 
   if (m_bUpdateAveragePrimaryZoneRoomTemp)
