@@ -381,12 +381,12 @@ void CDaikinCtrl::StateMachine()
             m_bPrimaryZoneValveClose = true;
 
             // We need to wait until primary zone valve is closed
-            m_iState = STATE_PRIMARY_VALVE_DELAY; 
+            if (m_bDaikinSecondaryZoneOn)
+              m_iState = STATE_PRIMARY_VALVE_DELAY; 
           }
           else if (m_bDaikinSecondaryZoneOn)
           {
             m_bDaikinPrimaryZoneOn = false;
-            m_iState = STATE_WAIT_STATE;
           }
 #else
           // When rooms (with floor-heating) are requesting heat, check whether Daikin secondary zone is enabled
@@ -444,7 +444,8 @@ void CDaikinCtrl::StateMachine()
         if (m_bPrimaryZoneValveClose)
         {
           m_bPrimaryZoneValveClose = false;
-          m_iState = STATE_PRIMARY_VALVE_DELAY;
+          if (m_bDaikinSecondaryZoneOn)
+            m_iState = STATE_PRIMARY_VALVE_DELAY;
         }
         else if (!m_bDaikinPrimaryZoneOn)
         {
@@ -455,7 +456,6 @@ void CDaikinCtrl::StateMachine()
         else
         {
           m_bDaikinSecondaryZoneOn = false;
-          m_iState = STATE_IDLE;
         }
 #else
         if (!m_bDaikinPrimaryZoneOn)
