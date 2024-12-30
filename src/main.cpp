@@ -34,7 +34,7 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.37"
+#define MY_VERSION "0.38"
 
 // Globals
 WiFiClient g_wifiClient;
@@ -185,6 +185,18 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
         g_DaikinCtrl.SetCtrlZoneSecOnly(iVal == 1 ? true : false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_VALVE_PRIMARY_CLOSE_FORCE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+        g_DaikinCtrl.SetCtrlValvePriCloseForce(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -400,6 +412,9 @@ bool MQTTReconnect()
 
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ONLY "/set", 1);
   MQTTPublishConfig(MQTT_ZONE_SECONDARY_ONLY, CDaikinCtrl::SWITCH);
+
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_VALVE_PRIMARY_CLOSE_FORCE "/set", 1);
+  MQTTPublishConfig(MQTT_VALVE_PRIMARY_CLOSE_FORCE, CDaikinCtrl::SWITCH);
 
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_ENABLE "/set", 1);
   MQTTPublishConfig(MQTT_DAIKIN_SECONDARY_ENABLE, CDaikinCtrl::SWITCH);
