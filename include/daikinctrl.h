@@ -56,6 +56,7 @@
 #define MQTT_DAIKIN_SECONDARY_ENABLED               "Daikin Secondary Enabled"
 #define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving Water Too High"
 #define MQTT_AVG_ROOM_TEMPERATURE                   "Temperature Room Averaged"
+#define MQTT_ZONE_PRIMARY_REQUIRES_HEATING          "Zone Primary Requires Heating"
 
 #define DAIKIN_HYSTERESIS                     1.0f
 #define LEAVING_WATER_MAX                    45.0f
@@ -106,6 +107,7 @@ class CDaikinCtrl
     void UpdateDaikinZonePrimaryEnable(const bool bVal);
     void UpdateDaikinZoneSecondaryEnable(const bool bVal);
     void UpdateAveragePrimaryZoneRoomTemp(const float fVal);
+    void UpdateZonePrimaryRequiresHeating(const bool bVal);
     bool MQTTPublishValues();
 
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
@@ -200,6 +202,8 @@ class CDaikinCtrl
     bool m_bUpdateDaikinZoneSecondaryEnable = true;
     char m_strAveragePrimaryZoneRoomTemp[5] = "";
     bool m_bUpdateAveragePrimaryZoneRoomTemp = true;
+    bool m_bZonePrimaryRequiresHeating = false;
+    bool m_bUpdateZonePrimaryRequiresHeating = true;
 
     float m_fP1P2LeavingWaterTemp = -1.0f;
     float m_fP1P2PrimaryZoneRoomTemp = -1.0f;       // Room temperature reported by P1P2/thermostat

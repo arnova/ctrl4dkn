@@ -143,6 +143,15 @@ void CDaikinCtrl::UpdateAveragePrimaryZoneRoomTemp(const float fVal)
   }
 }
 
+void CDaikinCtrl::UpdateZonePrimaryRequiresHeating(const bool bVal)
+{
+  if (m_bUpdateZonePrimaryRequiresHeating != bVal)
+  {
+    m_bZonePrimaryRequiresHeating = bVal;
+    m_bUpdateZonePrimaryRequiresHeating = true;
+  }
+}
+
 bool CDaikinCtrl::MQTTPublishValues()
 {
   if (m_bUpdateCtrlEnable)
@@ -271,6 +280,12 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_AVG_ROOM_TEMPERATURE, m_strAveragePrimaryZoneRoomTemp, true);
   }
 
+  if (m_bUpdateZonePrimaryRequiresHeating)
+  {
+    m_bUpdateZonePrimaryRequiresHeating = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_ZONE_PRIMARY_REQUIRES_HEATING, m_bZonePrimaryRequiresHeating ? "1" : "0", true);
+  }
+
   return true;
 }
 
@@ -341,6 +356,8 @@ void CDaikinCtrl::StateMachine()
   {
     m_bPrimaryZoneRequiresHeating = false;
   }
+
+  UpdateZonePrimaryRequiresHeating(m_bPrimaryZoneRequiresHeating);
 
   if (m_bP1P2CirculationPumpOn)
   {
