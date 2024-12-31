@@ -172,10 +172,10 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE, m_bCtrlZoneSecEnable ? "1" : "0", true);
   }
 
-  if (m_bUpdateCtrlZoneSecOnly)
+  if (m_bUpdateCtrlZoneSecForce)
   {
-    m_bUpdateCtrlZoneSecOnly = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ONLY, m_bCtrlZoneSecOnly ? "1" : "0", true);
+    m_bUpdateCtrlZoneSecForce = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE, m_bCtrlZoneSecForce ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlValvePriCloseForce)
@@ -320,7 +320,7 @@ void CDaikinCtrl::StateMachine()
 
   if (m_bP1P2CoolingOn)
   {
-    m_bPrimaryZoneValveClose = m_bCtrlZoneSecOnly || m_bCtrlValvePriCloseForce;// && bSecondaryZoneEnable;
+    m_bPrimaryZoneValveClose = m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce;// && bSecondaryZoneEnable;
     m_bDaikinPrimaryZoneOn = m_bCtrlZonePriEnable && !m_bPrimaryZoneValveClose;
     m_bDaikinSecondaryZoneOn = !m_bDaikinPrimaryZoneOn && bSecondaryZoneEnable && m_bCtrlDaikinSecEnable;
     m_iState = STATE_IDLE;
@@ -390,14 +390,14 @@ void CDaikinCtrl::StateMachine()
       // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hysteresis!).
       //       This is due to (possible) modulation else it may take forever before we switch over.
       //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
-      if (!m_bPrimaryZoneRequiresHeating || m_bCtrlZoneSecOnly || m_bCtrlValvePriCloseForce)
+      if (!m_bPrimaryZoneRequiresHeating || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce)
       {
         // Check if secondary zone requires heating
-        if (bSecondaryZoneEnable || m_bCtrlZoneSecOnly || m_bCtrlValvePriCloseForce)
+        if (bSecondaryZoneEnable || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce)
         {
 #ifdef LOW_TEMP_SECONDARY_ZONE
           // Enable (disable secondary zone on Daikin, if requested but primary zone doesn't require heating
-          m_bDaikinSecondaryZoneOn = m_bCtrlDaikinSecEnable && ((!m_bPrimaryZoneRequiresHeating && bSecondaryZoneEnable) || m_bCtrlZoneSecOnly);
+          m_bDaikinSecondaryZoneOn = m_bCtrlDaikinSecEnable && ((!m_bPrimaryZoneRequiresHeating && bSecondaryZoneEnable) || m_bCtrlZoneSecForce);
 
           if (!m_bPrimaryZoneValveClose)
           {
@@ -435,10 +435,10 @@ void CDaikinCtrl::StateMachine()
             m_bPrimaryZoneValveClose = true;
 
             // Check if Daikin secondary will be enabled below, if so wait till primary valve is closed
-            if (m_bCtrlDaikinSecEnable && ((!m_bPrimaryZoneRequiresHeating && bSecondaryZoneEnable) || m_bCtrlZoneSecOnly))
+            if (m_bCtrlDaikinSecEnable && ((!m_bPrimaryZoneRequiresHeating && bSecondaryZoneEnable) || m_bCtrlZoneSecForce))
               m_iState = STATE_PRIMARY_VALVE_DELAY;
           }
-          else if (m_bCtrlDaikinSecEnable && ((!m_bPrimaryZoneRequiresHeating && bSecondaryZoneEnable) || m_bCtrlZoneSecOnly))
+          else if (m_bCtrlDaikinSecEnable && ((!m_bPrimaryZoneRequiresHeating && bSecondaryZoneEnable) || m_bCtrlZoneSecForce))
           {
             m_bDaikinSecondaryZoneOn = true;
 

@@ -179,12 +179,12 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ONLY "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE "/set"))
   {
     if (bValidInt || length == 0)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlZoneSecOnly(iVal == 1 ? true : false);
+        g_DaikinCtrl.SetCtrlZoneSecForce(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -410,8 +410,8 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE "/set", 1);
   MQTTPublishConfig(MQTT_ZONE_SECONDARY_ENABLE, CDaikinCtrl::SWITCH);
 
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ONLY "/set", 1);
-  MQTTPublishConfig(MQTT_ZONE_SECONDARY_ONLY, CDaikinCtrl::SWITCH);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE "/set", 1);
+  MQTTPublishConfig(MQTT_ZONE_SECONDARY_FORCE, CDaikinCtrl::SWITCH);
 
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_VALVE_PRIMARY_CLOSE_FORCE "/set", 1);
   MQTTPublishConfig(MQTT_VALVE_PRIMARY_CLOSE_FORCE, CDaikinCtrl::SWITCH);
