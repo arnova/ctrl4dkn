@@ -145,7 +145,7 @@ void CDaikinCtrl::UpdateAveragePrimaryZoneRoomTemp(const float fVal)
 
 void CDaikinCtrl::UpdateZonePrimaryRequiresHeating(const bool bVal)
 {
-  if (m_bUpdateZonePrimaryRequiresHeating != bVal)
+  if (m_bZonePrimaryRequiresHeating != bVal)
   {
     m_bZonePrimaryRequiresHeating = bVal;
     m_bUpdateZonePrimaryRequiresHeating = true;
