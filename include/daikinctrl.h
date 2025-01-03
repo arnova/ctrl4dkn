@@ -143,7 +143,7 @@ class CDaikinCtrl
     PubSubClient* m_pMQTTClient;
     bool m_bDaikinPrimaryZoneOn = false;
     bool m_bDaikinSecondaryZoneOn = false;
-    bool m_bPrimaryZoneRequiresHeating = false;
+    bool m_bPrimaryZoneRequiresHeating = true;
     bool m_bPrimaryZoneValveClose = false;
     bool m_bFloorProtection = false;
     bool m_bDaikinActive = false;
