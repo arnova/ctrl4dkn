@@ -348,6 +348,7 @@ void CDaikinCtrl::StateMachine()
   if (!m_roomTempRollingAverager.HasValue() ||
        m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
        m_bCtrlZonePriEnable ||
+       ((!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable)) ||
       ((fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)) && m_bP1P2ValveZoneMain))
   {
     m_bPrimaryZoneRequiresHeating = true;
@@ -356,6 +357,7 @@ void CDaikinCtrl::StateMachine()
   {
     m_bPrimaryZoneRequiresHeating = false;
   }
+  m_bP1P2ValveZoneMainLast = m_bP1P2ValveZoneMain;
 
   UpdateZonePrimaryRequiresHeating(m_bPrimaryZoneRequiresHeating);
 

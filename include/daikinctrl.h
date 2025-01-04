@@ -214,6 +214,7 @@ class CDaikinCtrl
     bool m_bP1P2HeatingOn = false;
     bool m_bP1P2CoolingOn = false;
     bool m_bP1P2ValveZoneMain = false;
+    bool m_bP1P2ValveZoneMainLast = false;
 
     e_sm_state m_iState = STATE_WAIT_STATE;
 };

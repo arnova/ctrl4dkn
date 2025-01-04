@@ -1,7 +1,7 @@
 /*
   Ctrl4Dkn - Floor Heating(/Cooling) Controller For Daikin (Hybrid) Heatpump Systems
-  Last update: December 27, 2024
-  (C) Copyright 2024 by Arno van Amersfoort
+  Last update: January 4, 2025
+  (C) Copyright 2024-2025 by Arno van Amersfoort
   Web                   : https://github.com/arnova/ctrl4dkn
   Email                 : a r n o DOT v a n DOT a m e r s f o o r t AT g m a i l DOT c o m
                           (note: you must remove all spaces and substitute the @ and the . at the proper locations!)
