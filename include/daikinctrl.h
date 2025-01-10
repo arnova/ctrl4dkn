@@ -27,6 +27,7 @@
 #endif
 #define MQTT_P1P2_P_VALVE_ZONE_MAIN                 MQTT_P1P2_P_PREFIX "S/1/Valve_Zone_Main"
 #define MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE   MQTT_P1P2_P_PREFIX "T/1/Temperature_Room"
+#define MQTT_P1P2_P_ALTHERMA_ON                     MQTT_P1P2_P_PREFIX "S/0/Altherma_On"
 
 #define MQTT_CTRL4DKN_CTRL_PREFIX                   "ctrl4dkn/c/"
 #define MQTT_CTRL4DKN_STATUS_PREFIX                 "ctrl4dkn/s/"
@@ -66,6 +67,7 @@
 #define PRIMARY_ZONE_VALVE_DELAY              180   // Seconds = 3 minutes
 #define FLOOR_PROTECTION_DELAY                300   // Seconds = 5 minutes
 #define DAIKIN_ACTIVE_OFF_TIME                600   // Seconds = 10 minutes
+#define DAIKIN_STARTUP_TIME                    30   // Seconds
 
 #define CONTROL_LOOP_TIME                       1   // Seconds
 #define MQTT_UPDATE_TIME                        1   // Seconds
@@ -110,6 +112,7 @@ class CDaikinCtrl
     void UpdateZonePrimaryRequiresHeating(const bool bVal);
     bool MQTTPublishValues();
 
+    void SetP1P2AlthermaOn(const bool& bVal) { m_bP1P2AlthermaOn = bVal; };
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
     void SetP1P2PrimaryZoneTargetTemp(const float& fVal) { m_fP1P2PrimaryZoneTargetTemp = fVal; };
     void SetP1P2LeavingWaterTemp(const float& fVal) { m_fP1P2LeavingWaterTemp = fVal; };
@@ -120,7 +123,6 @@ class CDaikinCtrl
 
 //    bool IsDaikinHeatingActive() { return m_bP1P2HeatingOn && m_bP1P2CirculationPumpOn; };
 //    bool IsDaikinCoolingActive() { return m_bP1P2CoolingOn && m_bP1P2CirculationPumpOn; };
-    bool IsDaikinActive() { return m_bDaikinActive; };
 //    bool IsPrimaryHeatingActive() { return IsDaikinHeatingActive() && m_bP1P2ValveZoneMain; };
 
     void SetCtrlOnOff(const bool& bVal) { m_bCtrlEnable = bVal; m_bUpdateCtrlEnable = true; };
@@ -156,6 +158,7 @@ class CDaikinCtrl
     uint16_t m_iSMDelayCounter = 0;
     uint16_t m_iFloorProtectionCounter = 0;
     uint16_t m_iDaikinActiveOffCounter = 0;
+    uint16_t m_iDaikinStartupCounter = 0;
     CRollingAverage m_roomTempRollingAverager;
 
     bool m_bCtrlEnable = true;
@@ -209,12 +212,14 @@ class CDaikinCtrl
     float m_fP1P2PrimaryZoneRoomTemp = -1.0f;       // Room temperature reported by P1P2/thermostat
     float m_fP1P2PrimaryZoneTargetTemp = -1.0f;     // Actual target temperature set on P1P2/thermostat
 
+    bool m_bP1P2AlthermaOn = false;
     bool m_bP1P2CompressorOn = false;
     bool m_bP1P2CirculationPumpOn = false;
     bool m_bP1P2HeatingOn = false;
     bool m_bP1P2CoolingOn = false;
     bool m_bP1P2ValveZoneMain = false;
     bool m_bP1P2ValveZoneMainLast = false;
+    bool m_bAlthermaOn = false;
 
     e_sm_state m_iState = STATE_WAIT_STATE;
 };

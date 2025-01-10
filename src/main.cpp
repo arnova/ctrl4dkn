@@ -1,6 +1,6 @@
 /*
   Ctrl4Dkn - Floor Heating(/Cooling) Controller For Daikin (Hybrid) Heatpump Systems
-  Last update: January 4, 2025
+  Last update: January 10, 2025
   (C) Copyright 2024-2025 by Arno van Amersfoort
   Web                   : https://github.com/arnova/ctrl4dkn
   Email                 : a r n o DOT v a n DOT a m e r s f o o r t AT g m a i l DOT c o m
@@ -34,7 +34,7 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.38"
+#define MY_VERSION "0.39"
 
 // Globals
 WiFiClient g_wifiClient;
@@ -65,7 +65,21 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   int8_t iVal;
   const bool bValidInt = BytesToInt8(payload, length, iVal);
 
-  if (STRIEQUALS(topic, MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE))
+  if (STRIEQUALS(topic, MQTT_P1P2_P_ALTHERMA_ON))
+  {
+    if (bValidInt)
+    {
+      if (iVal == 1)
+        g_DaikinCtrl.SetP1P2AlthermaOn(true);
+      else if (iVal == 0)
+        g_DaikinCtrl.SetP1P2AlthermaOn(false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE))
   {
     if (bValidFloat)
       g_DaikinCtrl.SetP1P2PrimaryZoneRoomTemp(fVal);
@@ -392,6 +406,7 @@ bool MQTTReconnect()
   Serial.println("connected");
 
   // Subscribe to messages from p1p2serial etc.
+  g_MQTTClient.subscribe(MQTT_P1P2_P_ALTHERMA_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_LEAVING_WATER_TEMP, 0);

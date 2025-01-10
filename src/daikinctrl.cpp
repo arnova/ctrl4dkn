@@ -326,7 +326,28 @@ void CDaikinCtrl::StateMachine()
 
   UpdateAveragePrimaryZoneRoomTemp(fAveragePrimaryZoneRoomTemp);
 
-  if (m_bP1P2CirculationPumpOn)
+  // When Daikin is switched on, we incorperate a startup time
+  if (!m_bP1P2AlthermaOn)
+  {
+    m_iDaikinStartupCounter = 0;
+    m_bAlthermaOn = false;
+  }
+  else
+  {
+    // Consider Daikin on after DAIKIN_STARTUP_TIME seconds
+    if (m_iDaikinStartupCounter < DAIKIN_STARTUP_TIME)
+    {
+      m_iDaikinStartupCounter++;
+      m_iDaikinActiveOffCounter = 0; // NOTE: Need to keep active-off counter reset
+    }
+    else if (!m_bAlthermaOn)
+    {
+      m_bAlthermaOn = true;
+    }
+  }
+
+//  if (m_bP1P2CirculationPumpOn)
+  if (m_bP1P2ValveZoneMain)
   {
     m_iDaikinActiveOffCounter = 0;
     m_bDaikinActive = true;
@@ -367,20 +388,25 @@ void CDaikinCtrl::StateMachine()
     return; // Not heating (or cooling): Bypass statemachine
   }
 
-  // Primary zone requires heating when either room temp < target temp and main valve is enabled from Daikin or when requested via mqtt
-  if (!m_roomTempRollingAverager.HasValue() ||
-       m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
-       m_bCtrlZonePriEnable ||
-       ((!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable)) ||
-      ((fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)) && m_bP1P2ValveZoneMain))
+//  if (m_bP1P2AlthermaOn)
+  if (m_bAlthermaOn)
   {
-    m_bPrimaryZoneRequiresHeating = true;
+    // Primary zone requires heating when either room temp < target temp and main valve is enabled from Daikin or when requested via mqtt
+    if (!m_roomTempRollingAverager.HasValue() ||
+        m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
+        m_bCtrlZonePriEnable ||
+        ((!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable)) ||
+        ((fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)) && m_bP1P2ValveZoneMain))
+    {
+      m_bPrimaryZoneRequiresHeating = true;
+    }
+    else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bDaikinActive) // || !m_bP1P2ValveZoneMain) // FIXME
+    {
+      m_bPrimaryZoneRequiresHeating = false;
+    }
+
+    m_bP1P2ValveZoneMainLast = m_bP1P2ValveZoneMain;
   }
-  else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bP1P2ValveZoneMain)
-  {
-    m_bPrimaryZoneRequiresHeating = false;
-  }
-  m_bP1P2ValveZoneMainLast = m_bP1P2ValveZoneMain;
 
   UpdateZonePrimaryRequiresHeating(m_bPrimaryZoneRequiresHeating);
 
@@ -542,7 +568,7 @@ void CDaikinCtrl::UpdateRelays()
   bSafeForFloorHeating &= (!m_bDaikinSecondaryZoneOn || m_bP1P2CoolingOn); // FIXME: Delay this from SM?
 #endif
 
-  if ((!IsDaikinActive() || !m_bCtrlEnable) && bSafeForFloorHeating)
+  if ((!m_bDaikinActive || !m_bCtrlEnable) && bSafeForFloorHeating)
   {
     // Idle states:
     UpdateValveZonePrimaryOpen(PRIMARY_ZONE_VALVE_POLARITY ? false : true);
