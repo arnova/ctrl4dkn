@@ -318,24 +318,6 @@ void CDaikinCtrl::StateMachine()
   bSecondaryZoneEnable |= !digitalRead(SECONDARY_ZONE_ENABLE);
 #endif
 
-  if (m_bP1P2CoolingOn)
-  {
-    m_bPrimaryZoneValveClose = m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce;// && bSecondaryZoneEnable;
-    m_bDaikinPrimaryZoneOn = m_bCtrlZonePriEnable && !m_bPrimaryZoneValveClose;
-    m_bDaikinSecondaryZoneOn = !m_bDaikinPrimaryZoneOn && bSecondaryZoneEnable && m_bCtrlDaikinSecEnable;
-    m_iState = STATE_IDLE;
-    return; // Cooling: Bypass statemachine
-  }
-
-  if (!m_bP1P2HeatingOn)
-  {
-    m_bPrimaryZoneValveClose = false;
-    m_bDaikinPrimaryZoneOn = false;
-    m_bDaikinSecondaryZoneOn = false;
-    m_iState = STATE_IDLE;
-    return; // Not heating (or cooling): Bypass statemachine
-  }
-
   float fAveragePrimaryZoneRoomTemp;
   if (m_fP1P2PrimaryZoneRoomTemp <= 0.0f)
     fAveragePrimaryZoneRoomTemp = m_roomTempRollingAverager.RemoveValue();
@@ -343,23 +325,6 @@ void CDaikinCtrl::StateMachine()
     fAveragePrimaryZoneRoomTemp = m_roomTempRollingAverager.UpdateValue(m_fP1P2PrimaryZoneRoomTemp);
 
   UpdateAveragePrimaryZoneRoomTemp(fAveragePrimaryZoneRoomTemp);
-
-  // Primary zone requires heating when either room temp < target temp and main valve is enabled from Daikin or when requested via mqtt
-  if (!m_roomTempRollingAverager.HasValue() ||
-       m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
-       m_bCtrlZonePriEnable ||
-       ((!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable)) ||
-      ((fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)) && m_bP1P2ValveZoneMain))
-  {
-    m_bPrimaryZoneRequiresHeating = true;
-  }
-  else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bP1P2ValveZoneMain)
-  {
-    m_bPrimaryZoneRequiresHeating = false;
-  }
-  m_bP1P2ValveZoneMainLast = m_bP1P2ValveZoneMain;
-
-  UpdateZonePrimaryRequiresHeating(m_bPrimaryZoneRequiresHeating);
 
   if (m_bP1P2CirculationPumpOn)
   {
@@ -378,6 +343,46 @@ void CDaikinCtrl::StateMachine()
       m_bDaikinActive = false;
     }
   }
+
+  if (m_bP1P2CoolingOn)
+  {
+    m_bPrimaryZoneValveClose = m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce;// && bSecondaryZoneEnable;
+    m_bDaikinPrimaryZoneOn = m_bCtrlZonePriEnable && !m_bPrimaryZoneValveClose;
+    m_bDaikinSecondaryZoneOn = !m_bDaikinPrimaryZoneOn && bSecondaryZoneEnable && m_bCtrlDaikinSecEnable;
+    m_bP1P2ValveZoneMainLast = false;
+    UpdateZonePrimaryRequiresHeating(false);
+
+    m_iState = STATE_IDLE;
+    return; // Cooling: Bypass statemachine
+  }
+
+  if (!m_bP1P2HeatingOn)
+  {
+    m_bPrimaryZoneValveClose = false;
+    m_bDaikinPrimaryZoneOn = false;
+    m_bDaikinSecondaryZoneOn = false;
+    m_bP1P2ValveZoneMainLast = false;
+    UpdateZonePrimaryRequiresHeating(false);
+    m_iState = STATE_IDLE;
+    return; // Not heating (or cooling): Bypass statemachine
+  }
+
+  // Primary zone requires heating when either room temp < target temp and main valve is enabled from Daikin or when requested via mqtt
+  if (!m_roomTempRollingAverager.HasValue() ||
+       m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
+       m_bCtrlZonePriEnable ||
+       ((!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable)) ||
+      ((fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)) && m_bP1P2ValveZoneMain))
+  {
+    m_bPrimaryZoneRequiresHeating = true;
+  }
+  else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bP1P2ValveZoneMain)
+  {
+    m_bPrimaryZoneRequiresHeating = false;
+  }
+  m_bP1P2ValveZoneMainLast = m_bP1P2ValveZoneMain;
+
+  UpdateZonePrimaryRequiresHeating(m_bPrimaryZoneRequiresHeating);
 
   switch (m_iState)
   {
