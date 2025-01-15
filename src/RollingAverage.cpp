@@ -12,7 +12,7 @@
 
 #include "RollingAverage.h"
 
-float CRollingAverage::UpdateValue(const float& fNewVal)
+void CRollingAverage::UpdateValue(const float& fNewVal)
 {
   float fAccVal = (m_iAccCount == 0 ? 0.0f : m_fAccVal);
 
@@ -26,18 +26,14 @@ float CRollingAverage::UpdateValue(const float& fNewVal)
   }
 
   m_fAccVal = fAccVal + fNewVal; // Update value
-
-  return GetValue();
 }
 
 
-float CRollingAverage::RemoveValue()
+void CRollingAverage::RemoveValue()
 {
   if (m_iAccCount > 0)
   {
     m_fAccVal -= (m_fAccVal / m_iAvgCountSet);
     m_iAccCount--;
   }
-
-  return GetValue();
 }

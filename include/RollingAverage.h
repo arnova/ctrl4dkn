@@ -13,8 +13,8 @@ class CRollingAverage
     float GetValue() { return m_fAccVal / m_iAccCount; };
     bool HasValue() { return m_iAccCount != 0; };
     uint32_t GetAccCount() { return m_iAccCount; };
-    float UpdateValue(const float& fVal);
-    float RemoveValue();
+    void UpdateValue(const float& fVal);
+    void RemoveValue();
     void Reset() { m_fAccVal = 0.0f; m_iAccCount = 0; };
 
   private:

@@ -318,13 +318,17 @@ void CDaikinCtrl::StateMachine()
   bSecondaryZoneEnable |= !digitalRead(SECONDARY_ZONE_ENABLE);
 #endif
 
-  float fAveragePrimaryZoneRoomTemp;
   if (m_fP1P2PrimaryZoneRoomTemp <= 0.0f)
-    fAveragePrimaryZoneRoomTemp = m_roomTempRollingAverager.RemoveValue();
+    m_roomTempRollingAverager.RemoveValue();
   else
-    fAveragePrimaryZoneRoomTemp = m_roomTempRollingAverager.UpdateValue(m_fP1P2PrimaryZoneRoomTemp);
+    m_roomTempRollingAverager.UpdateValue(m_fP1P2PrimaryZoneRoomTemp);
 
-  UpdateAveragePrimaryZoneRoomTemp(fAveragePrimaryZoneRoomTemp);
+  float fAveragePrimaryZoneRoomTemp = 0.0f;
+  if (m_roomTempRollingAverager.HasValue())
+  {
+    fAveragePrimaryZoneRoomTemp = m_roomTempRollingAverager.GetValue();
+    UpdateAveragePrimaryZoneRoomTemp(fAveragePrimaryZoneRoomTemp);
+  }
 
   // When Daikin is switched on, we incorperate a startup time
   if (!m_bP1P2AlthermaOn)
@@ -389,14 +393,12 @@ void CDaikinCtrl::StateMachine()
   }
 
 //  if (m_bP1P2AlthermaOn)
-  if (m_bAlthermaOn)
+  if (m_bAlthermaOn && m_fP1P2PrimaryZoneTargetTemp > 0.0f && fAveragePrimaryZoneRoomTemp > 0.0f)
   {
     // Primary zone requires heating when either room temp < target temp and main valve is enabled from Daikin or when requested via mqtt
-    if (!m_roomTempRollingAverager.HasValue() ||
-        m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
-        m_bCtrlZonePriEnable ||
-        (!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable) ||
-        (fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))) // && m_bDaikinActive)) // FIXME: Doesn't work with Daikin primary relais
+    if (m_bCtrlZonePriEnable ||
+       (!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable) ||
+       (fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))) // && m_bDaikinActive)) // FIXME: Doesn't work with Daikin primary relais
     {
       m_bPrimaryZoneRequiresHeating = true;
     }
