@@ -395,12 +395,12 @@ void CDaikinCtrl::StateMachine()
     if (!m_roomTempRollingAverager.HasValue() ||
         m_fP1P2PrimaryZoneTargetTemp == 0.0f ||
         m_bCtrlZonePriEnable ||
-        ((!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable)) ||
-        ((fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2)) && m_bP1P2ValveZoneMain))
+        (!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable) ||
+        (fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))) // && m_bDaikinActive)) // FIXME: Doesn't work with Daikin primary relais
     {
       m_bPrimaryZoneRequiresHeating = true;
     }
-    else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bDaikinActive) // || !m_bP1P2ValveZoneMain) // FIXME
+    else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bDaikinActive) // FIXME: Remove?
     {
       m_bPrimaryZoneRequiresHeating = false;
     }

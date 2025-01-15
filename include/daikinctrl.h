@@ -66,7 +66,7 @@
 #define PRIMARY_ZONE_ROOM_TEMP_AVG_TIME      1800   // Seconds = 30 minutes
 #define PRIMARY_ZONE_VALVE_DELAY              180   // Seconds = 3 minutes
 #define FLOOR_PROTECTION_DELAY                300   // Seconds = 5 minutes
-#define DAIKIN_ACTIVE_OFF_TIME                600   // Seconds = 10 minutes
+#define DAIKIN_ACTIVE_OFF_TIME                900   // Seconds = 15 minutes
 #define DAIKIN_STARTUP_TIME                    30   // Seconds
 
 #define CONTROL_LOOP_TIME                       1   // Seconds
