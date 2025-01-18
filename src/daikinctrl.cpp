@@ -184,6 +184,12 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_VALVE_PRIMARY_CLOSE_FORCE, m_bCtrlValvePriCloseForce ? "1" : "0", true);
   }
 
+  if (m_bUpdateCtrlDaikinDisable)
+  {
+    m_bUpdateCtrlDaikinDisable = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_DISABLE, m_bCtrlDaikinDisable ? "1" : "0", true);
+  }
+
   if (m_bUpdateCtrlDaikinSecEnable)
   {
     m_bUpdateCtrlDaikinSecEnable = false;
@@ -581,7 +587,7 @@ void CDaikinCtrl::UpdateRelays()
   }
 
   const bool bShutdown = m_bFloorProtection && !m_bPrimaryZoneValveClose;
-  if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !bShutdown)
+  if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bCtrlDaikinDisable && !bShutdown)
   {
     // Enable primary zone heating on Daikin
     UpdateDaikinZonePrimaryEnable(true);
@@ -592,7 +598,7 @@ void CDaikinCtrl::UpdateRelays()
     UpdateDaikinZonePrimaryEnable(false);
   }
 
-  if ((m_bDaikinSecondaryZoneOn || m_bCtrlDaikinSecForce) && m_bCtrlEnable && !bShutdown)
+  if ((m_bDaikinSecondaryZoneOn || m_bCtrlDaikinSecForce) && m_bCtrlEnable && !m_bCtrlDaikinDisable && !bShutdown)
   {
     // FIXME?: Instead of selecting secondary curve, we can also increase AWT deviation but only when primary zone is active
 

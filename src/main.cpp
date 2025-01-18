@@ -1,6 +1,6 @@
 /*
   Ctrl4Dkn - Floor Heating(/Cooling) Controller For Daikin (Hybrid) Heatpump Systems
-  Last update: January 15, 2025
+  Last update: January 18, 2025
   (C) Copyright 2024-2025 by Arno van Amersfoort
   Web                   : https://github.com/arnova/ctrl4dkn
   Email                 : a r n o DOT v a n DOT a m e r s f o o r t AT g m a i l DOT c o m
@@ -34,7 +34,7 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.41"
+#define MY_VERSION "0.42"
 
 // Globals
 WiFiClient g_wifiClient;
@@ -211,6 +211,18 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
         g_DaikinCtrl.SetCtrlValvePriCloseForce(iVal == 1 ? true : false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_DISABLE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+        g_DaikinCtrl.SetCtrlDaikinDisable(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -430,6 +442,9 @@ bool MQTTReconnect()
 
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_VALVE_PRIMARY_CLOSE_FORCE "/set", 1);
   MQTTPublishConfig(MQTT_VALVE_PRIMARY_CLOSE_FORCE, CDaikinCtrl::SWITCH);
+
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_DISABLE "/set", 1);
+  MQTTPublishConfig(MQTT_DAIKIN_DISABLE, CDaikinCtrl::SWITCH);
 
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_ENABLE "/set", 1);
   MQTTPublishConfig(MQTT_DAIKIN_SECONDARY_ENABLE, CDaikinCtrl::SWITCH);
