@@ -34,7 +34,7 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.40"
+#define MY_VERSION "0.41"
 
 // Globals
 WiFiClient g_wifiClient;

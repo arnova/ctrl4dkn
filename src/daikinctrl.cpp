@@ -499,24 +499,6 @@ void CDaikinCtrl::StateMachine()
         // The following conditions were met:
         // - Primary zone is requesting heat
         // - Secondary zone only is not enabled and secondary zone heating is disabled
-#ifdef LOW_TEMP_SECONDARY_ZONE
-        if (m_bPrimaryZoneValveClose)
-        {
-          m_bPrimaryZoneValveClose = false;
-          if (m_bDaikinSecondaryZoneOn)
-            m_iState = STATE_PRIMARY_VALVE_DELAY;
-        }
-        else if (!m_bDaikinPrimaryZoneOn)
-        {
-          m_bDaikinPrimaryZoneOn = true;
-          if (m_bDaikinSecondaryZoneOn)
-            m_iState = STATE_DAIKIN_ZONE_SWITCH_DELAY;
-        }
-        else
-        {
-          m_bDaikinSecondaryZoneOn = false;
-        }
-#else
         if (!m_bDaikinPrimaryZoneOn)
         {
           m_bDaikinPrimaryZoneOn = true;
@@ -525,13 +507,16 @@ void CDaikinCtrl::StateMachine()
         else if (m_bDaikinSecondaryZoneOn)
         {
           m_bDaikinSecondaryZoneOn = false;
-          // FIXME: We should check AWT temperature and wait with opening primary valve until it's safe
+#ifndef LOW_TEMP_SECONDARY_ZONE
+          // Wait for AWT temperature to cool down before opening primary valve
+          // FIXME: Perhaps monitor LWT temperature?
+          m_iState = STATE_LWT_COOL_DOWN_DELAY;
+#endif
         }
         else if (m_bPrimaryZoneValveClose)
         {
           m_bPrimaryZoneValveClose = false;
         }
-#endif
       }
     }
     break;
@@ -546,6 +531,13 @@ void CDaikinCtrl::StateMachine()
     case STATE_DAIKIN_ZONE_SWITCH_DELAY:
     {
       m_iSMDelayCounter = DAIKIN_ZONE_SWITCH_TIME;
+      m_iState = STATE_DELAY_WAIT;
+    }
+    break;
+
+    case STATE_LWT_COOL_DOWN_DELAY:
+    {
+      m_iSMDelayCounter = LWT_COOL_DOWN_DELAY_TIME;
       m_iState = STATE_DELAY_WAIT;
     }
     break;

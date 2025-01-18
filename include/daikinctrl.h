@@ -68,6 +68,7 @@
 #define FLOOR_PROTECTION_DELAY                300   // Seconds = 5 minutes
 #define DAIKIN_ACTIVE_OFF_TIME                900   // Seconds = 15 minutes
 #define DAIKIN_STARTUP_TIME                    30   // Seconds
+#define LWT_COOL_DOWN_DELAY_TIME              300   // Seconds = 5 minutes
 
 #define CONTROL_LOOP_TIME                       1   // Seconds
 #define MQTT_UPDATE_TIME                        1   // Seconds
@@ -90,6 +91,7 @@ class CDaikinCtrl
       STATE_WAIT_STATE,
       STATE_PRIMARY_VALVE_DELAY,
       STATE_DAIKIN_ZONE_SWITCH_DELAY,
+      STATE_LWT_COOL_DOWN_DELAY,
       STATE_DELAY_WAIT
     };
 
