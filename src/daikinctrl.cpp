@@ -356,8 +356,7 @@ void CDaikinCtrl::StateMachine()
     }
   }
 
-//  if (m_bP1P2CirculationPumpOn)
-  if (m_bP1P2ValveZoneMain)
+  if (m_bP1P2CirculationPumpOn)
   {
     m_iDaikinActiveOffCounter = 0;
     m_bDaikinActive = true;
