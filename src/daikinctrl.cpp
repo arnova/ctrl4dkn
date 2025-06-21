@@ -348,30 +348,30 @@ void CDaikinCtrl::StateMachine()
     if (m_iDaikinStartupCounter < DAIKIN_STARTUP_TIME)
     {
       m_iDaikinStartupCounter++;
-      m_iDaikinActiveOffCounter = 0; // NOTE: Need to keep active-off counter reset
     }
     else if (!m_bAlthermaOn)
     {
       m_bAlthermaOn = true;
+      m_iDaikinIdleCounter = 0; // NOTE: Reset idle counter on startup
     }
   }
 
 //  if (m_bP1P2CirculationPumpOn)
   if (m_bP1P2ValveZoneMain)
   {
-    m_iDaikinActiveOffCounter = 0;
-    m_bDaikinActive = true;
+    m_iDaikinIdleCounter = 0;
+    m_bDaikinIdle = false;
   }
   else
   {
-    // Consider Daikin inactive after DAIKIN_ACTIVE_OFF_TIME seconds
-    if (m_iDaikinActiveOffCounter < DAIKIN_ACTIVE_OFF_TIME)
+    // Consider Daikin inactive after DAIKIN_IDLE_TIME seconds
+    if (m_iDaikinIdleCounter < DAIKIN_IDLE_TIME)
     {
-      m_iDaikinActiveOffCounter++;
+      m_iDaikinIdleCounter++;
     }
     else
     {
-      m_bDaikinActive = false;
+      m_bDaikinIdle = true;
     }
   }
 
@@ -404,11 +404,11 @@ void CDaikinCtrl::StateMachine()
     // Primary zone requires heating when either room temp < target temp and main valve is enabled from Daikin or when requested via mqtt
     if (m_bCtrlZonePriEnable ||
        (!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable) ||
-       (fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))) // && m_bDaikinActive)) // FIXME: Doesn't work with Daikin primary relais
+       (fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))) // && !m_bDaikinIdle)) // FIXME: Doesn't work with Daikin primary relais
     {
       m_bPrimaryZoneRequiresHeating = true;
     }
-    else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bDaikinActive) // FIXME: Remove?
+    else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || m_bDaikinIdle) // FIXME: Remove?
     {
       m_bPrimaryZoneRequiresHeating = false;
     }
@@ -568,7 +568,7 @@ void CDaikinCtrl::UpdateRelays()
   bSafeForFloorHeating &= (!m_bDaikinSecondaryZoneOn || m_bP1P2CoolingOn); // FIXME: Delay this from SM?
 #endif
 
-  if ((!m_bDaikinActive || !m_bCtrlEnable) && bSafeForFloorHeating)
+  if ((m_bDaikinIdle || !m_bCtrlEnable) && bSafeForFloorHeating)
   {
     // Idle states:
     UpdateValveZonePrimaryOpen(PRIMARY_ZONE_VALVE_POLARITY ? false : true);

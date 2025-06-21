@@ -67,7 +67,7 @@
 #define PRIMARY_ZONE_ROOM_TEMP_AVG_TIME      1800   // Seconds = 30 minutes
 #define PRIMARY_ZONE_VALVE_DELAY              180   // Seconds = 3 minutes
 #define FLOOR_PROTECTION_DELAY                300   // Seconds = 5 minutes
-#define DAIKIN_ACTIVE_OFF_TIME                900   // Seconds = 15 minutes
+#define DAIKIN_IDLE_TIME                     1800   // Seconds = 30 minutes
 #define DAIKIN_STARTUP_TIME                    30   // Seconds
 #define LWT_COOL_DOWN_DELAY_TIME              300   // Seconds = 5 minutes
 
@@ -152,7 +152,7 @@ class CDaikinCtrl
     bool m_bPrimaryZoneRequiresHeating = true;
     bool m_bPrimaryZoneValveClose = false;
     bool m_bFloorProtection = false;
-    bool m_bDaikinActive = false;
+    bool m_bDaikinIdle = false;
     bool m_bRoom1ValveOpenRq = false;
     bool m_bRoom2ValveOpenRq = false;
     bool m_bRoom3ValveOpenRq = false;
@@ -161,7 +161,7 @@ class CDaikinCtrl
     elapsedMillis m_MQTTTimer = 0;
     uint16_t m_iSMDelayCounter = 0;
     uint16_t m_iFloorProtectionCounter = 0;
-    uint16_t m_iDaikinActiveOffCounter = 0;
+    uint16_t m_iDaikinIdleCounter = 0;
     uint16_t m_iDaikinStartupCounter = 0;
     CRollingAverage m_roomTempRollingAverager;
 
