@@ -46,6 +46,7 @@
 #define MQTT_ROOM3_ENABLE                           "Room 3 Enable"
 #define MQTT_ROOM4_ENABLE                           "Room 4 Enable"
 #define MQTT_GAS_ONLY                               "Gas Only"
+#define MQTT_HYST_HACK                              "Hysteresis Hack"
 
 // Status topics
 #define MQTT_FW_VERSION                             "Firmware Version"
@@ -137,6 +138,7 @@ class CDaikinCtrl
     void SetCtrlDaikinSecEnable(const bool& bVal) { m_bCtrlDaikinSecEnable = bVal; m_bUpdateCtrlDaikinSecEnable = true; };
     void SetCtrlDaikinSecForce(const bool& bVal) { m_bCtrlDaikinSecForce = bVal; m_bUpdateCtrlDaikinSecForce = true; };
     void SetCtrlGasOnly(const bool& bVal) { m_bCtrlGasOnly = bVal; m_bUpdateCtrlGasOnly = true; };
+    void SetCtrlHystHack(const bool& bVal) { m_bCtrlHystHack = bVal; m_bUpdateCtrlHystHack = true; };
     void SetCtrlRoom1Enable(const bool& bVal) { m_bCtrlRoom1Enable = bVal; m_bUpdateCtrlRoom1Enable = true; };
     void SetCtrlRoom2Enable(const bool& bVal) { m_bCtrlRoom2Enable = bVal; m_bUpdateCtrlRoom2Enable = true; };
     void SetCtrlRoom3Enable(const bool& bVal) { m_bCtrlRoom3Enable = bVal; m_bUpdateCtrlRoom3Enable = true; };
@@ -174,6 +176,7 @@ class CDaikinCtrl
     bool m_bCtrlDaikinSecEnable = false;
     bool m_bCtrlDaikinSecForce = false;
     bool m_bCtrlGasOnly = false;
+    bool m_bCtrlHystHack = false;
     bool m_bCtrlRoom1Enable = false;
     bool m_bCtrlRoom2Enable = false;
     bool m_bCtrlRoom3Enable = false;
@@ -188,6 +191,7 @@ class CDaikinCtrl
     bool m_bUpdateCtrlDaikinSecEnable = true;
     bool m_bUpdateCtrlDaikinSecForce = true;
     bool m_bUpdateCtrlGasOnly = true;
+    bool m_bUpdateCtrlHystHack = true;
     bool m_bUpdateCtrlRoom1Enable = true;
     bool m_bUpdateCtrlRoom2Enable = true;
     bool m_bUpdateCtrlRoom3Enable = true;

@@ -208,6 +208,12 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY, m_bCtrlGasOnly ? "1" : "0", true);
   }
 
+  if (m_bUpdateCtrlHystHack)
+  {
+    m_bUpdateCtrlHystHack = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_HYST_HACK, m_bCtrlHystHack ? "1" : "0", true);
+  }
+
   if (m_bUpdateCtrlRoom1Enable)
   {
     m_bUpdateCtrlRoom1Enable = false;
@@ -403,11 +409,11 @@ void CDaikinCtrl::StateMachine()
     // Primary zone requires heating when either room temp < target temp and main valve is enabled from Daikin or when requested via mqtt
     if (m_bCtrlZonePriEnable ||
        (!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable) ||
-       (fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))) // && m_bDaikinActive)) // FIXME: Doesn't work with Daikin primary relais
+       (m_bCtrlHystHack && fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))) // && m_bDaikinActive)) // FIXME: Doesn't work with Daikin primary relais
     {
       m_bPrimaryZoneRequiresHeating = true;
     }
-    else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bDaikinActive) // FIXME: Remove?
+    else if ((m_bCtrlHystHack && fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp) || !m_bDaikinActive) // FIXME: Remove?
     {
       m_bPrimaryZoneRequiresHeating = false;
     }
