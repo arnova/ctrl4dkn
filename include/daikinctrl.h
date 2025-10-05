@@ -29,6 +29,8 @@
 #define MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE   MQTT_P1P2_P_PREFIX "T/1/Temperature_Room"
 #define MQTT_P1P2_P_ALTHERMA_ON                     MQTT_P1P2_P_PREFIX "S/0/Altherma_On"
 
+#define MQTT_P1P2_P_DATE_TIME                       MQTT_P1P2_P_PREFIX "M/9/Date_Time_Daikin"
+
 #define MQTT_CTRL4DKN_CTRL_PREFIX                   "ctrl4dkn/c/"
 #define MQTT_CTRL4DKN_STATUS_PREFIX                 "ctrl4dkn/s/"
 
@@ -71,6 +73,8 @@
 #define DAIKIN_ACTIVE_OFF_TIME                900   // Seconds = 15 minutes
 #define DAIKIN_STARTUP_TIME                    30   // Seconds
 #define LWT_COOL_DOWN_DELAY_TIME              300   // Seconds = 5 minutes
+#define WATCHDOG_TIMEOUT_TIME                 900   // Seconds = 15 minutes
+#define WATCHDOG_RECOVERY_TIME                900   // Seconds = 15 minutes
 
 #define CONTROL_LOOP_TIME                       1   // Seconds
 #define MQTT_UPDATE_TIME                        1   // Seconds
@@ -115,6 +119,8 @@ class CDaikinCtrl
     void UpdateAveragePrimaryZoneRoomTemp(const float fVal);
     void UpdateZonePrimaryRequiresHeating(const bool bVal);
     bool MQTTPublishValues();
+
+    void TriggerWatchdog() { m_iWatchdogCounter = 0; };
 
     void SetP1P2AlthermaOn(const bool& bVal) { m_bP1P2AlthermaOn = bVal; };
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
@@ -165,6 +171,8 @@ class CDaikinCtrl
     uint16_t m_iFloorProtectionCounter = 0;
     uint16_t m_iDaikinActiveOffCounter = 0;
     uint16_t m_iDaikinStartupCounter = 0;
+    uint16_t m_iWatchdogCounter = 0;
+    uint16_t m_iWatchdogRecoveryCounter = 0;
     CRollingAverage m_roomTempRollingAverager;
 
     bool m_bCtrlEnable = true;

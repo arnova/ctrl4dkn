@@ -40,6 +40,7 @@
 WiFiClient g_wifiClient;
 PubSubClient g_MQTTClient(g_wifiClient);
 CDaikinCtrl g_DaikinCtrl(g_MQTTClient);
+uint16_t g_iChecksumLast = 0;
 
 void MQTTPrintError(void)
 {
@@ -65,7 +66,20 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
   int8_t iVal;
   const bool bValidInt = BytesToInt8(payload, length, iVal);
 
-  if (STRIEQUALS(topic, MQTT_P1P2_P_ALTHERMA_ON))
+  if (STRIEQUALS(topic, MQTT_P1P2_P_DATE_TIME))
+  {
+    uint16_t iChecksum = 0;
+    for (unsigned int idx = 0; idx < length; idx++)
+    {
+      iChecksum += payload[idx];
+    }
+    if (iChecksum != g_iChecksumLast)
+    {
+      g_DaikinCtrl.TriggerWatchdog();
+    }
+    g_iChecksumLast = iChecksum;
+  }
+  else if (STRIEQUALS(topic, MQTT_P1P2_P_ALTHERMA_ON))
   {
     if (bValidInt)
     {
@@ -430,6 +444,7 @@ bool MQTTReconnect()
   Serial.println("connected");
 
   // Subscribe to messages from p1p2serial etc.
+  g_MQTTClient.subscribe(MQTT_P1P2_P_DATE_TIME, 0); // For watchdog
   g_MQTTClient.subscribe(MQTT_P1P2_P_ALTHERMA_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE, 0);

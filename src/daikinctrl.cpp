@@ -342,6 +342,20 @@ void CDaikinCtrl::StateMachine()
     UpdateAveragePrimaryZoneRoomTemp(fAveragePrimaryZoneRoomTemp);
   }
 
+  // Handle watchdog
+  if (m_iWatchdogCounter < WATCHDOG_TIMEOUT_TIME)
+  {
+    m_iWatchdogCounter++;
+    if (m_iWatchdogRecoveryCounter > 0)
+    {
+      m_iWatchdogRecoveryCounter--;
+    }
+  }
+  else
+  {
+    m_iWatchdogRecoveryCounter = WATCHDOG_RECOVERY_TIME;
+  }
+
   // When Daikin is switched on, we incorperate a startup time
   if (!m_bP1P2AlthermaOn)
   {
@@ -592,7 +606,7 @@ void CDaikinCtrl::UpdateRelays()
   }
 
   const bool bShutdown = m_bFloorProtection && !m_bPrimaryZoneValveClose;
-  if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bCtrlDaikinDisable && !bShutdown)
+  if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bCtrlDaikinDisable && !bShutdown && m_iWatchdogRecoveryCounter == 0)
   {
     // Enable primary zone heating on Daikin
     UpdateDaikinZonePrimaryEnable(true);
@@ -603,7 +617,7 @@ void CDaikinCtrl::UpdateRelays()
     UpdateDaikinZonePrimaryEnable(false);
   }
 
-  if ((m_bDaikinSecondaryZoneOn || m_bCtrlDaikinSecForce) && m_bCtrlEnable && !m_bCtrlDaikinDisable && !bShutdown)
+  if ((m_bDaikinSecondaryZoneOn || m_bCtrlDaikinSecForce) && m_bCtrlEnable && !m_bCtrlDaikinDisable && !bShutdown && m_iWatchdogRecoveryCounter == 0)
   {
     // FIXME?: Instead of selecting secondary curve, we can also increase AWT deviation but only when primary zone is active
 
