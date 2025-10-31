@@ -26,6 +26,7 @@
 #define MQTT_P1P2_P_LEAVING_WATER_TEMP              MQTT_P1P2_P_PREFIX "T/1/Temperature_R2T_Leaving_Water"
 #endif
 #define MQTT_P1P2_P_VALVE_ZONE_MAIN                 MQTT_P1P2_P_PREFIX "S/1/Valve_Zone_Main"
+#define MQTT_P1P2_P_DEFROST_ACTIVE                  MQTT_P1P2_P_PREFIX "S/1/Defrost_Active"
 #define MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE   MQTT_P1P2_P_PREFIX "T/1/Temperature_Room"
 #define MQTT_P1P2_P_ALTHERMA_ON                     MQTT_P1P2_P_PREFIX "S/0/Altherma_On"
 
@@ -49,6 +50,7 @@
 #define MQTT_ROOM4_ENABLE                           "Room 4 Enable"
 #define MQTT_GAS_ONLY                               "Gas Only"
 #define MQTT_HYST_HACK                              "Hysteresis Hack"
+#define MQTT_SHORT_CYCLE_PREVENT                    "Prevent Short Cycling"
 
 // Status topics
 #define MQTT_FW_VERSION                             "Firmware Version"
@@ -62,6 +64,8 @@
 #define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving Water Too High"
 #define MQTT_AVG_ROOM_TEMPERATURE                   "Temperature Room Averaged"
 #define MQTT_ZONE_PRIMARY_REQUIRES_HEATING          "Zone Primary Requires Heating"
+#define MQTT_SHORT_CYCLE_PRIMARY_DETECTED           "Zone Primary Short Cycle Detected"
+#define MQTT_SHORT_CYCLE_SECONDARY_DETECTED         "Zone Secondary Short Cycle Detected"
 
 #define DAIKIN_HYSTERESIS                     1.0f
 #define LEAVING_WATER_MAX                    45.0f
@@ -79,7 +83,7 @@
 #define CONTROL_LOOP_TIME                       1   // Seconds
 #define MQTT_UPDATE_TIME                        1   // Seconds
 
-
+#define SHORT_CYCLE_SAMPLES                     5
 class CDaikinCtrl
 {
   public:
@@ -238,6 +242,10 @@ class CDaikinCtrl
     bool m_bP1P2ValveZoneMain = false;
     bool m_bP1P2ValveZoneMainLast = false;
     bool m_bAlthermaOn = false;
+
+    int32_t iShortCycleTimeStamps[SHORT_CYCLE_SAMPLES] = { -1 };
+    uint32_t iShortCyclePrimaryRecoveryCounter = 0;
+    uint32_t iShortCycleSecondaryRecoveryCounter = 0;
 
     e_sm_state m_iState = STATE_WAIT_STATE;
 };
