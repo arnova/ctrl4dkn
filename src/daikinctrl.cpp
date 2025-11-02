@@ -208,10 +208,10 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY, m_bCtrlGasOnly ? "1" : "0", true);
   }
 
-  if (m_bUpdateCtrlHystHack)
+  if (m_bUpdateCtrlShortCyclePrevention)
   {
-    m_bUpdateCtrlHystHack = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_HYST_HACK, m_bCtrlHystHack ? "1" : "0", true);
+    m_bUpdateCtrlShortCyclePrevention = false;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SHORT_CYCLE_PREVENT, m_bCtrlShortCyclePrevention ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlRoom1Enable)
@@ -417,23 +417,26 @@ void CDaikinCtrl::StateMachine()
     return; // Not heating (or cooling): Bypass statemachine
   }
 
+#ifdef HYSTERSIS_HACK
 //  if (m_bP1P2AlthermaOn)
   if (m_bAlthermaOn && m_fP1P2PrimaryZoneTargetTemp > 0.0f && fAveragePrimaryZoneRoomTemp > 0.0f)
   {
     // Primary zone requires heating when either room temp < target temp and main valve is enabled from Daikin or when requested via mqtt
-    if (m_bCtrlZonePriEnable || (m_bCtrlHystHack &&
-       ((!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable) ||
-       (fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))))) // && m_bDaikinActive)) // FIXME: Doesn't work with Daikin primary relais
+    if ((!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable) ||
+       (fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))) // && m_bDaikinActive)) // FIXME: Doesn't work with Daikin primary relais
     {
       m_bPrimaryZoneRequiresHeating = true;
     }
-    else if (!m_bCtrlHystHack || (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bDaikinActive)) // FIXME: Remove?
+    else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bDaikinActive) // FIXME: Remove?
     {
       m_bPrimaryZoneRequiresHeating = false;
     }
 
     m_bP1P2ValveZoneMainLast = m_bP1P2ValveZoneMain;
   }
+#else
+  m_bPrimaryZoneRequiresHeating = m_bCtrlZonePriEnable;
+#endif
 
   UpdateZonePrimaryRequiresHeating(m_bPrimaryZoneRequiresHeating);
 

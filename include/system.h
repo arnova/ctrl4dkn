@@ -24,6 +24,9 @@ const char mqtt_server[] = "192.168.1.65";
 // Enable this when (Daikin) secondary zone uses low temperature AWT range that is safe for floor-heated rooms
 #define LOW_TEMP_SECONDARY_ZONE
 
+// Enable this to enable hysteresis hack when using Daikin wall room thermostat
+//#define HYSTERSIS_HACK
+
 /**************************
  * Output i/o pin numbers *
  **************************/
