@@ -327,12 +327,12 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_HYST_HACK "/set"))
+  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SHORT_CYCLE_PREVENT "/set"))
   {
     if (bValidInt || length == 0)
     {
       if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlHystHack(iVal == 1 ? true : false);
+        g_DaikinCtrl.SetCtrlShortCyclePrevention(iVal == 1 ? true : false);
       else
         MQTTPrintError();
     }
@@ -484,8 +484,8 @@ bool MQTTReconnect()
   MQTTPublishConfig(MQTT_GAS_ONLY, CDaikinCtrl::SWITCH);
 #endif
 
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_HYST_HACK "/set", 1);
-  MQTTPublishConfig(MQTT_HYST_HACK, CDaikinCtrl::SWITCH);
+  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SHORT_CYCLE_PREVENT "/set", 1);
+  MQTTPublishConfig(MQTT_SHORT_CYCLE_PREVENT, CDaikinCtrl::SWITCH);
 
 #ifdef ROOM1_VALVE_RELAY
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set", 1);
