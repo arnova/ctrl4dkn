@@ -84,6 +84,10 @@
 #define MQTT_UPDATE_TIME                        1   // Seconds
 
 #define SHORT_CYCLE_SAMPLES                     5
+#define SHORT_CYCLE_MIN_TIME                   15   // minutes
+#define SHORT_CYCLE_MAX_COUNT                   2   // Amount of short cycles allowed during SHORT_CYCLE_MIN_TIME
+#define SHORT_CYCLE_RECOVERY_TIME              30   // minutes
+
 class CDaikinCtrl
 {
   public:
@@ -107,8 +111,9 @@ class CDaikinCtrl
 
     typedef struct short_cycle_e
     {
-      int32_t iShortCycleTimeStamps[SHORT_CYCLE_SAMPLES] = { -1 };
-      uint32_t iShortCycleRecoveryCounter = 0;
+      uint32_t iShortCycleTimeStamps[SHORT_CYCLE_SAMPLES] = { UINT32_MAX / 2 };
+      uint16_t iShortCycleRecoveryCounter = 0;
+      bool bCompressorLast = false;
     } short_cycle_t;
   
     CDaikinCtrl(PubSubClient& MQTTClient);
@@ -128,6 +133,7 @@ class CDaikinCtrl
     void UpdateDaikinZoneSecondaryEnable(const bool bVal);
     void UpdateAveragePrimaryZoneRoomTemp(const float fVal);
     void UpdateZonePrimaryRequiresHeating(const bool bVal);
+    void ShortCycleHandling();
     bool MQTTPublishValues();
 
     void TriggerWatchdog() { m_iWatchdogCounter = 0; };
@@ -141,7 +147,7 @@ class CDaikinCtrl
     void SetP1P2CoolingOn(const bool& bVal) { m_bP1P2CoolingOn = bVal; };
     void SetP1P2ValveZoneMain(const bool& bVal) { m_bP1P2ValveZoneMain = bVal; };
     void SetP1P2DefrostActive(const bool& bVal) { m_bP1P2DefrostActive = bVal; };
-    void SetP1P2Compressor(const bool& bVal) { m_bP1P2Compressor = bVal; };
+    void SetP1P2Compressor(const bool& bVal) { m_bP1P2CompressorOn = bVal; };
     
 //    bool IsDaikinHeatingActive() { return m_bP1P2HeatingOn && m_bP1P2CirculationPumpOn; };
 //    bool IsDaikinCoolingActive() { return m_bP1P2CoolingOn && m_bP1P2CirculationPumpOn; };
@@ -251,10 +257,10 @@ class CDaikinCtrl
     bool m_bP1P2ValveZoneMainLast = false;
     bool m_bAlthermaOn = false;
     bool m_bP1P2DefrostActive = false;
-    bool m_bP1P2Compressor = false;
 
-    short_cycle_t m_ShortCyclePrimary = { };
-    short_cycle_t m_ShortCycleSecondary = { };
+    uint32_t m_iShortCycleTimestamp = 0;
+    short_cycle_t m_shortCyclePrimary = { };
+    short_cycle_t m_shortCycleSecondary = { };
 
     sm_state_e m_iState = STATE_WAIT_STATE;
 };
