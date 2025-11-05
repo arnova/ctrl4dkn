@@ -87,15 +87,15 @@
 class CDaikinCtrl
 {
   public:
-    typedef enum HAConfigType_e
+    typedef enum ha_config_type_e
     {
       SWITCH,
       TEMP_SENSOR,
       BINARY_SENSOR
-    } HAConfigType_t;
+    } ha_config_type_t;
 
     // Statemachine states
-    enum e_sm_state
+    enum sm_state_e
     {
       STATE_IDLE,
       STATE_WAIT_STATE,
@@ -256,6 +256,6 @@ class CDaikinCtrl
     short_cycle_t m_ShortCyclePrimary = { };
     short_cycle_t m_ShortCycleSecondary = { };
 
-    e_sm_state m_iState = STATE_WAIT_STATE;
+    sm_state_e m_iState = STATE_WAIT_STATE;
 };
 #endif // DAIKIN_CTRL_H

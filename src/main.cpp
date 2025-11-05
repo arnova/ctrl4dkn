@@ -370,7 +370,7 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
 }
 
 
-void MQTTPublishConfig(const char* strItem, CDaikinCtrl::HAConfigType_t HAConfigType)
+void MQTTPublishConfig(const char* strItem, CDaikinCtrl::ha_config_type_t HAConfigType)
 {
   JsonDocument root;
   root["name"] = strItem;
