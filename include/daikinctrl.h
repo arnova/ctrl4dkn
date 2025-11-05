@@ -105,6 +105,12 @@ class CDaikinCtrl
       STATE_DELAY_WAIT
     };
 
+    typedef struct short_cycle_e
+    {
+      int32_t iShortCycleTimeStamps[SHORT_CYCLE_SAMPLES] = { -1 };
+      uint32_t iShortCycleRecoveryCounter = 0;
+    } short_cycle_t;
+  
     CDaikinCtrl(PubSubClient& MQTTClient);
 
     void loop();
@@ -247,9 +253,8 @@ class CDaikinCtrl
     bool m_bP1P2DefrostActive = false;
     bool m_bP1P2Compressor = false;
 
-    int32_t iShortCycleTimeStamps[SHORT_CYCLE_SAMPLES] = { -1 };
-    uint32_t iShortCyclePrimaryRecoveryCounter = 0;
-    uint32_t iShortCycleSecondaryRecoveryCounter = 0;
+    short_cycle_t m_ShortCyclePrimary = { };
+    short_cycle_t m_ShortCycleSecondary = { };
 
     e_sm_state m_iState = STATE_WAIT_STATE;
 };
