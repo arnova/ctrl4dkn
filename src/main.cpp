@@ -128,6 +128,34 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
+  else if (STRIEQUALS(topic, MQTT_P1P2_P_DEFROST_ACTIVE))
+  {
+    if (bValidInt)
+    {
+      if (iVal == 1)
+        g_DaikinCtrl.SetP1P2DefrostActive(true);
+      else if (iVal == 0)
+        g_DaikinCtrl.SetP1P2DefrostActive(false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
+  else if (STRIEQUALS(topic, MQTT_P1P2_P_COMPRESSOR))
+  {
+    if (bValidInt)
+    {
+      if (iVal == 1)
+        g_DaikinCtrl.SetP1P2Compressor(true);
+      else if (iVal == 0)
+        g_DaikinCtrl.SetP1P2Compressor(false);
+      else
+        MQTTPrintError();
+    }
+    else
+      MQTTPrintError();
+  }
   else if (STRIEQUALS(topic, MQTT_P1P2_P_CIRCULATION_PUMP_ON))
   {
     if (bValidInt)
@@ -450,6 +478,8 @@ bool MQTTReconnect()
   g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_LEAVING_WATER_TEMP, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_VALVE_ZONE_MAIN, 0);
+  g_MQTTClient.subscribe(MQTT_P1P2_P_DEFROST_ACTIVE, 0);
+  g_MQTTClient.subscribe(MQTT_P1P2_P_COMPRESSOR, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
   g_MQTTClient.subscribe(MQTT_P1P2_P_COOLING_ON, 0);
