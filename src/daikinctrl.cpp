@@ -538,7 +538,7 @@ void CDaikinCtrl::StateMachine()
           m_iState = STATE_LWT_COOL_DOWN_DELAY;
 #endif
         }
-        else if (m_bPrimaryZoneValveClose)
+        else
         {
           m_bPrimaryZoneValveClose = false;
         }
