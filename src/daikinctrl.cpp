@@ -304,60 +304,24 @@ bool CDaikinCtrl::MQTTPublishValues()
 
 void CDaikinCtrl::ShortCycleHandling()
 {
-  // Increment timestamp
-  m_iShortCycleTimestamp++;
-
-  if (m_shortCyclePrimary.iShortCycleRecoveryCounter > 0)
-  {
-    m_shortCyclePrimary.iShortCycleRecoveryCounter--;
-    return;
-  }
-
-  if (m_bP1P2DefrostActive || !m_bAlthermaOn)
-    return; // Skip logic when defrosting or unit is turned off
+  const bool bOn = m_bP1P2CompressorOn || m_bP1P2DefrostActive || !m_bAlthermaOn;
 
   if (m_bDaikinPrimaryZoneOn)
   {
-    if (!m_bP1P2CompressorOn)
-    {
-      // Compressor turned off: Check stored timestamps
-      int8_t iPos = -1;
-      uint8_t iCycleCount = 0;
-      uint32_t iTimeDiffOldest = (m_iShortCycleTimestamp - m_shortCyclePrimary.iShortCycleTimeStamps[0]) / (60 / CONTROL_LOOP_TIME);
-      for (uint8_t it = 0; it < SHORT_CYCLE_SAMPLES; it++)
-      {
-        // Note: iTimeDiff already handles wrapping
-        const uint32_t iTimeDiff = (m_iShortCycleTimestamp - m_shortCyclePrimary.iShortCycleTimeStamps[it]) / (60 / CONTROL_LOOP_TIME);
-
-        // Check if this is a short cycle
-        if (iTimeDiff <= SHORT_CYCLE_MIN_TIME)
-        {
-          iCycleCount++;
-        }
-
-        // FIXME: We need to check which timestamp is the oldest, also when within SHORT_CYCLE_MIN_TIME!
-        // Overwrite one of timestamps that's no longer interesting
-        if (iTimeDiff < iTimeDiffOldest || iPos == -1) // FIXME
-        {
-          iPos = it;
-          iTimeDiffOldest = iTimeDiff;
-        }
-      }
-
-      if (iCycleCount >= SHORT_CYCLE_MAX_COUNT)
-      {
-        m_shortCyclePrimary.iShortCycleRecoveryCounter = SHORT_CYCLE_RECOVERY_TIME * (60 / CONTROL_LOOP_TIME);
-      }
-
-      m_shortCyclePrimary.iShortCycleTimeStamps[iPos] = m_iShortCycleTimestamp; // Store current timestamp
-    }
+    m_shortCyclePrimary.Loop(bOn);
+  }
+  else
+  {
+    m_shortCyclePrimary.Reset();
   }
 
   if (m_bDaikinSecondaryZoneOn)
   {
-    if (!m_bP1P2CompressorOn)
-    {
-    }
+    m_shortCycleSecondary.Loop(bOn);
+  }
+  else
+  {
+    m_shortCycleSecondary.Reset(); // ?
   }
 }
 

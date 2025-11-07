@@ -3,6 +3,8 @@
 
 #include "secrets.h"
 
+#define CONTROL_LOOP_TIME                       1   // Seconds
+
 // WiFi settings
 const char HOSTNAME[] = "ctrl4dkn";
 const char SSID[] = WIFI_SSID;          // Need to create + define in secrets.h

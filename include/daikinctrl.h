@@ -4,8 +4,9 @@
 #include <elapsedMillis.h>
 #include <PubSubClient.h>
 
-#include "RollingAverage.h"
 #include "system.h"
+#include "RollingAverage.h"
+#include "shortcycle.h"
 
 #define MQTT_MAX_SIZE 1024
 
@@ -80,13 +81,7 @@
 #define WATCHDOG_TIMEOUT_TIME                 900   // Seconds = 15 minutes
 #define WATCHDOG_RECOVERY_TIME                900   // Seconds = 15 minutes
 
-#define CONTROL_LOOP_TIME                       1   // Seconds
 #define MQTT_UPDATE_TIME                        1   // Seconds
-
-#define SHORT_CYCLE_SAMPLES                     5
-#define SHORT_CYCLE_MIN_TIME                   15   // minutes
-#define SHORT_CYCLE_MAX_COUNT                   2   // Amount of short cycles allowed during SHORT_CYCLE_MIN_TIME
-#define SHORT_CYCLE_RECOVERY_TIME              30   // minutes
 
 class CDaikinCtrl
 {
@@ -109,13 +104,7 @@ class CDaikinCtrl
       STATE_DELAY_WAIT
     };
 
-    typedef struct short_cycle_e
-    {
-      uint32_t iShortCycleTimeStamps[SHORT_CYCLE_SAMPLES] = { UINT32_MAX / 2 };
-      uint16_t iShortCycleRecoveryCounter = 0;
-      bool bCompressorLast = false;
-    } short_cycle_t;
-  
+ 
     CDaikinCtrl(PubSubClient& MQTTClient);
 
     void loop();
@@ -258,9 +247,8 @@ class CDaikinCtrl
     bool m_bAlthermaOn = false;
     bool m_bP1P2DefrostActive = false;
 
-    uint32_t m_iShortCycleTimestamp = 0;
-    short_cycle_t m_shortCyclePrimary = { };
-    short_cycle_t m_shortCycleSecondary = { };
+    CShortCycle m_shortCyclePrimary;
+    CShortCycle m_shortCycleSecondary;
 
     sm_state_e m_iState = STATE_WAIT_STATE;
 };
