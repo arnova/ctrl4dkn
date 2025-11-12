@@ -336,22 +336,25 @@ void CDaikinCtrl::ShortCycleHandling()
 {
   const bool bOn = m_bP1P2CompressorOn || m_bP1P2DefrostActive || !m_bAlthermaOn; // NOTE: Consider on when unit turned off
 
-  if (m_bDaikinPrimaryZoneOn)
-  {
-    m_shortCyclePrimary.Loop(bOn);
-  }
-  else
-  {
-    m_shortCyclePrimary.Reset();
-  }
-
   if (m_bDaikinSecondaryZoneOn)
   {
     m_shortCycleSecondary.Loop(bOn);
   }
   else
   {
-    m_shortCycleSecondary.Reset(); // ?
+    m_shortCycleSecondary.Reset();
+
+    // When on, assume primary is active
+    //if (m_bDaikinPrimaryZoneOn)
+    // FIXME: Logic below?
+    if (bOn)
+    {
+      m_shortCyclePrimary.Loop(true);
+    }
+    else
+    {
+      m_shortCyclePrimary.Reset();
+    }
   }
 
   // Publish to mqtt
