@@ -152,6 +152,24 @@ void CDaikinCtrl::UpdateZonePrimaryRequiresHeating(const bool bVal)
   }
 }
 
+void CDaikinCtrl::UpdateZonePrimaryShortCycleDetected(const bool bVal)
+{
+  if (m_bZonePrimaryShortCycleDetected != bVal)
+  {
+    m_bZonePrimaryShortCycleDetected = bVal;
+    m_bUpdateZonePrimaryShortCycleDetected = true;
+  }
+}
+
+void CDaikinCtrl::UpdateZoneSecondaryShortCycleDetected(const bool bVal)
+{
+  if (m_bZoneSecondaryShortCycleDetected != bVal)
+  {
+    m_bZoneSecondaryShortCycleDetected = bVal;
+    m_bUpdateZoneSecondaryShortCycleDetected = true;
+  }
+}
+
 bool CDaikinCtrl::MQTTPublishValues()
 {
   if (m_bUpdateCtrlEnable)
@@ -298,6 +316,18 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_ZONE_PRIMARY_REQUIRES_HEATING, m_bZonePrimaryRequiresHeating ? "1" : "0", true);
   }
 
+  if (m_bUpdateZonePrimaryShortCycleDetected)
+  {
+    m_bUpdateZonePrimaryShortCycleDetected = true;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_SHORT_CYCLE_PRIMARY_DETECTED, m_bZonePrimaryShortCycleDetected ? "1" : "0", true);
+  }
+
+  if (m_bUpdateZoneSecondaryShortCycleDetected)
+  {
+    m_bUpdateZoneSecondaryShortCycleDetected = true;
+    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_SHORT_CYCLE_SECONDARY_DETECTED, m_bZoneSecondaryShortCycleDetected ? "1" : "0", true);
+  }
+
   return true;
 }
 
@@ -323,6 +353,10 @@ void CDaikinCtrl::ShortCycleHandling()
   {
     m_shortCycleSecondary.Reset(); // ?
   }
+
+  // Publish to mqtt
+  UpdateZonePrimaryShortCycleDetected(m_shortCyclePrimary.IsRecoveryActive());
+  UpdateZoneSecondaryShortCycleDetected(m_shortCycleSecondary.IsRecoveryActive());
 }
 
 
