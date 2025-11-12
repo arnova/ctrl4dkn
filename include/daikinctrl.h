@@ -122,8 +122,12 @@ class CDaikinCtrl
     void UpdateDaikinZoneSecondaryEnable(const bool bVal);
     void UpdateAveragePrimaryZoneRoomTemp(const float fVal);
     void UpdateZonePrimaryRequiresHeating(const bool bVal);
-    void ShortCycleHandling();
+    void UpdateZonePrimaryShortCycleDetected(const bool bVal);
+    void UpdateZoneSecondaryShortCycleDetected(const bool bVal);
+
     bool MQTTPublishValues();
+
+    void ShortCycleHandling();
 
     void TriggerWatchdog() { m_iWatchdogCounter = 0; };
 
@@ -232,6 +236,10 @@ class CDaikinCtrl
     bool m_bUpdateAveragePrimaryZoneRoomTemp = true;
     bool m_bZonePrimaryRequiresHeating = false;
     bool m_bUpdateZonePrimaryRequiresHeating = true;
+    bool m_bZonePrimaryShortCycleDetected = false;
+    bool m_bUpdateZonePrimaryShortCycleDetected = true;
+    bool m_bZoneSecondaryShortCycleDetected = false;
+    bool m_bUpdateZoneSecondaryShortCycleDetected = true;
 
     float m_fP1P2LeavingWaterTemp = -1.0f;
     float m_fP1P2PrimaryZoneRoomTemp = -1.0f;       // Room temperature reported by P1P2/thermostat
