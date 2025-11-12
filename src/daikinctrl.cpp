@@ -334,7 +334,7 @@ bool CDaikinCtrl::MQTTPublishValues()
 
 void CDaikinCtrl::ShortCycleHandling()
 {
-  const bool bOn = m_bP1P2CompressorOn || m_bP1P2DefrostActive || !m_bAlthermaOn;
+  const bool bOn = m_bP1P2CompressorOn || m_bP1P2DefrostActive || !m_bAlthermaOn; // NOTE: Consider on when unit turned off
 
   if (m_bDaikinPrimaryZoneOn)
   {

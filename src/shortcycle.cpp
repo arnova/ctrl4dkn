@@ -22,33 +22,39 @@ void CShortCycle::Loop(const bool bOn)
   if (bOn)
     return; // We're done
 
-  int8_t iPos = -1;
-  uint8_t iCycleCount = 0;
+  uint8_t iCycleCountSmall = 0;
+  uint8_t iCycleCountLarge = 0;
+  int8_t iTimeStampPos = 0;
   uint32_t iTimeDiffOldest = (m_iShortCycleTimestamp - m_iShortCycleTimeStamps[0]) / (60 / CONTROL_LOOP_TIME);
   for (uint8_t it = 0; it < SHORT_CYCLE_SAMPLES; it++)
   {
     // Note: iTimeDiff already handles wrapping
     const uint32_t iTimeDiff = (m_iShortCycleTimestamp - m_iShortCycleTimeStamps[it]) / (60 / CONTROL_LOOP_TIME);
 
-    // Check if this is a short cycle
-    if (iTimeDiff <= SHORT_CYCLE_MIN_TIME)
+    // Check if this is a short cycle in the small window
+    if (iTimeDiff <= SHORT_CYCLE_SMALL_WINDOW)
     {
-      iCycleCount++;
+      iCycleCountSmall++;
     }
 
-    // FIXME: We need to check which timestamp is the oldest, also when within SHORT_CYCLE_MIN_TIME!
-    // Overwrite one of timestamps that's no longer interesting
-    if (iTimeDiff < iTimeDiffOldest || iPos == -1) // FIXME
+    // Check if this is a short cycle in the large window
+    if (iTimeDiff <= SHORT_CYCLE_LARGE_WINDOW)
     {
-      iPos = it;
+      iCycleCountLarge++;
+    }
+
+    // Overwrite the oldest timestamp
+    if (iTimeDiff < iTimeDiffOldest)
+    {
+      iTimeStampPos = it;
       iTimeDiffOldest = iTimeDiff;
     }
   }
 
-  if (iCycleCount >= SHORT_CYCLE_MAX_COUNT)
+  if (iCycleCountSmall >= SHORT_CYCLE_SMALL_WINDOW_COUNT || iCycleCountLarge >= SHORT_CYCLE_LARGE_WINDOW_COUNT)
   {
     m_iShortCycleRecoveryCounter = SHORT_CYCLE_RECOVERY_TIME * (60 / CONTROL_LOOP_TIME);
   }
 
-  m_iShortCycleTimeStamps[iPos] = m_iShortCycleTimestamp; // Store current timestamp
+  m_iShortCycleTimeStamps[iTimeStampPos] = m_iShortCycleTimestamp; // Store current timestamp
 }
