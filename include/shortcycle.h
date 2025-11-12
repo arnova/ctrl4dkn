@@ -10,12 +10,20 @@
 #define SHORT_CYCLE_SAMPLES                     5
 #endif
 
-#ifndef SHORT_CYCLE_MIN_TIME
-#define SHORT_CYCLE_MIN_TIME                   15   // minutes
+#ifndef SHORT_CYCLE_SMALL_WINDOW
+#define SHORT_CYCLE_SMALL_WINDOW               15   // minutes
 #endif
 
-#ifndef SHORT_CYCLE_MAX_COUNT
-#define SHORT_CYCLE_MAX_COUNT                   2   // Amount of short cycles allowed during SHORT_CYCLE_MIN_TIME
+#ifndef SHORT_CYCLE_SMALL_WINDOW_COUNT
+#define SHORT_CYCLE_SMALL_WINDOW_COUNT          2   // Amount of short cycles allowed during SHORT_CYCLE_SMALL_WINDOW
+#endif
+
+#ifndef SHORT_CYCLE_LARGE_WINDOW
+#define SHORT_CYCLE_LARGE_WINDOW               60   // minutes
+#endif
+
+#ifndef SHORT_CYCLE_LARGE_WINDOW_COUNT
+#define SHORT_CYCLE_LARGE_WINDOW_COUNT          4   // Amount of short cycles allowed during SHORT_CYCLE_LARGE_WINDOW
 #endif
 
 #ifndef SHORT_CYCLE_RECOVERY_TIME
