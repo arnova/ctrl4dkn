@@ -44,7 +44,6 @@ class CShortCycle
     uint16_t m_iShortCycleRecoveryCounter = 0;
     uint32_t m_iShortCycleTimestamp = 0;
     uint32_t m_iShortCycleTimeStamps[SHORT_CYCLE_SAMPLES] = { UINT32_MAX / 2 };
-    bool bLastOn = false;
 };
 
 #endif // SHORT_CYCLE_H
