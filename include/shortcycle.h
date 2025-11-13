@@ -41,6 +41,7 @@ class CShortCycle
     bool IsRecoveryActive() { return m_iShortCycleRecoveryCounter > 0; };
   
   private:
+    bool bLastState = false;
     uint16_t m_iShortCycleRecoveryCounter = 0;
     uint32_t m_iShortCycleTimestamp = 0;
     uint32_t m_iShortCycleTimeStamps[SHORT_CYCLE_SAMPLES] = { UINT32_MAX / 2 };
