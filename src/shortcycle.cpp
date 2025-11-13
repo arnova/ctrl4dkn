@@ -55,7 +55,7 @@ void CShortCycle::Loop(const bool bOn)
     }
   }
 
-  if (iCycleCountSmall >= SHORT_CYCLE_SMALL_WINDOW_COUNT || iCycleCountLarge >= SHORT_CYCLE_LARGE_WINDOW_COUNT)
+  if (iCycleCountSmall > SHORT_CYCLE_SMALL_WINDOW_COUNT || iCycleCountLarge > SHORT_CYCLE_LARGE_WINDOW_COUNT)
   {
     m_iShortCycleRecoveryCounter = SHORT_CYCLE_RECOVERY_TIME * 60 * CONTROL_LOOP_TIME;
   }
