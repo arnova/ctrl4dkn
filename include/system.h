@@ -41,8 +41,8 @@ const char mqtt_server[] = "192.168.1.65";
 //#define ROOM4_VALVE_RELAY 32                    // K2 relay: Used to open/close room 4 valve (floor-heating)
 #define ROOM4_VALVE_POLARITY 1                  // 1 = Normally closed, 0 = Normally open
 
-//#define ROOM3_VALVE_RELAY 13                    // K3 relay: Used to open/close room 3 valve (floor-heating)
-#define ROOM3_VALVE_POLARITY 1                  // 1 = Normally closed, 0 = Normally open
+#define ROOM3_VALVE_RELAY 13                    // K3 relay: Used to open/close room 3 valve (floor-heating)
+#define ROOM3_VALVE_POLARITY 0                  // 1 = Normally closed, 0 = Normally open
 
 #define ROOM2_VALVE_RELAY 12                    // K4 relay: Used to open/close room 2 valve (floor-heating)
 #define ROOM2_VALVE_POLARITY 0                  // 1 = Normally closed, 0 = Normally open
