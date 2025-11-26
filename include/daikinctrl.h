@@ -44,8 +44,6 @@
 #define MQTT_ZONE_SECONDARY_FORCE                   "Zone Secondary Force"
 #define MQTT_VALVE_PRIMARY_CLOSE_FORCE              "Valve Primary Close Force"
 #define MQTT_DAIKIN_DISABLE                         "Daikin Disable"
-#define MQTT_DAIKIN_SECONDARY_ENABLE                "Daikin Secondary Enable"
-#define MQTT_DAIKIN_SECONDARY_FORCE                 "Daikin Secondary Force"
 #define MQTT_ROOM1_ENABLE                           "Room 1 Enable"
 #define MQTT_ROOM2_ENABLE                           "Room 2 Enable"
 #define MQTT_ROOM3_ENABLE                           "Room 3 Enable"
@@ -152,8 +150,6 @@ class CDaikinCtrl
     void SetCtrlZoneSecForce(const bool& bVal) { m_bCtrlZoneSecForce = bVal; m_bUpdateCtrlZoneSecForce = true; };
     void SetCtrlValvePriCloseForce(const bool& bVal) { m_bCtrlValvePriCloseForce = bVal; m_bUpdateCtrlValvePriCloseForce = true; };
     void SetCtrlDaikinDisable(const bool& bVal) { m_bCtrlDaikinDisable = bVal; m_bUpdateCtrlDaikinDisable = true; };
-    void SetCtrlDaikinSecEnable(const bool& bVal) { m_bCtrlDaikinSecEnable = bVal; m_bUpdateCtrlDaikinSecEnable = true; };
-    void SetCtrlDaikinSecForce(const bool& bVal) { m_bCtrlDaikinSecForce = bVal; m_bUpdateCtrlDaikinSecForce = true; };
     void SetCtrlGasOnly(const bool& bVal) { m_bCtrlGasOnly = bVal; m_bUpdateCtrlGasOnly = true; };
     void SetCtrlShortCyclePrevention(const bool& bVal) { m_bCtrlShortCyclePrevention = bVal; m_bUpdateCtrlShortCyclePrevention = true; };
     void SetCtrlRoom1Enable(const bool& bVal) { m_bCtrlRoom1Enable = bVal; m_bUpdateCtrlRoom1Enable = true; };
@@ -192,8 +188,6 @@ class CDaikinCtrl
     bool m_bCtrlZoneSecForce = false;
     bool m_bCtrlValvePriCloseForce = false;
     bool m_bCtrlDaikinDisable = false;
-    bool m_bCtrlDaikinSecEnable = false;
-    bool m_bCtrlDaikinSecForce = false;
     bool m_bCtrlGasOnly = false;
     bool m_bCtrlShortCyclePrevention = false;
     bool m_bCtrlRoom1Enable = false;
@@ -207,8 +201,6 @@ class CDaikinCtrl
     bool m_bUpdateCtrlZoneSecForce = true;
     bool m_bUpdateCtrlValvePriCloseForce = true;
     bool m_bUpdateCtrlDaikinDisable = true;
-    bool m_bUpdateCtrlDaikinSecEnable = true;
-    bool m_bUpdateCtrlDaikinSecForce = true;
     bool m_bUpdateCtrlGasOnly = true;
     bool m_bUpdateCtrlShortCyclePrevention = true;
     bool m_bUpdateCtrlRoom1Enable = true;

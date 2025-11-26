@@ -1,6 +1,6 @@
 /*
   Ctrl4Dkn - Floor Heating(/Cooling) Controller For Daikin (Hybrid) Heatpump Systems
-  Last update: January 18, 2025
+  Last update: November 26, 2025
   (C) Copyright 2024-2025 by Arno van Amersfoort
   Web                   : https://github.com/arnova/ctrl4dkn
   Email                 : a r n o DOT v a n DOT a m e r s f o o r t AT g m a i l DOT c o m
@@ -34,7 +34,7 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.43"
+#define MY_VERSION "0.44"
 
 // Globals
 WiFiClient g_wifiClient;
@@ -271,30 +271,6 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     else
       MQTTPrintError();
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_ENABLE "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlDaikinSecEnable(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_FORCE "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlDaikinSecForce(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
   else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set"))
   {
     if (bValidInt || length == 0)
@@ -502,12 +478,6 @@ bool MQTTReconnect()
 
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_DISABLE "/set", 1);
   MQTTPublishConfig(MQTT_DAIKIN_DISABLE, CDaikinCtrl::SWITCH);
-
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_ENABLE "/set", 1);
-  MQTTPublishConfig(MQTT_DAIKIN_SECONDARY_ENABLE, CDaikinCtrl::SWITCH);
-
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_SECONDARY_FORCE "/set", 1);
-  MQTTPublishConfig(MQTT_DAIKIN_SECONDARY_FORCE, CDaikinCtrl::SWITCH);
 
 #ifdef DAIKIN_PREFERENTIAL_RELAY
   g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY "/set", 1);
