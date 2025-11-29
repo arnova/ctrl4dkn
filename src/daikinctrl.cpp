@@ -497,7 +497,7 @@ void CDaikinCtrl::StateMachine()
       if (!m_bPrimaryZoneRequiresHeating || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce)
       {
         // Check if secondary zone requires heating
-        if (bSecondaryZoneEnable || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce)
+        if ((bSecondaryZoneEnable || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce) && !m_bCtrlDaikinDisable)
         {
 #ifdef LOW_TEMP_SECONDARY_ZONE
           // Enable (disable secondary zone on Daikin, if requested but primary zone doesn't require heating
