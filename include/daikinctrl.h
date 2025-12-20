@@ -62,7 +62,6 @@
 #define MQTT_DAIKIN_SECONDARY_ENABLED               "Daikin Secondary Enabled"
 #define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving Water Too High"
 #define MQTT_AVG_ROOM_TEMPERATURE                   "Temperature Room Averaged"
-#define MQTT_ZONE_PRIMARY_REQUIRES_HEATING          "Zone Primary Requires Heating"
 #define MQTT_SHORT_CYCLE_PRIMARY_DETECTED           "Zone Primary Short Cycle Detected"
 #define MQTT_SHORT_CYCLE_SECONDARY_DETECTED         "Zone Secondary Short Cycle Detected"
 
@@ -119,7 +118,6 @@ class CDaikinCtrl
     void UpdateDaikinZonePrimaryEnable(const bool bVal);
     void UpdateDaikinZoneSecondaryEnable(const bool bVal);
     void UpdateAveragePrimaryZoneRoomTemp(const float fVal);
-    void UpdateZonePrimaryRequiresHeating(const bool bVal);
     void UpdateZonePrimaryShortCycleDetected(const bool bVal);
     void UpdateZoneSecondaryShortCycleDetected(const bool bVal);
 
@@ -164,7 +162,6 @@ class CDaikinCtrl
     PubSubClient* m_pMQTTClient;
     bool m_bDaikinPrimaryZoneOn = false;
     bool m_bDaikinSecondaryZoneOn = false;
-    bool m_bPrimaryZoneRequiresHeating = true;
     bool m_bPrimaryZoneValveClose = false;
     bool m_bFloorProtection = false;
     bool m_bDaikinActive = false;
@@ -226,8 +223,6 @@ class CDaikinCtrl
     bool m_bUpdateDaikinZoneSecondaryEnable = true;
     char m_strAveragePrimaryZoneRoomTemp[5] = "";
     bool m_bUpdateAveragePrimaryZoneRoomTemp = true;
-    bool m_bZonePrimaryRequiresHeating = false;
-    bool m_bUpdateZonePrimaryRequiresHeating = true;
     bool m_bZonePrimaryShortCycleDetected = false;
     bool m_bUpdateZonePrimaryShortCycleDetected = true;
     bool m_bZoneSecondaryShortCycleDetected = false;

@@ -143,15 +143,6 @@ void CDaikinCtrl::UpdateAveragePrimaryZoneRoomTemp(const float fVal)
   }
 }
 
-void CDaikinCtrl::UpdateZonePrimaryRequiresHeating(const bool bVal)
-{
-  if (m_bZonePrimaryRequiresHeating != bVal)
-  {
-    m_bZonePrimaryRequiresHeating = bVal;
-    m_bUpdateZonePrimaryRequiresHeating = true;
-  }
-}
-
 void CDaikinCtrl::UpdateZonePrimaryShortCycleDetected(const bool bVal)
 {
   if (m_bZonePrimaryShortCycleDetected != bVal)
@@ -298,12 +289,6 @@ bool CDaikinCtrl::MQTTPublishValues()
     m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_AVG_ROOM_TEMPERATURE, m_strAveragePrimaryZoneRoomTemp, true);
   }
 
-  if (m_bUpdateZonePrimaryRequiresHeating)
-  {
-    m_bUpdateZonePrimaryRequiresHeating = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_ZONE_PRIMARY_REQUIRES_HEATING, m_bZonePrimaryRequiresHeating ? "1" : "0", true);
-  }
-
   if (m_bUpdateZonePrimaryShortCycleDetected)
   {
     m_bUpdateZonePrimaryShortCycleDetected = true;
@@ -441,8 +426,6 @@ void CDaikinCtrl::StateMachine()
     m_bDaikinPrimaryZoneOn = m_bCtrlZonePriEnable && !m_bPrimaryZoneValveClose;
     m_bDaikinSecondaryZoneOn = !m_bDaikinPrimaryZoneOn && bSecondaryZoneEnable;
     m_bP1P2ValveZoneMainLast = false;
-    UpdateZonePrimaryRequiresHeating(false);
-
     m_iState = STATE_IDLE;
     return; // Cooling: Bypass statemachine
   }
@@ -453,33 +436,9 @@ void CDaikinCtrl::StateMachine()
     m_bDaikinPrimaryZoneOn = false;
     m_bDaikinSecondaryZoneOn = false;
     m_bP1P2ValveZoneMainLast = false;
-    UpdateZonePrimaryRequiresHeating(false);
     m_iState = STATE_IDLE;
     return; // Not heating (or cooling): Bypass statemachine
   }
-
-#ifdef HYSTERSIS_HACK
-//  if (m_bP1P2AlthermaOn)
-  if (m_bAlthermaOn && m_fP1P2PrimaryZoneTargetTemp > 0.0f && fAveragePrimaryZoneRoomTemp > 0.0f)
-  {
-    // Primary zone requires heating when either room temp < target temp and main valve is enabled from Daikin or when requested via mqtt
-    if ((!m_bP1P2ValveZoneMainLast && m_bP1P2ValveZoneMain && !m_bDaikinZoneSecondaryEnable) ||
-       (fAveragePrimaryZoneRoomTemp < m_fP1P2PrimaryZoneTargetTemp - (DAIKIN_HYSTERESIS / 2))) // && m_bDaikinActive)) // FIXME: Doesn't work with Daikin primary relais
-    {
-      m_bPrimaryZoneRequiresHeating = true;
-    }
-    else if (fAveragePrimaryZoneRoomTemp >= m_fP1P2PrimaryZoneTargetTemp || !m_bDaikinActive) // FIXME: Remove?
-    {
-      m_bPrimaryZoneRequiresHeating = false;
-    }
-
-    m_bP1P2ValveZoneMainLast = m_bP1P2ValveZoneMain;
-  }
-#else
-  m_bPrimaryZoneRequiresHeating = m_bCtrlZonePriEnable;
-#endif
-
-  UpdateZonePrimaryRequiresHeating(m_bPrimaryZoneRequiresHeating);
 
   switch (m_iState)
   {
@@ -494,14 +453,14 @@ void CDaikinCtrl::StateMachine()
       // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hysteresis!).
       //       This is due to (possible) modulation else it may take forever before we switch over.
       //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
-      if (!m_bPrimaryZoneRequiresHeating || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce)
+      if (!m_bCtrlZonePriEnable || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce)
       {
         // Check if secondary zone requires heating
         if ((bSecondaryZoneEnable || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce) && !m_bCtrlDaikinDisable)
         {
 #ifdef LOW_TEMP_SECONDARY_ZONE
           // Enable (disable secondary zone on Daikin, if requested but primary zone doesn't require heating
-          m_bDaikinSecondaryZoneOn = ((!m_bPrimaryZoneRequiresHeating && bSecondaryZoneEnable) || m_bCtrlZoneSecForce);
+          m_bDaikinSecondaryZoneOn = ((!m_bCtrlZonePriEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce);
 
           if (!m_bPrimaryZoneValveClose)
           {
@@ -538,10 +497,10 @@ void CDaikinCtrl::StateMachine()
             m_bPrimaryZoneValveClose = true;
 
             // Check if Daikin secondary will be enabled below, if so wait till primary valve is closed
-            if ((!m_bPrimaryZoneRequiresHeating && bSecondaryZoneEnable) || m_bCtrlZoneSecForce)
+            if ((!m_bCtrlZonePriEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce)
               m_iState = STATE_PRIMARY_VALVE_DELAY;
           }
-          else if ((!m_bPrimaryZoneRequiresHeating && bSecondaryZoneEnable) || m_bCtrlZoneSecForce)
+          else if ((!m_bCtrlZonePriEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce)
           {
             m_bDaikinSecondaryZoneOn = true;
 
