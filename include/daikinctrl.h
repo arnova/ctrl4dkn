@@ -180,51 +180,71 @@ class CDaikinCtrl
     CRollingAverage m_roomTempRollingAverager;
 
     bool m_bCtrlEnable = true;
-    bool m_bCtrlZonePriEnable = false;
-    bool m_bCtrlZoneSecEnable = false;
-    bool m_bCtrlZoneSecForce = false;
-    bool m_bCtrlValvePriCloseForce = false;
-    bool m_bCtrlDaikinDisable = false;
-    bool m_bCtrlGasOnly = false;
-    bool m_bCtrlShortCyclePrevention = false;
-    bool m_bCtrlRoom1Enable = false;
-    bool m_bCtrlRoom2Enable = false;
-    bool m_bCtrlRoom3Enable = false;
-    bool m_bCtrlRoom4Enable = false;
-
     bool m_bUpdateCtrlEnable = true;
+
+    bool m_bCtrlZonePriEnable = false;
     bool m_bUpdateCtrlZonePriEnable = true;
+
+    bool m_bCtrlZoneSecEnable = false;
     bool m_bUpdateCtrlZoneSecEnable = true;
+
+    bool m_bCtrlZoneSecForce = false;
     bool m_bUpdateCtrlZoneSecForce = true;
+
+    bool m_bCtrlValvePriCloseForce = false;
     bool m_bUpdateCtrlValvePriCloseForce = true;
+
+    bool m_bCtrlDaikinDisable = false;
     bool m_bUpdateCtrlDaikinDisable = true;
+
+    bool m_bCtrlGasOnly = false;
     bool m_bUpdateCtrlGasOnly = true;
+
+    bool m_bCtrlShortCyclePrevention = false;
     bool m_bUpdateCtrlShortCyclePrevention = true;
+
+    bool m_bCtrlRoom1Enable = false;
     bool m_bUpdateCtrlRoom1Enable = true;
+
+    bool m_bCtrlRoom2Enable = false;
     bool m_bUpdateCtrlRoom2Enable = true;
+
+    bool m_bCtrlRoom3Enable = false;
     bool m_bUpdateCtrlRoom3Enable = true;
+
+    bool m_bCtrlRoom4Enable = false;
     bool m_bUpdateCtrlRoom4Enable = true;
 
     bool m_bLeavingWaterTooHigh = false;
     bool m_bUpdateLeavingWaterTooHigh = true;
+
     bool m_bValveZonePrimaryOpen = true;
     bool m_bUpdateValveZonePrimaryOpen = true;
+
     bool m_bRoom1ValveOpen = true;
     bool m_bUpdateRoom1ValveOpen = true;
+
     bool m_bRoom2ValveOpen = true;
     bool m_bUpdateRoom2ValveOpen = true;
+
     bool m_bRoom3ValveOpen = true;
     bool m_bUpdateRoom3ValveOpen = true;
+
     bool m_bRoom4ValveOpen = true;
     bool m_bUpdateRoom4ValveOpen = true;
+
     bool m_bDaikinZonePrimaryEnable = false;
     bool m_bUpdateDaikinZonePrimaryEnable = true;
+
     bool m_bDaikinZoneSecondaryEnable = false;
     bool m_bUpdateDaikinZoneSecondaryEnable = true;
+
     char m_strAveragePrimaryZoneRoomTemp[5] = "";
     bool m_bUpdateAveragePrimaryZoneRoomTemp = true;
+
     bool m_bZonePrimaryShortCycleDetected = false;
     bool m_bUpdateZonePrimaryShortCycleDetected = true;
+
     bool m_bZoneSecondaryShortCycleDetected = false;
     bool m_bUpdateZoneSecondaryShortCycleDetected = true;
 
