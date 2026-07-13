@@ -530,7 +530,11 @@ void SetupWifi()
   Serial.print("Connecting to ");
   Serial.println(SSID);
 
+  // Init wifi
+  WiFi.mode(WIFI_STA);
+  WiFi.setHostname(HOST_NAME);
   WiFi.begin(SSID, PASSWORD);
+
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(1000);
@@ -543,7 +547,7 @@ void SetupWifi()
   Serial.println(WiFi.localIP());
 
   // Initialize mDNS
-  if (!MDNS.begin(HOSTNAME))
+  if (!MDNS.begin(HOST_NAME))
   {
     Serial.println("Error setting up MDNS responder!");
   }
@@ -553,7 +557,7 @@ void SetupWifi()
   }
 
   // Need to explicitly set hostname as ArduinoOTA will override our mdns-name set above
-  ArduinoOTA.setHostname(HOSTNAME);
+  ArduinoOTA.setHostname(HOST_NAME);
 
   ArduinoOTA.onStart([]() {
     Serial.println("Start");
