@@ -1,9 +1,8 @@
 #include "daikinctrl.h"
 #include "util.h"
 
-CDaikinCtrl::CDaikinCtrl(PubSubClient& MQTTClient)
+CDaikinCtrl::CDaikinCtrl(PubSubClient& mqttClient) : m_mqttClient(mqttClient)
 {
-  m_pMQTTClient = &MQTTClient;
   m_roomTempRollingAverager.SetAvgCount(PRIMARY_ZONE_ROOM_TEMP_AVG_TIME);
 }
 
@@ -166,139 +165,139 @@ bool CDaikinCtrl::MQTTPublishValues()
   if (m_bUpdateCtrlEnable)
   {
     m_bUpdateCtrlEnable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF, m_bCtrlEnable ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF, m_bCtrlEnable ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlZonePriEnable)
   {
     m_bUpdateCtrlZonePriEnable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_PRIMARY_ENABLE, m_bCtrlZonePriEnable ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_PRIMARY_ENABLE, m_bCtrlZonePriEnable ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlZoneSecEnable)
   {
     m_bUpdateCtrlZoneSecEnable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE, m_bCtrlZoneSecEnable ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE, m_bCtrlZoneSecEnable ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlZoneSecForce)
   {
     m_bUpdateCtrlZoneSecForce = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE, m_bCtrlZoneSecForce ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE, m_bCtrlZoneSecForce ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlValvePriCloseForce)
   {
     m_bUpdateCtrlValvePriCloseForce = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_VALVE_PRIMARY_CLOSE_FORCE, m_bCtrlValvePriCloseForce ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_VALVE_PRIMARY_CLOSE_FORCE, m_bCtrlValvePriCloseForce ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlDaikinDisable)
   {
     m_bUpdateCtrlDaikinDisable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_DISABLE, m_bCtrlDaikinDisable ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_DISABLE, m_bCtrlDaikinDisable ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlGasOnly)
   {
     m_bUpdateCtrlGasOnly = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY, m_bCtrlGasOnly ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY, m_bCtrlGasOnly ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlShortCyclePrevention)
   {
     m_bUpdateCtrlShortCyclePrevention = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SHORT_CYCLE_PREVENT, m_bCtrlShortCyclePrevention ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SHORT_CYCLE_PREVENT, m_bCtrlShortCyclePrevention ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlRoom1Enable)
   {
     m_bUpdateCtrlRoom1Enable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE, m_bCtrlRoom1Enable ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE, m_bCtrlRoom1Enable ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlRoom2Enable)
   {
     m_bUpdateCtrlRoom2Enable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE, m_bCtrlRoom2Enable ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE, m_bCtrlRoom2Enable ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlRoom3Enable)
   {
     m_bUpdateCtrlRoom3Enable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE, m_bCtrlRoom3Enable ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE, m_bCtrlRoom3Enable ? "1" : "0", true);
   }
 
   if (m_bUpdateCtrlRoom4Enable)
   {
     m_bUpdateCtrlRoom4Enable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM4_ENABLE, m_bCtrlRoom4Enable ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM4_ENABLE, m_bCtrlRoom4Enable ? "1" : "0", true);
   }
 
   if (m_bUpdateLeavingWaterTooHigh)
   {
     m_bUpdateLeavingWaterTooHigh = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_LEAVING_WATER_TOO_HIGH, m_bLeavingWaterTooHigh ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_LEAVING_WATER_TOO_HIGH, m_bLeavingWaterTooHigh ? "1" : "0", true);
   }
 
   if (m_bUpdateValveZonePrimaryOpen)
   {
     m_bUpdateValveZonePrimaryOpen = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ZONE_PRIMARY_OPEN, m_bValveZonePrimaryOpen ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ZONE_PRIMARY_OPEN, m_bValveZonePrimaryOpen ? "1" : "0", true);
   }
 
   if (m_bUpdateRoom1ValveOpen)
   {
     m_bUpdateRoom1ValveOpen = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM1_OPEN, m_bRoom1ValveOpen ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM1_OPEN, m_bRoom1ValveOpen ? "1" : "0", true);
   }
 
   if (m_bUpdateRoom2ValveOpen)
   {
     m_bUpdateRoom2ValveOpen = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM2_OPEN, m_bRoom2ValveOpen ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM2_OPEN, m_bRoom2ValveOpen ? "1" : "0", true);
   }
 
   if (m_bUpdateRoom3ValveOpen)
   {
     m_bUpdateRoom3ValveOpen = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM3_OPEN, m_bRoom3ValveOpen ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM3_OPEN, m_bRoom3ValveOpen ? "1" : "0", true);
   }
 
   if (m_bUpdateRoom4ValveOpen)
   {
     m_bUpdateRoom4ValveOpen = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM4_OPEN, m_bRoom4ValveOpen ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_VALVE_ROOM4_OPEN, m_bRoom4ValveOpen ? "1" : "0", true);
   }
 
   if (m_bUpdateDaikinZonePrimaryEnable)
   {
     m_bUpdateDaikinZonePrimaryEnable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_PRIMARY_ENABLED, m_bDaikinZonePrimaryEnable ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_PRIMARY_ENABLED, m_bDaikinZonePrimaryEnable ? "1" : "0", true);
   }
 
   if (m_bUpdateDaikinZoneSecondaryEnable)
   {
     m_bUpdateDaikinZoneSecondaryEnable = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_SECONDARY_ENABLED, m_bDaikinZoneSecondaryEnable ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_DAIKIN_SECONDARY_ENABLED, m_bDaikinZoneSecondaryEnable ? "1" : "0", true);
   }
 
   if (m_bUpdateAveragePrimaryZoneRoomTemp)
   {
     m_bUpdateAveragePrimaryZoneRoomTemp = false;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_AVG_ROOM_TEMPERATURE, m_strAveragePrimaryZoneRoomTemp, true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_AVG_ROOM_TEMPERATURE, m_strAveragePrimaryZoneRoomTemp, true);
   }
 
   if (m_bUpdateZonePrimaryShortCycleDetected)
   {
     m_bUpdateZonePrimaryShortCycleDetected = true;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_SHORT_CYCLE_PRIMARY_DETECTED, m_bZonePrimaryShortCycleDetected ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_SHORT_CYCLE_PRIMARY_DETECTED, m_bZonePrimaryShortCycleDetected ? "1" : "0", true);
   }
 
   if (m_bUpdateZoneSecondaryShortCycleDetected)
   {
     m_bUpdateZoneSecondaryShortCycleDetected = true;
-    m_pMQTTClient->publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_SHORT_CYCLE_SECONDARY_DETECTED, m_bZoneSecondaryShortCycleDetected ? "1" : "0", true);
+    m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_SHORT_CYCLE_SECONDARY_DETECTED, m_bZoneSecondaryShortCycleDetected ? "1" : "0", true);
   }
 
   return true;
@@ -664,7 +663,7 @@ void CDaikinCtrl::loop()
   }
 
   // Publish new MQTT values (if any) when timer expires (and connected)
-  if (m_MQTTTimer > MQTT_UPDATE_TIME * 1000 && m_pMQTTClient->connected())
+  if (m_MQTTTimer > MQTT_UPDATE_TIME * 1000 && m_mqttClient.connected())
   {
     MQTTPublishValues();
 

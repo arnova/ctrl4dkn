@@ -34,12 +34,12 @@
 #include "system.h"
 
 // Version string:
-#define MY_VERSION "0.44"
+#define MY_VERSION "1.00"
 
 // Globals
 WiFiClient g_wifiClient;
-PubSubClient g_MQTTClient(g_wifiClient);
-CDaikinCtrl g_DaikinCtrl(g_MQTTClient);
+PubSubClient g_mqttClient(g_wifiClient);
+CDaikinCtrl g_DaikinCtrl(g_mqttClient);
 uint16_t g_iChecksumLast = 0;
 
 void MQTTPrintError(void)
@@ -426,7 +426,7 @@ void MQTTPublishConfig(const char* strItem, CDaikinCtrl::ha_config_type_t HAConf
   strTopic.toLowerCase();
   strTopic.replace(' ', '_');
 
-  g_MQTTClient.publish(strTopic.c_str(), message, true);
+  g_mqttClient.publish(strTopic.c_str(), message, true);
 }
 
 
@@ -437,73 +437,73 @@ bool MQTTReconnect()
   String clientId = "ESP32But-";
   clientId += String(random(0xffff), HEX);
   // Attempt to connect
-//    if (MQTTClient.connect(clientId.c_str(), NULL, NULL, "test", 0, false, "not connected", false))
-  if (!g_MQTTClient.connect(clientId.c_str()))
+//    if (m_mqttClient.connect(clientId.c_str(), NULL, NULL, "test", 0, false, "not connected", false))
+  if (!g_mqttClient.connect(clientId.c_str()))
   {
     Serial.print("failed, rc=");
-    Serial.print(g_MQTTClient.state());
+    Serial.print(g_mqttClient.state());
     return false;
   }
 
   Serial.println("connected");
 
   // Subscribe to messages from p1p2serial etc.
-  g_MQTTClient.subscribe(MQTT_P1P2_P_DATE_TIME, 0); // For watchdog
-  g_MQTTClient.subscribe(MQTT_P1P2_P_ALTHERMA_ON, 0);
-  g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE, 0);
-  g_MQTTClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE, 0);
-  g_MQTTClient.subscribe(MQTT_P1P2_P_LEAVING_WATER_TEMP, 0);
-  g_MQTTClient.subscribe(MQTT_P1P2_P_VALVE_ZONE_MAIN, 0);
-  g_MQTTClient.subscribe(MQTT_P1P2_P_DEFROST_ACTIVE, 0);
-  g_MQTTClient.subscribe(MQTT_P1P2_P_COMPRESSOR, 0);
-  g_MQTTClient.subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
-  g_MQTTClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
-  g_MQTTClient.subscribe(MQTT_P1P2_P_COOLING_ON, 0);
+  g_mqttClient.subscribe(MQTT_P1P2_P_DATE_TIME, 0); // For watchdog
+  g_mqttClient.subscribe(MQTT_P1P2_P_ALTHERMA_ON, 0);
+  g_mqttClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE, 0);
+  g_mqttClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE, 0);
+  g_mqttClient.subscribe(MQTT_P1P2_P_LEAVING_WATER_TEMP, 0);
+  g_mqttClient.subscribe(MQTT_P1P2_P_VALVE_ZONE_MAIN, 0);
+  g_mqttClient.subscribe(MQTT_P1P2_P_DEFROST_ACTIVE, 0);
+  g_mqttClient.subscribe(MQTT_P1P2_P_COMPRESSOR, 0);
+  g_mqttClient.subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
+  g_mqttClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
+  g_mqttClient.subscribe(MQTT_P1P2_P_COOLING_ON, 0);
 
   // Publish MQTT config for eg. HA discovery and subscribe to control topics
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set", 1);
   MQTTPublishConfig(MQTT_CONTROLLER_ON_OFF, CDaikinCtrl::SWITCH);
 
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_PRIMARY_ENABLE "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_PRIMARY_ENABLE "/set", 1);
   MQTTPublishConfig(MQTT_ZONE_PRIMARY_ENABLE, CDaikinCtrl::SWITCH);
 
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE "/set", 1);
   MQTTPublishConfig(MQTT_ZONE_SECONDARY_ENABLE, CDaikinCtrl::SWITCH);
 
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE "/set", 1);
   MQTTPublishConfig(MQTT_ZONE_SECONDARY_FORCE, CDaikinCtrl::SWITCH);
 
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_VALVE_PRIMARY_CLOSE_FORCE "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_VALVE_PRIMARY_CLOSE_FORCE "/set", 1);
   MQTTPublishConfig(MQTT_VALVE_PRIMARY_CLOSE_FORCE, CDaikinCtrl::SWITCH);
 
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_DISABLE "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_DISABLE "/set", 1);
   MQTTPublishConfig(MQTT_DAIKIN_DISABLE, CDaikinCtrl::SWITCH);
 
 #ifdef DAIKIN_PREFERENTIAL_RELAY
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY "/set", 1);
   MQTTPublishConfig(MQTT_GAS_ONLY, CDaikinCtrl::SWITCH);
 #endif
 
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SHORT_CYCLE_PREVENT "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SHORT_CYCLE_PREVENT "/set", 1);
   MQTTPublishConfig(MQTT_SHORT_CYCLE_PREVENT, CDaikinCtrl::SWITCH);
 
 #ifdef ROOM1_VALVE_RELAY
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set", 1);
   MQTTPublishConfig(MQTT_ROOM1_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_VALVE_ROOM1_OPEN, CDaikinCtrl::BINARY_SENSOR);
 #endif
 #ifdef ROOM2_VALVE_RELAY
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE "/set", 1);
   MQTTPublishConfig(MQTT_ROOM2_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_VALVE_ROOM2_OPEN, CDaikinCtrl::BINARY_SENSOR);
 #endif
 #ifdef ROOM3_VALVE_RELAY
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE "/set", 1);
   MQTTPublishConfig(MQTT_ROOM3_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_VALVE_ROOM3_OPEN, CDaikinCtrl::BINARY_SENSOR);
 #endif
 #ifdef ROOM4_VALVE_RELAY
-  g_MQTTClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM4_ENABLE "/set", 1);
+  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM4_ENABLE "/set", 1);
   MQTTPublishConfig(MQTT_ROOM4_ENABLE, CDaikinCtrl::SWITCH);
   MQTTPublishConfig(MQTT_VALVE_ROOM4_OPEN, CDaikinCtrl::BINARY_SENSOR);
 #endif
@@ -516,7 +516,7 @@ bool MQTTReconnect()
   MQTTPublishConfig(MQTT_SHORT_CYCLE_SECONDARY_DETECTED, CDaikinCtrl::BINARY_SENSOR);
 
   // Publish our f/w version
-  g_MQTTClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_FW_VERSION, MY_VERSION, true);
+  g_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_FW_VERSION, MY_VERSION, true);
 
   return true;
 }
@@ -648,9 +648,9 @@ void setup()
 
   SetupWifi();
 
-  g_MQTTClient.setServer(mqtt_server, MQTT_PORT);
-  g_MQTTClient.setBufferSize(MQTT_MAX_SIZE);
-  g_MQTTClient.setCallback(MQTTCallback);
+  g_mqttClient.setServer(mqtt_server, MQTT_PORT);
+  g_mqttClient.setBufferSize(MQTT_MAX_SIZE);
+  g_mqttClient.setCallback(MQTTCallback);
 
   // Allow the hardware to sort itself out
   delay(1500);
@@ -682,7 +682,7 @@ void loop()
       MQTTReconnectTimer = 0;
     }
   }
-  else if (!g_MQTTClient.connected()) // Check for MQTT disconnects
+  else if (!g_mqttClient.connected()) // Check for MQTT disconnects
   {
 #ifdef LED_RED
     digitalWrite(LED_RED, LOW); // Always on: failure
@@ -710,7 +710,7 @@ void loop()
 
 #endif
 
-    g_MQTTClient.loop();
+    g_mqttClient.loop();
 
     // Handle OTA-updates
     ArduinoOTA.handle();

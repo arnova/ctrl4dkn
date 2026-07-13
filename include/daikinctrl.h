@@ -101,8 +101,7 @@ class CDaikinCtrl
       STATE_DELAY_WAIT
     };
 
- 
-    CDaikinCtrl(PubSubClient& MQTTClient);
+    CDaikinCtrl(PubSubClient& mqttClient);
 
     void loop();
 
@@ -159,7 +158,7 @@ class CDaikinCtrl
     void StateMachine();
     void UpdateRelays();
 
-    PubSubClient* m_pMQTTClient;
+    PubSubClient& m_mqttClient;
     bool m_bDaikinPrimaryZoneOn = false;
     bool m_bDaikinSecondaryZoneOn = false;
     bool m_bPrimaryZoneValveClose = false;
