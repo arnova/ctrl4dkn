@@ -348,7 +348,10 @@ void CDaikinCtrl::StateMachine()
   m_bRoom4ValveOpenRq |= !digitalRead(ROOM4_ENABLE);
 #endif
 
-  bool bSecondaryZoneEnable = m_bCtrlZoneSecEnable;
+  const bool bPrimaryZoneEnable = m_bCtrlZonePriEnable && !(m_bCtrlShortCyclePrevention && m_bZonePrimaryShortCycleDetected);
+
+  bool bSecondaryZoneEnable = m_bCtrlZoneSecEnable && !(m_bCtrlShortCyclePrevention && m_bZoneSecondaryShortCycleDetected);
+
 #ifdef SECONDARY_ZONE_ENABLE
   bSecondaryZoneEnable |= !digitalRead(SECONDARY_ZONE_ENABLE);
 #endif
@@ -422,7 +425,7 @@ void CDaikinCtrl::StateMachine()
   if (m_bP1P2CoolingOn)
   {
     m_bPrimaryZoneValveClose = m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce;// && bSecondaryZoneEnable;
-    m_bDaikinPrimaryZoneOn = m_bCtrlZonePriEnable && !m_bPrimaryZoneValveClose;
+    m_bDaikinPrimaryZoneOn = bPrimaryZoneEnable && !m_bPrimaryZoneValveClose;
     m_bDaikinSecondaryZoneOn = !m_bDaikinPrimaryZoneOn && bSecondaryZoneEnable;
     m_bP1P2ValveZoneMainLast = false;
     m_iState = STATE_IDLE;
@@ -452,14 +455,14 @@ void CDaikinCtrl::StateMachine()
       // NOTE: Need to enable secondary zone as soon as the primary zone is at set-point (not + half hysteresis!).
       //       This is due to (possible) modulation else it may take forever before we switch over.
       //       Furthermore we don't want wp shutting on-off-on when switching over from primary to secondary.
-      if (!m_bCtrlZonePriEnable || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce)
+      if (!bPrimaryZoneEnable || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce)
       {
         // Check if secondary zone requires heating
         if ((bSecondaryZoneEnable || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce) && !m_bCtrlDaikinDisable)
         {
 #ifdef LOW_TEMP_SECONDARY_ZONE
           // Enable (disable secondary zone on Daikin, if requested but primary zone doesn't require heating
-          m_bDaikinSecondaryZoneOn = ((!m_bCtrlZonePriEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce);
+          m_bDaikinSecondaryZoneOn = ((!bPrimaryZoneEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce);
 
           if (!m_bPrimaryZoneValveClose)
           {
@@ -496,10 +499,10 @@ void CDaikinCtrl::StateMachine()
             m_bPrimaryZoneValveClose = true;
 
             // Check if Daikin secondary will be enabled below, if so wait till primary valve is closed
-            if ((!m_bCtrlZonePriEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce)
+            if ((!bPrimaryZoneEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce)
               m_iState = STATE_PRIMARY_VALVE_DELAY;
           }
-          else if ((!m_bCtrlZonePriEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce)
+          else if ((!bPrimaryZoneEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce)
           {
             m_bDaikinSecondaryZoneOn = true;
 
