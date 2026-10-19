@@ -25,7 +25,14 @@ void CDaikinCtrl::Reset()
   m_iNetworkWatchdogCounter = 0;
   m_iNetworkWatchdogRecoveryCounter = 0;
 
+  // Clear short cycle history (also ends any active short cycle recovery)
+  m_shortCyclePrimary.Reset();
+  m_shortCycleSecondary.Reset();
+
+  m_roomTempRollingAverager.Reset();
+
   m_bPublishSettings = true;
+  m_bMqttRepublish = true;
 
   LoadSettings();
 }
