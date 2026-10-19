@@ -242,7 +242,7 @@ result_code_t CCtrl4DknCommandHandler::CmdSetMqttPassword(const char *strArgs)
 result_code_t CCtrl4DknCommandHandler::CmdRestartNet(const char *strArgs)
 {
   if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS);
+    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
 
   m_network.InitWifi(true);
 
@@ -253,7 +253,7 @@ result_code_t CCtrl4DknCommandHandler::CmdRestartNet(const char *strArgs)
 result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
 {
   if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS);
+    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
 
   char strBuf[20]; // Enough room for float with 3 decimals
 
@@ -326,7 +326,7 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
 result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
 {
   if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS);
+    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
 
   CTerminal::print("wifi_conn=");
   CTerminal::print(m_network.IsConnected() ? "1" : "0");
@@ -349,7 +349,7 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
 result_code_t CCtrl4DknCommandHandler::CmdUpTime(const char *strArgs)
 {
   if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS);
+    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
 
   // Publish uptime
   const CUptime::uptime_t upTime = m_daikinCtrl.GetUpTime();
@@ -364,7 +364,7 @@ result_code_t CCtrl4DknCommandHandler::CmdUpTime(const char *strArgs)
 result_code_t CCtrl4DknCommandHandler::CmdReset(const char *strArgs)
 {
   if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS);
+    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
 
   m_daikinCtrl.Reset();
 
@@ -375,7 +375,7 @@ result_code_t CCtrl4DknCommandHandler::CmdReset(const char *strArgs)
 result_code_t CCtrl4DknCommandHandler::CmdFactoryReset(const char *strArgs)
 {
   if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS);
+    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
 
   m_daikinCtrl.FactoryReset();
 
