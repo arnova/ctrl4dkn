@@ -654,7 +654,7 @@ void CDaikinCtrl::loop()
   {
     if (m_iFloorProtectionCounter > 0)
     {
-      if (--m_iFloorProtectionCounter)
+      if (--m_iFloorProtectionCounter == 0)
       {
         m_bFloorProtection = false;
       }
@@ -679,6 +679,9 @@ void CDaikinCtrl::loop()
 #endif
   if (bLeavingWaterTooHigh)
   {
+    // Abort any running protection delay
+    m_iFloorProtectionCounter = 0;
+
     if (!m_bFloorProtection)
     {
       // Leaving water temperature too high, enable protection
@@ -694,7 +697,16 @@ void CDaikinCtrl::loop()
     if (m_bFloorProtection &&
         m_fP1P2LeavingWaterTemp < LEAVING_WATER_MAX - LEAVING_WATER_MAX_MARGIN)
     {
-      m_iFloorProtectionCounter = FLOOR_PROTECTION_DELAY;
+      // Start protection delay (once, it's counted down by the timed control loop)
+      if (m_iFloorProtectionCounter == 0)
+      {
+        m_iFloorProtectionCounter = FLOOR_PROTECTION_DELAY;
+      }
+    }
+    else
+    {
+      // Abort any running protection delay (temperature not below margin (anymore))
+      m_iFloorProtectionCounter = 0;
     }
   }
 
