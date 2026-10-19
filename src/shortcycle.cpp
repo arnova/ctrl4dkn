@@ -27,8 +27,9 @@ void CShortCycle::Loop(const bool bOn)
   // Check for on-off state change
   if (bLastState && !bOn)
   {
-    uint8_t iCycleCountSmall = 0;
-    uint8_t iCycleCountLarge = 0;
+    // Include the current stop in the counts
+    uint8_t iCycleCountSmall = 1;
+    uint8_t iCycleCountLarge = 1;
     int8_t iTimeStampPos = 0;
     uint32_t iTimeDiffOldest = (m_iShortCycleTimestamp - m_iShortCycleTimeStamps[0]) / 60 / CONTROL_LOOP_TIME;
     for (uint8_t it = 0; it < SHORT_CYCLE_SAMPLES; it++)
