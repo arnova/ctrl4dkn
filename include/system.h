@@ -11,9 +11,11 @@ const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno v
 
 // Network watchdog timer settings
 #define NETWORK_WATCHDOG_TIMEOUT_DEFAULT        900   // Seconds = 15 minutes
+#define NETWORK_WATCHDOG_TIMEOUT_MIN            60    // Seconds = 1 minute (0 = disabled)
 #define NETWORK_WATCHDOG_TIMEOUT_MAX            65000
 
 #define NETWORK_WATCHDOG_RECOVERY_DEFAULT       900   // Seconds = 15 minutes
+#define NETWORK_WATCHDOG_RECOVERY_MIN           60    // Seconds = 1 minute
 #define NETWORK_WATCHDOG_RECOVERY_MAX           65000
 
 #define MQTT_UPDATE_TIME_DEFAULT                10     // Seconds

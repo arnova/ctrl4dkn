@@ -27,8 +27,8 @@ const char HELP_STR_P[] PROGMEM = "\r\n"
                                   "mqttpass [p]           : Set MQTT server password to [p] (may be empty)\r\n"
                                   "mqttinterval [s]       : Set MQTT update interval to [s] seconds\r\n"
                                   "restartnet             : Restart network (after eg. WiFi/IP/hostname settings changes)\r\n"
-                                  "netwdt [i]             : Set network watchdog timeout to [i] seconds (0 or \"off\" to disable)\r\n"
-                                  "netwdr [i]             : Set network watchdog recovery time to [i] seconds\r\n"
+                                  "netwdt [i]             : Set network watchdog timeout to [i] seconds (min. " STRINGIZE(NETWORK_WATCHDOG_TIMEOUT_MIN) ", 0 or \"off\" to disable)\r\n"
+                                  "netwdr [i]             : Set network watchdog recovery time to [i] seconds (min. " STRINGIZE(NETWORK_WATCHDOG_RECOVERY_MIN) ")\r\n"
 //                                  "exhelp                 : Show expert help\r\n"
                                   "factoryreset           : Reset all (stored) settings to factory defaults (except network)\r\n"
                                   ;
@@ -386,19 +386,21 @@ result_code_t CCtrl4DknCommandHandler::CmdNetWatchdogTimeout(const char *strArgs
   if (result.code != ERR_CODE_OK)
     return result;
 
-  if (STRIEQUALS(strArgs, "off") || STRIEQUALS(strArgs, "0"))
+  int32_t iTimeout = 0; // 0 = disabled
+  if (!STRIEQUALS(strArgs, "off"))
   {
-    m_daikinCtrl.SetNetWatchDogTimeout(0);
-  }
-  else
-  {
-    int32_t iTimeout;
     result = get_int32_from_string(strArgs, &iTimeout, 0, NETWORK_WATCHDOG_TIMEOUT_MAX, ARG_INT32_NUM1);
     if (result.code != ERR_CODE_OK)
       return result;
 
-    m_daikinCtrl.SetNetWatchDogTimeout(iTimeout);
+    if (iTimeout != 0 && iTimeout < NETWORK_WATCHDOG_TIMEOUT_MIN)
+    {
+      result_code_t resultCode = pack_result_code(ERR_CODE_ARG_VAL_MIN, ARG_INT32_NUM1);
+      return store_arg1_int32(resultCode, NETWORK_WATCHDOG_TIMEOUT_MIN);
+    }
   }
+
+  m_daikinCtrl.SetNetWatchDogTimeout(iTimeout);
 
   return pack_result_code(ERR_CODE_OK);
 }
@@ -411,7 +413,7 @@ result_code_t CCtrl4DknCommandHandler::CmdNetWatchdogRecovery(const char *strArg
     return result;
 
   int32_t iTime;
-  result = get_int32_from_string(strArgs, &iTime, 0, NETWORK_WATCHDOG_RECOVERY_MAX, ARG_INT32_NUM1);
+  result = get_int32_from_string(strArgs, &iTime, NETWORK_WATCHDOG_RECOVERY_MIN, NETWORK_WATCHDOG_RECOVERY_MAX, ARG_INT32_NUM1);
   if (result.code != ERR_CODE_OK)
     return result;
 
@@ -523,11 +525,11 @@ result_code_t CCtrl4DknCommandHandler::ProcessCommand(char *strCommand)
   }
   else if (STRIEQUALS(strCommand, "netwdt"))
   {
-    //result = CmdNetWatchdogTimeout(strArgs); // FIXME
+    result = CmdNetWatchdogTimeout(strArgs);
   }
   else if (STRIEQUALS(strCommand, "netwdr"))
   {
-    //result = CmdNetWatchdogRecovery(strArgs); // FIXME
+    result = CmdNetWatchdogRecovery(strArgs);
   }
 
   return result;
