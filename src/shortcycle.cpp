@@ -49,7 +49,7 @@ void CShortCycle::Loop(const bool bOn)
       }
 
       // Overwrite the oldest timestamp
-      if (iTimeDiff < iTimeDiffOldest)
+      if (iTimeDiff > iTimeDiffOldest)
       {
         iTimeStampPos = it;
         iTimeDiffOldest = iTimeDiff;
