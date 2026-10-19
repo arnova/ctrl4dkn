@@ -245,9 +245,14 @@ result_code_t CCtrl4DknCommandHandler::CmdRestartNet(const char *strArgs)
   if (strArgs != NULL && *strArgs)
     return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
 
+  // Output result before restarting, else it's lost on a socket (terminal) connection
+  CTerminal::println("OK");
+
+  delay(3000); // Delay to make sure network socket processing is done
+
   m_network.InitWifi(true);
 
-  return pack_result_code(ERR_CODE_OK);
+  return pack_result_code(ERR_CODE_OK_NULL); // Result already printed
 }
 
 
