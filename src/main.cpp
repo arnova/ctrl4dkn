@@ -1,7 +1,7 @@
 /*
   Ctrl4Dkn - Floor Heating(/Cooling) Controller For Daikin (Hybrid) Heatpump Systems
-  Last update: November 26, 2025
-  (C) Copyright 2024-2025 by Arno van Amersfoort
+  Last update: October 19, 2026
+  (C) Copyright 2024-2026 by Arno van Amersfoort
   Web                   : https://github.com/arnova/ctrl4dkn
   Email                 : a r n o DOT v a n DOT a m e r s f o o r t AT g m a i l DOT c o m
                           (note: you must remove all spaces and substitute the @ and the . at the proper locations!)
@@ -22,49 +22,36 @@
 */
 
 #include <Arduino.h>
-#include <WiFi.h>
-//#include <WiFiSTA.h>
-#include <ESPmDNS.h>
-#include <PubSubClient.h>
-#include <ArduinoOTA.h>
-#include <ArduinoJson.h>
+#include <EEPROM.h>
 
-#include "daikinctrl.h"
+#include "Terminal.h"
 #include "util.h"
+#include "App.h"
 #include "system.h"
 
-// Version string:
-#define MY_VERSION "1.00"
-
-// Globals
-WiFiClient g_wifiClient;
-PubSubClient g_mqttClient(g_wifiClient);
-CDaikinCtrl g_DaikinCtrl(g_mqttClient);
+// Application global instance
+CApp g_app;
 uint16_t g_iChecksumLast = 0;
 
-void MQTTPrintError(void)
+void MqttCallback(char* topic, byte *payload, const unsigned int length)
 {
-  Serial.println("ERROR: Invalid MQTT data for topic");
-}
-
-
-void MQTTCallback(char* topic, byte *payload, const unsigned int length)
-{
-  Serial.println("-------new message from broker-----");
-  Serial.print("topic: ");
-  Serial.println(topic);
-  Serial.print("data: ");
-  for (int i = 0; i < length; i++)
+#ifdef MQTT_DEBUG
+  CTerminal::println("-------new message from broker-----");
+  CTerminal::print("topic: ");
+  CTerminal::println(topic);
+  CTerminal::print("data: ");
+  for (unsigned int i = 0; i < length; i++)
   {
-    Serial.print((char)payload[i]);
+    CTerminal::print((char) payload[i]);
   }
-  Serial.println();
+  CTerminal::println("");
+#endif
 
   float fVal;
-  const bool bValidFloat = BytesToFloat(payload, length, fVal);
+  const bool bValidFloat = bytes_to_float(payload, length, &fVal);
 
-  int8_t iVal;
-  const bool bValidInt = BytesToInt8(payload, length, iVal);
+  int32_t iVal;
+  const bool bValidInt = bytes_to_int32(payload, length, &iVal);
 
   if (STRIEQUALS(topic, MQTT_P1P2_P_DATE_TIME))
   {
@@ -75,518 +62,520 @@ void MQTTCallback(char* topic, byte *payload, const unsigned int length)
     }
     if (iChecksum != g_iChecksumLast)
     {
-      g_DaikinCtrl.TriggerWatchdog();
+      g_app.GetDaikinCtrl().TriggerWatchdog();
     }
     g_iChecksumLast = iChecksum;
+
+    return;
   }
-  else if (STRIEQUALS(topic, MQTT_P1P2_P_ALTHERMA_ON))
+  
+  if (STRIEQUALS(topic, MQTT_P1P2_P_ALTHERMA_ON))
   {
     if (bValidInt)
     {
       if (iVal == 1)
-        g_DaikinCtrl.SetP1P2AlthermaOn(true);
+      {
+        g_app.GetDaikinCtrl().SetP1P2AlthermaOn(true);
+      }
       else if (iVal == 0)
-        g_DaikinCtrl.SetP1P2AlthermaOn(false);
+      {
+        g_app.GetDaikinCtrl().SetP1P2AlthermaOn(false);
+      }
       else
-        MQTTPrintError();
+      {
+        CMqttClient::PrintDataError();
+      }
     }
     else
-      MQTTPrintError();
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
-  else if (STRIEQUALS(topic, MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE))
+
+  if (STRIEQUALS(topic, MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE))
   {
     if (bValidFloat)
-      g_DaikinCtrl.SetP1P2PrimaryZoneRoomTemp(fVal);
+    {
+      g_app.GetDaikinCtrl().SetP1P2PrimaryZoneRoomTemp(fVal);
+    }
     else
-      MQTTPrintError();
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
-  else if (STRIEQUALS(topic, MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE))
+
+  if (STRIEQUALS(topic, MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE))
   {
     if (bValidFloat)
-      g_DaikinCtrl.SetP1P2PrimaryZoneTargetTemp(fVal);
+    {
+      g_app.GetDaikinCtrl().SetP1P2PrimaryZoneTargetTemp(fVal);
+    }
     else
-      MQTTPrintError();
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
-  else if (STRIEQUALS(topic, MQTT_P1P2_P_LEAVING_WATER_TEMP))
+
+  if (STRIEQUALS(topic, MQTT_P1P2_P_LEAVING_WATER_TEMP))
   {
     if (bValidFloat)
-      g_DaikinCtrl.SetP1P2LeavingWaterTemp(fVal);
+    {
+      g_app.GetDaikinCtrl().SetP1P2LeavingWaterTemp(fVal);
+    }
     else
-      MQTTPrintError();
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
-  else if (STRIEQUALS(topic, MQTT_P1P2_P_VALVE_ZONE_MAIN))
+
+  if (STRIEQUALS(topic, MQTT_P1P2_P_VALVE_ZONE_MAIN))
   {
     if (bValidInt)
     {
       if (iVal == 1)
-        g_DaikinCtrl.SetP1P2ValveZoneMain(true);
+      {
+        g_app.GetDaikinCtrl().SetP1P2ValveZoneMain(true);
+      }
       else if (iVal == 0)
-        g_DaikinCtrl.SetP1P2ValveZoneMain(false);
+      {
+        g_app.GetDaikinCtrl().SetP1P2ValveZoneMain(false);
+      }
       else
-        MQTTPrintError();
+      {
+        CMqttClient::PrintDataError();
+      }
     }
     else
-      MQTTPrintError();
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
-  else if (STRIEQUALS(topic, MQTT_P1P2_P_DEFROST_ACTIVE))
+
+  if (STRIEQUALS(topic, MQTT_P1P2_P_DEFROST_ACTIVE))
   {
     if (bValidInt)
     {
       if (iVal == 1)
-        g_DaikinCtrl.SetP1P2DefrostActive(true);
+      {
+        g_app.GetDaikinCtrl().SetP1P2DefrostActive(true);
+      }
       else if (iVal == 0)
-        g_DaikinCtrl.SetP1P2DefrostActive(false);
+      {
+        g_app.GetDaikinCtrl().SetP1P2DefrostActive(false);
+      }
       else
-        MQTTPrintError();
+      {
+        CMqttClient::PrintDataError();
+      }
     }
     else
-      MQTTPrintError();
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
-  else if (STRIEQUALS(topic, MQTT_P1P2_P_COMPRESSOR))
+
+
+  if (STRIEQUALS(topic, MQTT_P1P2_P_COMPRESSOR))
   {
     if (bValidInt)
     {
       if (iVal == 1)
-        g_DaikinCtrl.SetP1P2Compressor(true);
+      {
+        g_app.GetDaikinCtrl().SetP1P2Compressor(true);
+      }
       else if (iVal == 0)
-        g_DaikinCtrl.SetP1P2Compressor(false);
+      {
+        g_app.GetDaikinCtrl().SetP1P2Compressor(false);
+      }
       else
-        MQTTPrintError();
+      {
+        CMqttClient::PrintDataError();
+      }
     }
     else
-      MQTTPrintError();
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
-  else if (STRIEQUALS(topic, MQTT_P1P2_P_CIRCULATION_PUMP_ON))
+
+
+  if (STRIEQUALS(topic, MQTT_P1P2_P_CIRCULATION_PUMP_ON))
   {
     if (bValidInt)
     {
       if (iVal == 1)
-        g_DaikinCtrl.SetP1P2CirculationPumpOn(true);
+      {
+        g_app.GetDaikinCtrl().SetP1P2CirculationPumpOn(true);
+      }
       else if (iVal == 0)
-        g_DaikinCtrl.SetP1P2CirculationPumpOn(false);
+      {
+        g_app.GetDaikinCtrl().SetP1P2CirculationPumpOn(false);
+      }
       else
-        MQTTPrintError();
+      {
+        CMqttClient::PrintDataError();
+      }
     }
     else
-      MQTTPrintError();
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
-  else if (STRIEQUALS(topic, MQTT_P1P2_P_HEATING_ON))
+
+  if (STRIEQUALS(topic, MQTT_P1P2_P_HEATING_ON))
   {
     if (bValidInt)
     {
       if (iVal == 1)
-        g_DaikinCtrl.SetP1P2HeatingOn(true);
+      {
+        g_app.GetDaikinCtrl().SetP1P2HeatingOn(true);
+      }
       else if (iVal == 0)
-        g_DaikinCtrl.SetP1P2HeatingOn(false);
+      {
+        g_app.GetDaikinCtrl().SetP1P2HeatingOn(false);
+      }
       else
-        MQTTPrintError();
+      {
+        CMqttClient::PrintDataError();
+      }
     }
     else
-      MQTTPrintError();
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
-  else if (STRIEQUALS(topic, MQTT_P1P2_P_COOLING_ON))
+
+  if (STRIEQUALS(topic, MQTT_P1P2_P_COOLING_ON))
   {
     if (bValidInt)
     {
       if (iVal == 1)
-        g_DaikinCtrl.SetP1P2CoolingOn(true);
+      {
+        g_app.GetDaikinCtrl().SetP1P2CoolingOn(true);
+      }
       else if (iVal == 0)
-        g_DaikinCtrl.SetP1P2CoolingOn(false);
+      {
+        g_app.GetDaikinCtrl().SetP1P2CoolingOn(false);
+      }
       else
-        MQTTPrintError();
+      {
+        CMqttClient::PrintDataError();
+      }
     }
     else
-      MQTTPrintError();
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
 
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set"))
+  if (STRIEQUALS(topic, MQTT_HA_STATUS_TOPIC))
   {
-    if (bValidInt || length == 0)
+    // Home Assistant (re)started: it lost our (non-retained) states so republish them
+    if (length == 6 && strncasecmp((const char*) payload, "online", 6) == 0)
     {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlOnOff((iVal == 1 || length == 0) ? true : false);
-      else
-        MQTTPrintError();
+      g_app.MqttRequestRepublish();
     }
-    else
-      MQTTPrintError();
+    return;
   }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_PRIMARY_ENABLE "/set"))
+
+  const size_t iLen = strlen(g_app.GetNetwork().GetHostName());
+  if (strncmp(topic, g_app.GetNetwork().GetHostName(), iLen) != 0 ||
+      strlen(topic) < iLen + 2)
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlZonePriEnable(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlZoneSecEnable(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlZoneSecForce(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_VALVE_PRIMARY_CLOSE_FORCE "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlValvePriCloseForce(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_DISABLE "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlDaikinDisable(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlRoom1Enable(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlRoom2Enable(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlRoom3Enable(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM4_ENABLE "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlRoom4Enable(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlGasOnly(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-  else if (STRIEQUALS(topic, MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SHORT_CYCLE_PREVENT "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-        g_DaikinCtrl.SetCtrlShortCyclePrevention(iVal == 1 ? true : false);
-      else
-        MQTTPrintError();
-    }
-    else
-      MQTTPrintError();
-  }
-}
-
-
-void MQTTPublishConfig(const char* strItem, CDaikinCtrl::ha_config_type_t HAConfigType)
-{
-  JsonDocument root;
-  root["name"] = strItem;
-  root["unique_id"] = String("Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID "_") + strItem; // Optional
-  root["retain"] = true;
-  root["qos"] = 1;
-
-//  root["value_template"] = "{{ value_json.state }}"; // Not used
-
-  switch(HAConfigType)
-  {
-    case CDaikinCtrl::SWITCH:
-    {
-      root["state_topic"] = String(MQTT_CTRL4DKN_CTRL_PREFIX) + strItem;
-      root["command_topic"] = String(MQTT_CTRL4DKN_CTRL_PREFIX) + strItem + "/set";
-      root["payload_on"] = "1";
-      root["payload_off"] = "0";
-      root["state_on"] = "1";
-      root["state_off"] = "0";
-    }
-    break;
-
-    case CDaikinCtrl::BINARY_SENSOR:
-    {
-      root["state_topic"] = String(MQTT_CTRL4DKN_STATUS_PREFIX) + strItem;
-      root["payload_on"] = "1";
-      root["payload_off"] = "0";
-    }
-    break;
-
-    case CDaikinCtrl::TEMP_SENSOR:
-    {
-      root["state_topic"] = String(MQTT_CTRL4DKN_STATUS_PREFIX) + strItem;
-      root["unit_of_meas"] = "°C";
-      root["dev_cla"] = "temperature";
-    }
-    break;
+    return; // Hostname mismatch or length too small
   }
 
-  JsonObject device = root["device"].to<JsonObject>();
-  device["name"] = "Ctrl4Dkn";
-  device["model"] = "Daikin Floorheating Controller";
-  device["manufacturer"] = "Arnova";
-  device["identifiers"] = "Ctrl4Dkn_" MQTT_CTRL4DKN_HOST_ID;
-
-  // Output to console
-  serializeJsonPretty(root, Serial);
-  Serial.println();
-
-  // Serialize JSON for MQTT
-  char message[MQTT_MAX_SIZE];
-  serializeJson(root, message);
-  Serial.println(message); //Prints it out on one line.
-
-  String strTopic = String("homeassistant/");
-  switch (HAConfigType)
-  {
-    case CDaikinCtrl::SWITCH:
-    {
-       strTopic += "switch";
-    }
-    break;
-
-    case CDaikinCtrl::TEMP_SENSOR:
-    {
-      strTopic += "sensor";
-    }
-    break;
-
-    case CDaikinCtrl::BINARY_SENSOR:
-    {
-      strTopic += "binary_sensor";
-    }
-    break;
-  }
-  strTopic += String("/ctrl4dkn_" MQTT_CTRL4DKN_HOST_ID "/") + strItem + "/config";
-  strTopic.toLowerCase();
-  strTopic.replace(' ', '_');
-
-  g_mqttClient.publish(strTopic.c_str(), message, true);
-}
-
-
-bool MQTTReconnect()
-{
-  Serial.print("Attempting MQTT connection...");
-  // Create a random client ID
-  String clientId = "ESP32But-";
-  clientId += String(random(0xffff), HEX);
-  // Attempt to connect
-//    if (m_mqttClient.connect(clientId.c_str(), NULL, NULL, "test", 0, false, "not connected", false))
-  if (!g_mqttClient.connect(clientId.c_str()))
-  {
-    Serial.print("failed, rc=");
-    Serial.print(g_mqttClient.state());
-    return false;
-  }
-
-  Serial.println("connected");
-
-  // Subscribe to messages from p1p2serial etc.
-  g_mqttClient.subscribe(MQTT_P1P2_P_DATE_TIME, 0); // For watchdog
-  g_mqttClient.subscribe(MQTT_P1P2_P_ALTHERMA_ON, 0);
-  g_mqttClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE, 0);
-  g_mqttClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE, 0);
-  g_mqttClient.subscribe(MQTT_P1P2_P_LEAVING_WATER_TEMP, 0);
-  g_mqttClient.subscribe(MQTT_P1P2_P_VALVE_ZONE_MAIN, 0);
-  g_mqttClient.subscribe(MQTT_P1P2_P_DEFROST_ACTIVE, 0);
-  g_mqttClient.subscribe(MQTT_P1P2_P_COMPRESSOR, 0);
-  g_mqttClient.subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
-  g_mqttClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
-  g_mqttClient.subscribe(MQTT_P1P2_P_COOLING_ON, 0);
-
-  // Publish MQTT config for eg. HA discovery and subscribe to control topics
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_CONTROLLER_ON_OFF "/set", 1);
-  MQTTPublishConfig(MQTT_CONTROLLER_ON_OFF, CDaikinCtrl::SWITCH);
-
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_PRIMARY_ENABLE "/set", 1);
-  MQTTPublishConfig(MQTT_ZONE_PRIMARY_ENABLE, CDaikinCtrl::SWITCH);
-
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_ENABLE "/set", 1);
-  MQTTPublishConfig(MQTT_ZONE_SECONDARY_ENABLE, CDaikinCtrl::SWITCH);
-
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ZONE_SECONDARY_FORCE "/set", 1);
-  MQTTPublishConfig(MQTT_ZONE_SECONDARY_FORCE, CDaikinCtrl::SWITCH);
-
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_VALVE_PRIMARY_CLOSE_FORCE "/set", 1);
-  MQTTPublishConfig(MQTT_VALVE_PRIMARY_CLOSE_FORCE, CDaikinCtrl::SWITCH);
-
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_DAIKIN_DISABLE "/set", 1);
-  MQTTPublishConfig(MQTT_DAIKIN_DISABLE, CDaikinCtrl::SWITCH);
-
-#ifdef DAIKIN_PREFERENTIAL_RELAY
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_GAS_ONLY "/set", 1);
-  MQTTPublishConfig(MQTT_GAS_ONLY, CDaikinCtrl::SWITCH);
+#if 0
+  char strVal[32] = { 0 };
+  memcpy(strVal, payload, (length < sizeof(strVal)) ? length : sizeof(strVal) - 1);
 #endif
 
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_SHORT_CYCLE_PREVENT "/set", 1);
-  MQTTPublishConfig(MQTT_SHORT_CYCLE_PREVENT, CDaikinCtrl::SWITCH);
+  // Get rid of host prefix
+  char* subTopic = topic + iLen;
 
-#ifdef ROOM1_VALVE_RELAY
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM1_ENABLE "/set", 1);
-  MQTTPublishConfig(MQTT_ROOM1_ENABLE, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_VALVE_ROOM1_OPEN, CDaikinCtrl::BINARY_SENSOR);
-#endif
-#ifdef ROOM2_VALVE_RELAY
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM2_ENABLE "/set", 1);
-  MQTTPublishConfig(MQTT_ROOM2_ENABLE, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_VALVE_ROOM2_OPEN, CDaikinCtrl::BINARY_SENSOR);
-#endif
-#ifdef ROOM3_VALVE_RELAY
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM3_ENABLE "/set", 1);
-  MQTTPublishConfig(MQTT_ROOM3_ENABLE, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_VALVE_ROOM3_OPEN, CDaikinCtrl::BINARY_SENSOR);
-#endif
-#ifdef ROOM4_VALVE_RELAY
-  g_mqttClient.subscribe(MQTT_CTRL4DKN_CTRL_PREFIX MQTT_ROOM4_ENABLE "/set", 1);
-  MQTTPublishConfig(MQTT_ROOM4_ENABLE, CDaikinCtrl::SWITCH);
-  MQTTPublishConfig(MQTT_VALVE_ROOM4_OPEN, CDaikinCtrl::BINARY_SENSOR);
-#endif
-  MQTTPublishConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_DAIKIN_PRIMARY_ENABLED, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_DAIKIN_SECONDARY_ENABLED, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_LEAVING_WATER_TOO_HIGH, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_AVG_ROOM_TEMPERATURE, CDaikinCtrl::TEMP_SENSOR);
-  MQTTPublishConfig(MQTT_SHORT_CYCLE_PRIMARY_DETECTED, CDaikinCtrl::BINARY_SENSOR);
-  MQTTPublishConfig(MQTT_SHORT_CYCLE_SECONDARY_DETECTED, CDaikinCtrl::BINARY_SENSOR);
-
-  // Publish our f/w version
-  g_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_FW_VERSION, MY_VERSION, true);
-
-  return true;
-}
-
-
-void SetupWifi()
-{
-  delay(10);
-  // We start by connecting to a WiFi network
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(SSID);
-
-  // Init wifi
-  WiFi.mode(WIFI_STA);
-  WiFi.setHostname(HOST_NAME);
-  WiFi.begin(SSID, PASSWORD);
-
-  while (WiFi.status() != WL_CONNECTED)
+  if (STRIEQUALS(subTopic, "/" MQTT_CONTROLLER_ON_OFF "/set"))
   {
-    delay(1000);
-    Serial.print(".");
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlOnOff((iVal == 1 || length == 0) ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
 
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  // Initialize mDNS
-  if (!MDNS.begin(HOST_NAME))
+  if (STRIEQUALS(subTopic, "/" MQTT_ZONE_PRIMARY_ENABLE "/set"))
   {
-    Serial.println("Error setting up MDNS responder!");
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlZonePriEnable(iVal == 1 ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
-  else
+
+  if (STRIEQUALS(subTopic, "/" MQTT_ZONE_SECONDARY_ENABLE "/set"))
   {
-    Serial.println("mDNS responder started");
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlZoneSecEnable(iVal == 1 ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
   }
 
-  // Need to explicitly set hostname as ArduinoOTA will override our mdns-name set above
-  ArduinoOTA.setHostname(HOST_NAME);
+  if (STRIEQUALS(subTopic, "/" MQTT_ZONE_SECONDARY_FORCE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlZoneSecForce(iVal == 1 ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
 
-  ArduinoOTA.onStart([]() {
-    Serial.println("Start");
-  });
-  ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-    else if (error == OTA_END_ERROR) Serial.println("End Failed");
-  });
-  ArduinoOTA.begin();
+    return;
+  }
 
-  randomSeed(micros());
+  if (STRIEQUALS(subTopic, "/" MQTT_VALVE_PRIMARY_CLOSE_FORCE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlValvePriCloseForce(iVal == 1 ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
+  }
+
+  if (STRIEQUALS(subTopic, "/" MQTT_DAIKIN_DISABLE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlDaikinDisable(iVal == 1 ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
+  }
+
+  if (STRIEQUALS(subTopic, "/" MQTT_ROOM1_ENABLE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlRoom1Enable(iVal == 1 ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
+  }
+
+  if (STRIEQUALS(subTopic, "/" MQTT_ROOM2_ENABLE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlRoom2Enable(iVal == 1 ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
+  }
+
+  if (STRIEQUALS(subTopic, "/" MQTT_ROOM3_ENABLE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlRoom3Enable(iVal == 1 ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
+  }
+
+  if (STRIEQUALS(subTopic, "/" MQTT_ROOM4_ENABLE "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlRoom4Enable(iVal == 1 ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
+  }
+
+  if (STRIEQUALS(subTopic, "/" MQTT_GAS_ONLY "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlGasOnly(iVal == 1 ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
+  }
+
+  if (STRIEQUALS(subTopic, "/" MQTT_SHORT_CYCLE_PREVENT "/set"))
+  {
+    if (bValidInt || length == 0)
+    {
+      if (iVal == 0 || iVal == 1 || length == 0)
+      {
+        g_app.GetDaikinCtrl().SetCtrlShortCyclePrevention(iVal == 1 ? true : false);
+      }
+      else
+      {
+        CMqttClient::PrintDataError();
+      }
+    }
+    else
+    {
+      CMqttClient::PrintDataError();
+    }
+
+    return;
+  }
 }
 
 
 void setup()
 {
+  EEPROM.begin(EEPROM_MAX_SIZE); // Reserve room for eeprom settings
+
+  randomSeed(micros());
+
   // Outputs
-#ifdef LED_RED
-  pinMode(LED_RED, OUTPUT);
+#ifdef STATUS_LED
+  pinMode(STATUS_LED, OUTPUT);
 #endif
 
 #ifdef DAIKIN_PRIMARY_ZONE_RELAY
@@ -643,78 +632,27 @@ void setup()
   pinMode(HARDWARE_MAX_TEMP_SENSOR, INPUT_PULLUP);
 #endif
 
-  Serial.begin(9600);
-  Serial.setTimeout(2000);
+  TERM_SERIAL.begin(BAUD_RATE);
+  TERM_SERIAL.setTimeout(2000);
 
-  SetupWifi();
+  // Init g_app instance
+  g_app.Init();
 
-  g_mqttClient.setServer(mqtt_server, MQTT_PORT);
-  g_mqttClient.setBufferSize(MQTT_MAX_SIZE);
-  g_mqttClient.setCallback(MQTTCallback);
+  // Setup the MQTT client callback
+  g_app.GetNetwork().GetMqttClient().setCallback(MqttCallback);
 
   // Allow the hardware to sort itself out
   delay(1500);
 
-  MQTTReconnect();
+  // Have the terminal start with a newline
+  CTerminal::println("");
+
+  // Print out version info
+  CTerminal::println(FPSTR(VER_STR_P));
 }
 
 
 void loop()
 {
-  static elapsedMillis MQTTReconnectTimer = 0;
-  static elapsedMillis WifiReconnectTimer = 0;
-  static elapsedMillis ledTimer = 0;
-
-  if (WiFi.status() != WL_CONNECTED) // Check for wifi disconnects
-  {
-#ifdef LED_RED
-    digitalWrite(LED_RED, LOW); // Always on: failure
-#endif
-
-    if (WifiReconnectTimer > 5000)
-    {
-      Serial.print(millis());
-      Serial.println("Reconnecting to WiFi...");
-      WiFi.disconnect();
-      WiFi.reconnect();
-      MQTTReconnect();
-      WifiReconnectTimer = 0;
-      MQTTReconnectTimer = 0;
-    }
-  }
-  else if (!g_mqttClient.connected()) // Check for MQTT disconnects
-  {
-#ifdef LED_RED
-    digitalWrite(LED_RED, LOW); // Always on: failure
-#endif
-
-    if (MQTTReconnectTimer > 5000)
-    {
-      MQTTReconnect();
-      MQTTReconnectTimer = 0;
-    }
-  }
-  else
-  {
-    // Indicate we're running:
-#ifdef LED_RED
-    if (ledTimer > 2000)
-    {
-      digitalWrite(LED_RED, HIGH); // Off
-      ledTimer = 0;
-    }
-    else if (ledTimer > 1000)
-    {
-      digitalWrite(LED_RED, LOW); // On
-    }
-
-#endif
-
-    g_mqttClient.loop();
-
-    // Handle OTA-updates
-    ArduinoOTA.handle();
-  }
-
-  g_DaikinCtrl.loop();
+  g_app.Loop();
 }
