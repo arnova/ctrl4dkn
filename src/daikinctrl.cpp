@@ -290,13 +290,13 @@ bool CDaikinCtrl::MQTTPublishValues()
 
   if (m_bUpdateZonePrimaryShortCycleDetected)
   {
-    m_bUpdateZonePrimaryShortCycleDetected = true;
+    m_bUpdateZonePrimaryShortCycleDetected = false;
     m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_SHORT_CYCLE_PRIMARY_DETECTED, m_bZonePrimaryShortCycleDetected ? "1" : "0", true);
   }
 
   if (m_bUpdateZoneSecondaryShortCycleDetected)
   {
-    m_bUpdateZoneSecondaryShortCycleDetected = true;
+    m_bUpdateZoneSecondaryShortCycleDetected = false;
     m_mqttClient.publish(MQTT_CTRL4DKN_STATUS_PREFIX MQTT_SHORT_CYCLE_SECONDARY_DETECTED, m_bZoneSecondaryShortCycleDetected ? "1" : "0", true);
   }
 
