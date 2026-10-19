@@ -1,0 +1,437 @@
+/* 
+  Network Class
+  (C) Copyright 2026
+
+  Written by       : Arno van Amersfoort
+  Dependencies     : elapsedMillis MqttClient Terminal util
+  Initial date     : July 11, 2026
+  Last modified    : July 30, 2026
+*/
+
+#include <Arduino.h>
+#ifdef ESP8266
+#include <ESP8266WiFi.h>
+#else
+#include <WiFi.h>
+#endif
+#include <ArduinoOTA.h>
+#include <EEPROM.h>
+
+#include "Network.h"
+#include "globals.h"
+#include "Terminal.h"
+#include "util.h"
+
+
+CNetwork::CNetwork()
+#ifdef SOCKET_SERVER_PORT
+  : m_socketServer(SOCKET_SERVER_PORT)
+#endif
+{
+}
+
+
+void CNetwork::Init()
+{
+  LoadSettings();
+
+  InitWifi(false);
+
+  m_mqttClient.setClient(m_wifiClient);
+
+  if (IPAddress(m_mqttIpAddr) != IPAddress(0, 0, 0, 0))
+  {
+    m_mqttClient.Init(m_mqttIpAddr, m_strHostName, m_strMqttUser, m_strMqttPassword);
+  }
+}
+
+
+bool CNetwork::IsValidAlpha(const char* str)
+{
+  for (; *str; ++str)
+  {
+    if (*str < 32 || *str > 126)
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+void CNetwork::LoadSettings()
+{
+  EEPROM.get(EEPROM_HOST_NAME, m_strHostName);
+  m_strHostName[HOST_NAME_MAX_SIZE] = '\0'; // Always null terminate
+  if (!IsValidAlpha(m_strHostName))
+  {
+    strcpy(m_strHostName, DEFAULT_HOST_NAME);
+  }
+
+  EEPROM.get(EEPROM_IP_ADDR, m_ipAddr);
+  if (IPAddress(m_ipAddr) == IPAddress(255, 255, 255, 255))
+  {
+    memset(m_ipAddr, 0x00, 4);
+  }
+
+  EEPROM.get(EEPROM_IP_NETMASK, m_ipNetmask);
+
+  EEPROM.get(EEPROM_MQTT_IP_ADDR, m_mqttIpAddr);
+  if (IPAddress(m_mqttIpAddr) == IPAddress(255, 255, 255, 255))
+  {
+    memset(m_mqttIpAddr, 0x00, 4);
+  }
+
+  EEPROM.get(EEPROM_WIFI_SSID, m_strWifiSsid);
+  m_strWifiSsid[WIFI_SSID_MAX_SIZE] = '\0'; // Always null terminate
+  if (!IsValidAlpha(m_strWifiSsid))
+  {
+    strcpy(m_strWifiSsid, "");
+  }
+
+  EEPROM.get(EEPROM_WIFI_PASSWORD, m_strWifiPassword);
+  m_strWifiPassword[WIFI_PASSWORD_MAX_SIZE] = '\0'; // Always null terminate
+  if (!IsValidAlpha(m_strWifiPassword))
+  {
+    strcpy(m_strWifiPassword, "");
+  }
+
+  EEPROM.get(EEPROM_MQTT_USER, m_strMqttUser);
+  m_strMqttUser[MQTT_USER_MAX_SIZE] = '\0'; // Always null terminate
+  if (!IsValidAlpha(m_strMqttUser))
+  {
+    strcpy(m_strMqttUser, "");
+  }
+
+  EEPROM.get(EEPROM_MQTT_PASSWORD, m_strMqttPassword);
+  m_strMqttPassword[MQTT_PASSWORD_MAX_SIZE] = '\0'; // Always null terminate
+  if (!IsValidAlpha(m_strMqttPassword))
+  {
+    strcpy(m_strMqttPassword, "");
+  }
+}
+
+
+void CNetwork::InitWifi(const bool bReconnect)
+{
+  m_wifiTimeoutTimer = 0;
+  m_bWifiConnected = false;
+
+  if (bReconnect)
+  {
+#ifdef WIFI_DEBUG
+    //CTerminal::println("");
+    //CTerminal::println(PSTR("Disconnecting WiFi"));
+#endif
+#ifdef SOCKET_SERVER_PORT
+    if (m_socketServerClient)
+    {
+      m_socketServerClient.stop();
+    }
+
+    m_socketServer.stop();
+#endif
+    WiFi.disconnect();
+  }
+
+  if (strlen(m_strWifiSsid) == 0)
+    return;
+
+#ifdef WIFI_DEBUG
+  CTerminal::println("");
+  CTerminal::print(PSTR("(Re)connecting to WiFi network: "));
+  CTerminal::println(m_strWifiSsid);
+#endif
+
+  // Check for dhcp ip
+  if (IPAddress(m_ipAddr) != IPAddress(0, 0, 0, 0))
+  {
+    // Static IP. NOTE: No gateway / dns
+    WiFi.config(m_ipAddr, IPAddress(0, 0, 0, 0), m_ipNetmask);
+  }
+  else
+  {
+    // DHCP IP
+    WiFi.config(IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0));
+  }
+
+  WiFi.mode(WIFI_STA);
+  WiFi.setHostname(m_strHostName);
+  if (strlen(m_strWifiPassword) != 0)
+  {
+    WiFi.begin(m_strWifiSsid, m_strWifiPassword);
+  }
+  else
+  {
+    WiFi.begin(m_strWifiSsid);
+  }
+}
+
+
+void CNetwork::SetHostName(const char* strHostName)
+{
+  if (!STREQUALS(strHostName, m_strHostName))
+  {
+    memset(m_strHostName, 0x00, HOST_NAME_MAX_SIZE + 1);
+    strcpy(m_strHostName, strHostName);
+
+    EEPROM.put(EEPROM_HOST_NAME, m_strHostName);
+    EEPROM.commit();
+  }
+}
+
+
+void CNetwork::SetWifiSsid(const char* strSsid)
+{
+  if (!STREQUALS(strSsid, m_strWifiSsid))
+  {
+    memset(m_strWifiSsid, 0x00, WIFI_SSID_MAX_SIZE + 1);
+    strcpy(m_strWifiSsid, strSsid);
+
+    EEPROM.put(EEPROM_WIFI_SSID, m_strWifiSsid);
+    EEPROM.commit();
+  }
+}
+
+
+void CNetwork::SetWifiPassword(const char* strPassword)
+{
+  if (!STREQUALS(strPassword, m_strWifiPassword))
+  {
+    memset(m_strWifiPassword, 0x00, WIFI_PASSWORD_MAX_SIZE + 1);
+    strcpy(m_strWifiPassword, strPassword);
+
+    EEPROM.put(EEPROM_WIFI_PASSWORD, m_strWifiPassword);
+    EEPROM.commit();
+  }
+}
+
+
+void CNetwork::SetIpAddr(const uint8_t* ipAddress)
+{
+  if (memcmp(ipAddress, m_ipAddr, 4) != 0)
+  {
+    memcpy(m_ipAddr, ipAddress, sizeof(m_ipAddr));
+
+    EEPROM.put(EEPROM_IP_ADDR, m_ipAddr);
+    EEPROM.commit();
+  }
+}
+
+
+void CNetwork::SetNetMask(const uint8_t* ipNetMask)
+{
+  if (memcmp(ipNetMask, m_ipNetmask, 4) != 0)
+  {
+    memcpy(m_ipNetmask, ipNetMask, sizeof(m_ipNetmask));
+
+    EEPROM.put(EEPROM_IP_NETMASK, m_ipNetmask);
+    EEPROM.commit();
+  }
+}
+
+
+void CNetwork::ReinitMqtt()
+{
+  // Disconnect to current server
+  if (m_mqttClient.connected())
+  {
+    m_mqttClient.disconnect();
+  }
+
+  m_mqttClient.Init(m_mqttIpAddr, m_strHostName, m_strMqttUser, m_strMqttPassword);
+}
+
+
+void CNetwork::SetMqttServerIp(const uint8_t* ipAddress)
+{
+  if (memcmp(ipAddress, m_mqttIpAddr, 4) != 0)
+  {
+    memcpy(m_mqttIpAddr, ipAddress, sizeof(m_mqttIpAddr));
+
+    EEPROM.put(EEPROM_MQTT_IP_ADDR, m_mqttIpAddr);
+    EEPROM.commit();
+  }
+
+  ReinitMqtt();
+}
+
+
+void CNetwork::SetMqttUser(const char* strUser)
+{
+  if (!STREQUALS(strUser, m_strMqttUser))
+  {
+    memset(m_strMqttUser, 0x00, MQTT_USER_MAX_SIZE + 1);
+    strcpy(m_strMqttUser, strUser);
+
+    EEPROM.put(EEPROM_MQTT_USER, m_strMqttUser);
+    EEPROM.commit();
+  }
+
+  ReinitMqtt();
+}
+
+
+void CNetwork::SetMqttPassword(const char* strPassword)
+{
+  if (!STREQUALS(strPassword, m_strMqttPassword))
+  {
+    memset(m_strMqttPassword, 0x00, MQTT_PASSWORD_MAX_SIZE + 1);
+    strcpy(m_strMqttPassword, strPassword);
+
+    EEPROM.put(EEPROM_MQTT_PASSWORD, m_strMqttPassword);
+    EEPROM.commit();
+  }
+
+  ReinitMqtt();
+}
+
+
+void CNetwork::MqttPublishValues()
+{
+  // Note: Values are static so only published on request
+  if (!m_bMqttRepublish || !IsMqttConnected())
+    return;
+
+  m_mqttClient.PublishMessage(MQTT_WIFI_SSID, m_strWifiSsid);
+
+  char strBuf[16]; // Enough room for a standard IPv4 address
+  snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
+  m_mqttClient.PublishMessage(MQTT_IP_ADDRESS, strBuf);
+
+//  snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", WiFi.net()[0], WiFi.net()[1], WiFi.net()[2], WiFi.net()[3]);
+//  m_mqttClient.PublishMessage(MQTT_IP_NETMASK, strBuf);
+
+  m_bMqttRepublish = false;
+}
+
+
+#ifdef SOCKET_SERVER_PORT
+WiFiClient& CNetwork::GetSocketServerClient()
+{
+  // Check for new client connections
+  WiFiClient newClient = m_socketServer.accept();
+
+  if (newClient)
+  {
+    if (m_socketServerClient && m_socketServerClient.connected())
+    {
+#ifdef WIFI_DEBUG
+      CTerminal::println("Terminating existing client connection for new client");
+#endif
+      m_socketServerClient.stop();
+    }
+
+    m_socketServerClient = newClient;
+
+    if (m_socketServerClient)
+    {
+      CTerminal::SetSocketClient(m_socketServerClient);
+#ifdef WIFI_DEBUG
+      CTerminal::print("Accepting connection from client: ");
+
+      char strBuf[16]; // Enough room for a standard IPv4 address
+      snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", m_socketServerClient.remoteIP()[0], m_socketServerClient.remoteIP()[1], m_socketServerClient.remoteIP()[2], m_socketServerClient.remoteIP()[3]);
+      CTerminal::println(strBuf);
+#endif
+    }
+  }
+
+  return m_socketServerClient;
+}
+#endif
+
+
+bool CNetwork::HandleMqttClient()
+{
+  // Handle MQTT client-server connection
+  if (IPAddress(m_mqttIpAddr) != IPAddress(0, 0, 0, 0) && m_bWifiConnected)
+  {
+    if (m_mqttClient.connected())
+    {
+      m_mqttTimeoutTimer = 0;
+    }
+    else if (m_mqttTimeoutTimer > MQTT_CONNECT_TIMEOUT)
+    {
+      m_mqttTimeoutTimer = 0;
+
+      if (m_mqttClient.ServerConnect())
+      {
+        return true; // Reconnected
+      }
+    }
+  }
+
+  return false; // No reconnection
+}
+
+
+void CNetwork::Loop()
+{
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    if (!m_bWifiConnected)
+    {
+      // Need to explicitly set hostname as ArduinoOTA also handles mdns
+      ArduinoOTA.setHostname(m_strHostName);
+
+      ArduinoOTA.onStart([]() {
+        TERM_SERIAL.println("Start");
+      });
+      ArduinoOTA.onEnd([]() {
+        TERM_SERIAL.println("\nEnd");
+      });
+      ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+        TERM_SERIAL.printf("Progress: %u%%\r", (progress / (total / 100)));
+      });
+      ArduinoOTA.onError([](ota_error_t error) {
+        TERM_SERIAL.printf("Error[%u]: ", error);
+        if (error == OTA_AUTH_ERROR) TERM_SERIAL.println("Auth Failed");
+        else if (error == OTA_BEGIN_ERROR) TERM_SERIAL.println("Begin Failed");
+        else if (error == OTA_CONNECT_ERROR) TERM_SERIAL.println("Connect Failed");
+        else if (error == OTA_RECEIVE_ERROR) TERM_SERIAL.println("Receive Failed");
+        else if (error == OTA_END_ERROR) TERM_SERIAL.println("End Failed");
+      });
+      ArduinoOTA.begin();
+
+      m_bWifiConnected = true;
+
+#ifdef WIFI_DEBUG
+      TERM_SERIAL.println("");
+      TERM_SERIAL.print(PSTR("WiFi connected with IP address: "));
+
+      char strBuf[16]; // Enough room for a standard IPv4 address
+      snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
+      TERM_SERIAL.println(strBuf);
+#endif
+
+#ifdef SOCKET_SERVER_PORT
+      // Init the socket server
+      m_socketServer.begin();
+      m_socketServer.setNoDelay(true);
+
+#ifdef WIFI_DEBUG
+      TERM_SERIAL.println("Listening for terminal connections on TCP port: " STRINGIZE(SOCKET_SERVER_PORT));
+#endif
+#endif
+    }
+
+    // Handle OTA (& mdns) updates
+    ArduinoOTA.handle();
+
+    m_wifiTimeoutTimer = 0;
+  }
+  else
+  {
+    if (m_wifiTimeoutTimer > WIFI_CONNECT_TIMEOUT)
+    {
+      InitWifi(true);
+    }
+  }
+
+  // Always perform mqtt loop to detect connection failures
+  m_mqttClient.loop();
+
+  MqttPublishValues();
+}

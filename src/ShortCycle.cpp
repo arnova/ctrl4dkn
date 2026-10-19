@@ -1,5 +1,5 @@
-      
-#include "shortcycle.h"
+#include "ShortCycle.h"
+#include "globals.h"
 
 void CShortCycle::Reset()
 {
@@ -31,11 +31,11 @@ void CShortCycle::Loop(const bool bOn)
     uint8_t iCycleCountSmall = 1;
     uint8_t iCycleCountLarge = 1;
     int8_t iTimeStampPos = 0;
-    uint32_t iTimeDiffOldest = (m_iShortCycleTimestamp - m_iShortCycleTimeStamps[0]) / 60 / CONTROL_LOOP_TIME;
+    uint32_t iTimeDiffOldest = (m_iShortCycleTimestamp - m_iShortCycleTimeStamps[0]) / 60 / (CONTROL_LOOP_TIME / 1000);
     for (uint8_t it = 0; it < SHORT_CYCLE_SAMPLES; it++)
     {
       // Note: iTimeDiff already handles wrapping. Note that it's in minutes
-      const uint32_t iTimeDiff = (m_iShortCycleTimestamp - m_iShortCycleTimeStamps[it]) / 60 / CONTROL_LOOP_TIME;
+      const uint32_t iTimeDiff = (m_iShortCycleTimestamp - m_iShortCycleTimeStamps[it]) / 60 / (CONTROL_LOOP_TIME / 1000);
 
       // Check if this is a short cycle in the small window
       if (iTimeDiff <= SHORT_CYCLE_SMALL_WINDOW)
@@ -59,7 +59,7 @@ void CShortCycle::Loop(const bool bOn)
 
     if (iCycleCountSmall > SHORT_CYCLE_SMALL_WINDOW_COUNT || iCycleCountLarge > SHORT_CYCLE_LARGE_WINDOW_COUNT)
     {
-      m_iShortCycleRecoveryCounter = SHORT_CYCLE_RECOVERY_TIME * 60 * CONTROL_LOOP_TIME;
+      m_iShortCycleRecoveryCounter = SHORT_CYCLE_RECOVERY_TIME * 60 * (CONTROL_LOOP_TIME / 1000);
     }
 
     m_iShortCycleTimeStamps[iTimeStampPos] = m_iShortCycleTimestamp; // Store current timestamp

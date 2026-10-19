@@ -2,83 +2,15 @@
 #define DAIKIN_CTRL_H
 
 #include <elapsedMillis.h>
-#include <PubSubClient.h>
 
+#include "globals.h"
 #include "system.h"
+#include "Uptime.h"
+#include "Network.h"
+#include "Terminal.h"
+#include "Ctrl4DknCommandHandler.h"
 #include "RollingAverage.h"
-#include "shortcycle.h"
-
-#define MQTT_MAX_SIZE 1024
-
-#define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
-
-// Define P1P2Serial / bridge topics
-#ifndef MQTT_P1P2_OLD_BRIDGE
-#define MQTT_P1P2_P_HEATING_ON                      MQTT_P1P2_P_PREFIX "S/0/Heating_OnOff"
-#define MQTT_P1P2_P_COOLING_ON                      MQTT_P1P2_P_PREFIX "S/0/Cooling_OnOff"
-#define MQTT_P1P2_P_CIRCULATION_PUMP_ON             MQTT_P1P2_P_PREFIX "S/1/Circulation_Pump_OnOff"
-#define MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE MQTT_P1P2_P_PREFIX "S/1/Target_Temperature_Room"
-#define MQTT_P1P2_P_LEAVING_WATER_TEMP              MQTT_P1P2_P_PREFIX "T/1/Temperature_Leaving_Water"
-#else
-#define MQTT_P1P2_P_HEATING_ON                      MQTT_P1P2_P_PREFIX "S/1/Climate_Heating"
-#define MQTT_P1P2_P_COOLING_ON                      MQTT_P1P2_P_PREFIX "S/1/Climate_Cooling"
-#define MQTT_P1P2_P_CIRCULATION_PUMP_ON             MQTT_P1P2_P_PREFIX "S/1/Circulation_Pump"
-#define MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE MQTT_P1P2_P_PREFIX "S/0/Room_Heating_Setpoint"
-#define MQTT_P1P2_P_LEAVING_WATER_TEMP              MQTT_P1P2_P_PREFIX "T/1/Temperature_R2T_Leaving_Water"
-#endif
-#define MQTT_P1P2_P_VALVE_ZONE_MAIN                 MQTT_P1P2_P_PREFIX "S/1/Valve_Zone_Main"
-#define MQTT_P1P2_P_DEFROST_ACTIVE                  MQTT_P1P2_P_PREFIX "S/1/Defrost_Active"
-#define MQTT_P1P2_P_COMPRESSOR                      MQTT_P1P2_P_PREFIX "S/1/Compressor"
-#define MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE   MQTT_P1P2_P_PREFIX "T/1/Temperature_Room"
-#define MQTT_P1P2_P_ALTHERMA_ON                     MQTT_P1P2_P_PREFIX "S/0/Altherma_On"
-
-#define MQTT_P1P2_P_DATE_TIME                       MQTT_P1P2_P_PREFIX "M/9/Date_Time_Daikin"
-
-#define MQTT_CTRL4DKN_CTRL_PREFIX                   "ctrl4dkn/c/"
-#define MQTT_CTRL4DKN_STATUS_PREFIX                 "ctrl4dkn/s/"
-
-// Control topics
-#define MQTT_CONTROLLER_ON_OFF                      "Controller Enable"
-#define MQTT_ZONE_PRIMARY_ENABLE                    "Zone Primary Enable"
-#define MQTT_ZONE_SECONDARY_ENABLE                  "Zone Secondary Enable"
-#define MQTT_ZONE_SECONDARY_FORCE                   "Zone Secondary Force"
-#define MQTT_VALVE_PRIMARY_CLOSE_FORCE              "Valve Primary Close Force"
-#define MQTT_DAIKIN_DISABLE                         "Daikin Disable"
-#define MQTT_ROOM1_ENABLE                           "Room 1 Enable"
-#define MQTT_ROOM2_ENABLE                           "Room 2 Enable"
-#define MQTT_ROOM3_ENABLE                           "Room 3 Enable"
-#define MQTT_ROOM4_ENABLE                           "Room 4 Enable"
-#define MQTT_GAS_ONLY                               "Gas Only"
-#define MQTT_SHORT_CYCLE_PREVENT                    "Short Cycle Prevention"
-
-// Status topics
-#define MQTT_FW_VERSION                             "Firmware Version"
-#define MQTT_VALVE_ZONE_PRIMARY_OPEN                "Valve Zone Primary Open"
-#define MQTT_VALVE_ROOM1_OPEN                       "Valve Room 1 Open"
-#define MQTT_VALVE_ROOM2_OPEN                       "Valve Room 2 Open"
-#define MQTT_VALVE_ROOM3_OPEN                       "Valve Room 3 Open"
-#define MQTT_VALVE_ROOM4_OPEN                       "Valve Room 4 Open"
-#define MQTT_DAIKIN_PRIMARY_ENABLED                 "Daikin Primary Enabled"
-#define MQTT_DAIKIN_SECONDARY_ENABLED               "Daikin Secondary Enabled"
-#define MQTT_LEAVING_WATER_TOO_HIGH                 "Leaving Water Too High"
-#define MQTT_AVG_ROOM_TEMPERATURE                   "Temperature Room Averaged"
-#define MQTT_SHORT_CYCLE_PRIMARY_DETECTED           "Zone Primary Short Cycle Detected"
-#define MQTT_SHORT_CYCLE_SECONDARY_DETECTED         "Zone Secondary Short Cycle Detected"
-
-#define DAIKIN_HYSTERESIS                     1.0f
-#define LEAVING_WATER_MAX                    45.0f
-#define LEAVING_WATER_MAX_MARGIN              3.0f
-#define DAIKIN_ZONE_SWITCH_TIME                 5   // Seconds
-#define PRIMARY_ZONE_ROOM_TEMP_AVG_TIME      1800   // Seconds = 30 minutes
-#define PRIMARY_ZONE_VALVE_DELAY              180   // Seconds = 3 minutes
-#define FLOOR_PROTECTION_DELAY                300   // Seconds = 5 minutes
-#define DAIKIN_ACTIVE_OFF_TIME                900   // Seconds = 15 minutes
-#define DAIKIN_STARTUP_TIME                    30   // Seconds
-#define LWT_COOL_DOWN_DELAY_TIME              300   // Seconds = 5 minutes
-#define WATCHDOG_TIMEOUT_TIME                 900   // Seconds = 15 minutes
-#define WATCHDOG_RECOVERY_TIME                900   // Seconds = 15 minutes
-
-#define MQTT_UPDATE_TIME                        1   // Seconds
+#include "ShortCycle.h"
 
 class CDaikinCtrl
 {
@@ -101,12 +33,21 @@ class CDaikinCtrl
       STATE_DELAY_WAIT
     };
 
-    CDaikinCtrl(PubSubClient& mqttClient);
-
-    void loop();
+    CDaikinCtrl(CNetwork& network); // Ctor
 
     static bool Float2HexStr(const float& fVal, char* strVal);
     static bool Float2Str(const float& fVal, char* strVal);
+
+    void Loop();
+    void Reset();
+
+    void MqttOnConnect();
+    void MqttRequestRepublish() { m_bMqttRepublish = true; }; // Publish all values on next loop
+    void LoadSettings();
+    void FactoryReset();
+
+    void TriggerWatchdog() { m_iNetworkWatchdogCounter = 0; };
+    void ShortCycleHandling();
 
     void UpdateLeavingWaterTooHigh(const bool bVal);
     void UpdateValveZonePrimaryOpen(const bool bVal);
@@ -120,11 +61,9 @@ class CDaikinCtrl
     void UpdateZonePrimaryShortCycleDetected(const bool bVal);
     void UpdateZoneSecondaryShortCycleDetected(const bool bVal);
 
-    bool MQTTPublishValues();
-
-    void ShortCycleHandling();
-
-    void TriggerWatchdog() { m_iWatchdogCounter = 0; };
+    void SetMqttUpdateInterval(const uint8_t iInterval);
+    void SetNetWatchDogTimeout(const uint16_t iTimeout);
+    void SetNetWatchDogRecovery(const uint16_t iTimeout);
 
     void SetP1P2AlthermaOn(const bool& bVal) { m_bP1P2AlthermaOn = bVal; };
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
@@ -154,11 +93,36 @@ class CDaikinCtrl
     void SetCtrlRoom3Enable(const bool& bVal) { m_bCtrlRoom3Enable = bVal; m_bUpdateCtrlRoom3Enable = true; };
     void SetCtrlRoom4Enable(const bool& bVal) { m_bCtrlRoom4Enable = bVal; m_bUpdateCtrlRoom4Enable = true; };
 
+    CUptime::uptime_t GetUpTime() const { return m_upTime.GetBreakdown(); };
+    uint8_t GetMqttUpdateInterval() const { return m_iMqttUpdateInterval; };
+    uint16_t GetNetWatchDogTimeout() const { return m_iNetWatchDogTimeout; };
+    uint16_t GetNetWatchDogRecovery() const { return m_iNetWatchDogRecovery; };
+
   private:
-    void StateMachine();
+    void MqttPublishDiscovery();
+    bool MqttPublishValues();
+    void MqttP1P2Subscribe();
+
+    void Update();
     void UpdateRelays();
 
-    PubSubClient& m_mqttClient;
+    CNetwork& m_network;
+
+    elapsedMillis m_loopTimer = 0;
+    elapsedMillis m_mqttPublishTimer = 0;
+    bool m_bMqttRepublish = false; // Publish all values, including the interval timed ones
+    uint32_t m_iNetworkWatchdogCounter = 0;
+    uint32_t m_iNetworkWatchdogRecoveryCounter = 0;
+
+    // Keep track of up-time
+    CUptime m_upTime;
+
+    uint8_t m_iMqttUpdateInterval = 0;
+    uint16_t m_iNetWatchDogTimeout = 0;
+    uint16_t m_iNetWatchDogRecovery = 0;
+
+    bool m_bPublishSettings = true;
+
     bool m_bDaikinPrimaryZoneOn = false;
     bool m_bDaikinSecondaryZoneOn = false;
     bool m_bPrimaryZoneValveClose = false;
@@ -168,14 +132,11 @@ class CDaikinCtrl
     bool m_bRoom2ValveOpenRq = false;
     bool m_bRoom3ValveOpenRq = false;
     bool m_bRoom4ValveOpenRq = false;
-    elapsedMillis m_loopTimer = 0;
-    elapsedMillis m_MQTTTimer = 0;
     uint16_t m_iSMDelayCounter = 0;
     uint16_t m_iFloorProtectionCounter = 0;
     uint16_t m_iDaikinActiveOffCounter = 0;
     uint16_t m_iDaikinStartupCounter = 0;
-    uint16_t m_iWatchdogCounter = 0;
-    uint16_t m_iWatchdogRecoveryCounter = 0;
+
     CRollingAverage m_roomTempRollingAverager;
 
     bool m_bCtrlEnable = true;
