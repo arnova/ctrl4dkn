@@ -440,6 +440,25 @@ result_code_t CCtrl4DknCommandHandler::CmdReset(const char *strArgs)
 }
 
 
+result_code_t CCtrl4DknCommandHandler::CmdReboot(const char *strArgs)
+{
+  if (strArgs != NULL && *strArgs)
+    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
+
+  m_network.GetMqttClient().ServerDisconnect();
+
+  CTerminal::println("OK");
+
+  delay(3000); // Delay to make sure network socket processing is done
+
+  ESP.restart();
+
+  // In principle anything from here on is not executed
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
 result_code_t CCtrl4DknCommandHandler::CmdFactoryReset(const char *strArgs)
 {
   if (strArgs != NULL && *strArgs)
@@ -725,9 +744,6 @@ result_code_t CCtrl4DknCommandHandler::ProcessCommand(char *strCommand)
   }
   else if (STRIEQUALS(strCommand, "reboot"))
   {
-    if (strArgs == NULL || !*strArgs)
-      m_network.GetMqttClient().ServerDisconnect();
-
     result = CmdReboot(strArgs);
   }
   else if (STRIEQUALS(strCommand, "reset"))
