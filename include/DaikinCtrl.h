@@ -3,7 +3,6 @@
 
 #include <elapsedMillis.h>
 
-#include "globals.h"
 #include "system.h"
 #include "Uptime.h"
 #include "Network.h"

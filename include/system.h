@@ -3,6 +3,9 @@
 
 #include <Arduino.h>
 
+// Global (application) definitions
+#include "globals.h"
+
 // Version string:
 #define MY_VERSION "1.00"
 

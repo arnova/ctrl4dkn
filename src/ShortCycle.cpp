@@ -1,5 +1,4 @@
 #include "ShortCycle.h"
-#include "globals.h"
 
 void CShortCycle::Reset()
 {
