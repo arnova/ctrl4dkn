@@ -261,28 +261,6 @@ result_code_t CCtrl4DknCommandHandler::CmdRestartNet(const char *strArgs)
 }
 
 
-static void PrintItemValue(const char* strItem, const char* strValue)
-{
-  CTerminal::print(strItem);
-  CTerminal::print("=");
-  CTerminal::print(strValue);
-}
-
-
-static void PrintItemValue(const char* strItem, const bool bValue)
-{
-  PrintItemValue(strItem, bValue ? "1" : "0");
-}
-
-
-static void PrintItemIp(const char* strItem, const uint8_t* ipAddr)
-{
-  char strBuf[16]; // Enough room for "255.255.255.255"
-  snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", ipAddr[0], ipAddr[1], ipAddr[2], ipAddr[3]);
-  PrintItemValue(strItem, strBuf);
-}
-
-
 result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
 {
   if (strArgs != NULL && *strArgs)

@@ -41,6 +41,28 @@ result_code_t CCommandHandler::FormatIP(uint8_t *data, char *strResult)
 }
 
 
+void CCommandHandler::PrintItemValue(const char* strItem, const char* strValue)
+{
+  CTerminal::print(strItem);
+  CTerminal::print("=");
+  CTerminal::print(strValue);
+}
+
+
+void CCommandHandler::PrintItemValue(const char* strItem, const bool bValue)
+{
+  PrintItemValue(strItem, bValue ? "1" : "0");
+}
+
+
+void CCommandHandler::PrintItemIp(const char* strItem, const uint8_t* ipAddr)
+{
+  char strBuf[16]; // Enough room for "255.255.255.255"
+  snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", ipAddr[0], ipAddr[1], ipAddr[2], ipAddr[3]);
+  PrintItemValue(strItem, strBuf);
+}
+
+
 // Handle local echo on/off
 result_code_t CCommandHandler::CmdEchoOnOff(const char *strArgs)
 {
