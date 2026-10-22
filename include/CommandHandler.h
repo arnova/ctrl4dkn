@@ -16,6 +16,10 @@ class CCommandHandler
     static result_code_t FormatIP(uint8_t *data, char *strResult);
 
   protected:
+    static void PrintItemValue(const char* strItem, const char* strValue);
+    static void PrintItemValue(const char* strItem, const bool bValue);
+    static void PrintItemIp(const char* strItem, const uint8_t* ipAddr);
+
     result_code_t CmdEchoOnOff(const char *strArgs);
     result_code_t CmdReboot(const char *strArgs);
 };
