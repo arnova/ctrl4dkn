@@ -10,25 +10,7 @@
 #define SHORT_CYCLE_SAMPLES                     5
 #endif
 
-#ifndef SHORT_CYCLE_SMALL_WINDOW
-#define SHORT_CYCLE_SMALL_WINDOW               15   // minutes
-#endif
-
-#ifndef SHORT_CYCLE_SMALL_WINDOW_COUNT
-#define SHORT_CYCLE_SMALL_WINDOW_COUNT          2   // Amount of short cycles allowed during SHORT_CYCLE_SMALL_WINDOW
-#endif
-
-#ifndef SHORT_CYCLE_LARGE_WINDOW
-#define SHORT_CYCLE_LARGE_WINDOW               60   // minutes
-#endif
-
-#ifndef SHORT_CYCLE_LARGE_WINDOW_COUNT
-#define SHORT_CYCLE_LARGE_WINDOW_COUNT          4   // Amount of short cycles allowed during SHORT_CYCLE_LARGE_WINDOW
-#endif
-
-#ifndef SHORT_CYCLE_RECOVERY_TIME
-#define SHORT_CYCLE_RECOVERY_TIME              30   // minutes
-#endif
+#include "globals.h"
 
 class CShortCycle
 {
@@ -39,12 +21,21 @@ class CShortCycle
     void Loop(const bool bOn);
     void Reset();
     bool IsRecoveryActive() { return m_iShortCycleRecoveryCounter > 0; };
-  
+
+    // Windows & recovery time are in minutes
+    void SetConfig(const uint16_t iSmallWindow, const uint8_t iSmallWindowCount, const uint16_t iLargeWindow, const uint8_t iLargeWindowCount, const uint16_t iRecoveryTime);
+
   private:
     bool bLastState = false;
     uint16_t m_iShortCycleRecoveryCounter = 0;
     uint32_t m_iShortCycleTimestamp = 0;
     uint32_t m_iShortCycleTimeStamps[SHORT_CYCLE_SAMPLES] = { UINT32_MAX / 2 };
+
+    uint16_t m_iSmallWindow = SHORT_CYCLE_SMALL_WINDOW_DEFAULT;
+    uint8_t m_iSmallWindowCount = SHORT_CYCLE_SMALL_WINDOW_COUNT_DEFAULT; // Amount of short cycles allowed during small window
+    uint16_t m_iLargeWindow = SHORT_CYCLE_LARGE_WINDOW_DEFAULT;
+    uint8_t m_iLargeWindowCount = SHORT_CYCLE_LARGE_WINDOW_COUNT_DEFAULT; // Amount of short cycles allowed during large window
+    uint16_t m_iRecoveryTime = SHORT_CYCLE_RECOVERY_TIME_DEFAULT;
 };
 
 #endif // SHORT_CYCLE_H

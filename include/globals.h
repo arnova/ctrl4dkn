@@ -48,6 +48,11 @@
 #define MQTT_FLOOR_PROTECTION_DELAY             "floor_protection_delay"
 #define MQTT_PRIMARY_ZONE_VALVE_DELAY           "valve_zone_primary_delay"
 #define MQTT_LWT_COOL_DOWN_DELAY                "leaving_water_cool_down_delay"
+#define MQTT_SC_SMALL_WINDOW                    "short_cycle_small_window"
+#define MQTT_SC_SMALL_WINDOW_COUNT              "short_cycle_small_window_count"
+#define MQTT_SC_LARGE_WINDOW                    "short_cycle_large_window"
+#define MQTT_SC_LARGE_WINDOW_COUNT              "short_cycle_large_window_count"
+#define MQTT_SC_RECOVERY_TIME                   "short_cycle_recovery_time"
 
 #define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
 
@@ -98,5 +103,28 @@
 #define LWT_COOL_DOWN_DELAY_TIME_DEFAULT          300   // 5 minutes
 #define LWT_COOL_DOWN_DELAY_TIME_MIN                1
 #define LWT_COOL_DOWN_DELAY_TIME_MAX            65000
+
+// Short cycle detection: Windows/recovery are in minutes
+// NOTE: Counts max. is SHORT_CYCLE_SAMPLES (larger counts can never be exceeded)
+// NOTE: Recovery max. is limited by its 16 bit (seconds) counter
+#define SHORT_CYCLE_SMALL_WINDOW_DEFAULT           15
+#define SHORT_CYCLE_SMALL_WINDOW_MIN                1
+#define SHORT_CYCLE_SMALL_WINDOW_MAX             1440   // 24 hours
+
+#define SHORT_CYCLE_SMALL_WINDOW_COUNT_DEFAULT      2   // Amount of short cycles allowed during small window
+#define SHORT_CYCLE_SMALL_WINDOW_COUNT_MIN          1
+#define SHORT_CYCLE_SMALL_WINDOW_COUNT_MAX          SHORT_CYCLE_SAMPLES
+
+#define SHORT_CYCLE_LARGE_WINDOW_DEFAULT           60
+#define SHORT_CYCLE_LARGE_WINDOW_MIN                1
+#define SHORT_CYCLE_LARGE_WINDOW_MAX             1440   // 24 hours
+
+#define SHORT_CYCLE_LARGE_WINDOW_COUNT_DEFAULT      4   // Amount of short cycles allowed during large window
+#define SHORT_CYCLE_LARGE_WINDOW_COUNT_MIN          1
+#define SHORT_CYCLE_LARGE_WINDOW_COUNT_MAX          SHORT_CYCLE_SAMPLES
+
+#define SHORT_CYCLE_RECOVERY_TIME_DEFAULT          30
+#define SHORT_CYCLE_RECOVERY_TIME_MIN               1
+#define SHORT_CYCLE_RECOVERY_TIME_MAX            1000
 
 #endif // GLOBALS_H
