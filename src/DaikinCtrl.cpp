@@ -3,17 +3,6 @@
 
 #include <EEPROM.h>
 
-bool CDaikinCtrl::Float2HexStr(const float &fVal, char *strVal)
-{
-  return (snprintf(strVal, 3, "%02X", (uint8_t)(fVal * 10)) > 0);
-}
-
-bool CDaikinCtrl::Float2Str(const float &fVal, char *strVal)
-{
-  return (snprintf(strVal, 4, "%f", fVal));
-}
-
-
 CDaikinCtrl::CDaikinCtrl(CNetwork& network) : m_network(network)
 {
   m_roomTempRollingAverager.SetAvgCount(PRIMARY_ZONE_ROOM_TEMP_AVG_TIME);

@@ -35,9 +35,6 @@ class CDaikinCtrl
 
     CDaikinCtrl(CNetwork& network); // Ctor
 
-    static bool Float2HexStr(const float& fVal, char* strVal);
-    static bool Float2Str(const float& fVal, char* strVal);
-
     void Loop();
     void Reset();
 
