@@ -67,6 +67,12 @@ class CDaikinCtrl
     void SetLowTempSecondaryZone(const bool bVal);
     void SetShortCyclePrevention(const bool bVal);
 
+    // Expert settings
+    void SetLeavingWaterMax(const float fVal);
+    void SetPrimaryZoneValveDelay(const uint16_t iTime);
+    void SetFloorProtectionDelay(const uint16_t iTime);
+    void SetLwtCoolDownDelay(const uint16_t iTime);
+
     void SetP1P2AlthermaOn(const bool& bVal) { m_bP1P2AlthermaOn = bVal; };
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
     void SetP1P2PrimaryZoneTargetTemp(const float& fVal) { m_fP1P2PrimaryZoneTargetTemp = fVal; };
@@ -136,6 +142,11 @@ class CDaikinCtrl
     bool GetLowTempSecondaryZone() const { return m_bLowTempSecondaryZone; };
     bool GetShortCyclePrevention() const { return m_bShortCyclePrevention; };
 
+    float GetLeavingWaterMax() const { return m_fLeavingWaterMax; };
+    uint16_t GetPrimaryZoneValveDelay() const { return m_iPrimaryZoneValveDelay; };
+    uint16_t GetFloorProtectionDelay() const { return m_iFloorProtectionDelay; };
+    uint16_t GetLwtCoolDownDelay() const { return m_iLwtCoolDownDelay; };
+
   private:
     void MqttPublishDiscovery();
     bool MqttPublishValues();
@@ -160,6 +171,12 @@ class CDaikinCtrl
     uint16_t m_iNetWatchDogRecovery = 0;
     bool m_bLowTempSecondaryZone = LOW_TEMP_SECONDARY_ZONE_DEFAULT; // Secondary zone uses low temp. AWT range (safe for floor heating)
     bool m_bShortCyclePrevention = SHORT_CYCLE_PREVENTION_DEFAULT;   // Disable zone when short cycling is detected
+
+    // Expert settings
+    float m_fLeavingWaterMax = LEAVING_WATER_MAX_DEFAULT;                 // Max. LWT (floor protection)
+    uint16_t m_iPrimaryZoneValveDelay = PRIMARY_ZONE_VALVE_DELAY_DEFAULT; // Seconds
+    uint16_t m_iFloorProtectionDelay = FLOOR_PROTECTION_DELAY_DEFAULT;    // Seconds
+    uint16_t m_iLwtCoolDownDelay = LWT_COOL_DOWN_DELAY_TIME_DEFAULT;      // Seconds
 
     bool m_bPublishSettings = true;
 

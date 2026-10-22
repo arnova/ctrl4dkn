@@ -20,6 +20,27 @@ CDaikinCtrl::CDaikinCtrl(CNetwork& network) : m_network(network)
 }
 
 
+// Load (and validate) setting from EEPROM, returns default when out of range
+static uint16_t LoadUInt16Setting(const int iAddr, const uint16_t iMin, const uint16_t iMax, const uint16_t iDefault)
+{
+  uint16_t iVal16 = 0;
+  EEPROM.get(iAddr, iVal16);
+
+  return (iVal16 < iMin || iVal16 > iMax) ? iDefault : iVal16;
+}
+
+
+// Load (and validate) setting from EEPROM, returns default when out of range
+static float LoadFloatSetting(const int iAddr, const float fMin, const float fMax, const float fDefault)
+{
+  float fVal = 0.0f;
+  EEPROM.get(iAddr, fVal);
+
+  // NOTE: Written as in-range check, so NaN (eg. unprogrammed EEPROM) also results in default
+  return (fVal >= fMin && fVal <= fMax) ? fVal : fDefault;
+}
+
+
 void CDaikinCtrl::Reset()
 {
   m_iNetworkWatchdogCounter = 0;
@@ -68,6 +89,12 @@ void CDaikinCtrl::LoadSettings()
 
   EEPROM.get(EEPROM_SC_PREVENTION, iVal8);
   m_bShortCyclePrevention = (iVal8 > 1) ? SHORT_CYCLE_PREVENTION_DEFAULT : (iVal8 == 1);
+
+  // Expert settings
+  m_fLeavingWaterMax = LoadFloatSetting(EEPROM_LWT_MAX, LEAVING_WATER_MAX_MIN, LEAVING_WATER_MAX_MAX, LEAVING_WATER_MAX_DEFAULT);
+  m_iPrimaryZoneValveDelay = LoadUInt16Setting(EEPROM_VALVE_DELAY, PRIMARY_ZONE_VALVE_DELAY_MIN, PRIMARY_ZONE_VALVE_DELAY_MAX, PRIMARY_ZONE_VALVE_DELAY_DEFAULT);
+  m_iFloorProtectionDelay = LoadUInt16Setting(EEPROM_FLOOR_DELAY, FLOOR_PROTECTION_DELAY_MIN, FLOOR_PROTECTION_DELAY_MAX, FLOOR_PROTECTION_DELAY_DEFAULT);
+  m_iLwtCoolDownDelay = LoadUInt16Setting(EEPROM_LWT_COOL_DOWN, LWT_COOL_DOWN_DELAY_TIME_MIN, LWT_COOL_DOWN_DELAY_TIME_MAX, LWT_COOL_DOWN_DELAY_TIME_DEFAULT);
 
   m_bPublishSettings = true;
 }
@@ -141,6 +168,62 @@ void CDaikinCtrl::SetShortCyclePrevention(const bool bVal)
 }
 
 
+void CDaikinCtrl::SetLeavingWaterMax(const float fVal)
+{
+  if (fVal != m_fLeavingWaterMax)
+  {
+    EEPROM.put(EEPROM_LWT_MAX, fVal);
+    EEPROM.commit();
+
+    m_fLeavingWaterMax = fVal;
+
+    m_bPublishSettings = true;
+  }
+}
+
+
+void CDaikinCtrl::SetPrimaryZoneValveDelay(const uint16_t iTime)
+{
+  if (iTime != m_iPrimaryZoneValveDelay)
+  {
+    EEPROM.put(EEPROM_VALVE_DELAY, iTime);
+    EEPROM.commit();
+
+    m_iPrimaryZoneValveDelay = iTime;
+
+    m_bPublishSettings = true;
+  }
+}
+
+
+void CDaikinCtrl::SetFloorProtectionDelay(const uint16_t iTime)
+{
+  if (iTime != m_iFloorProtectionDelay)
+  {
+    EEPROM.put(EEPROM_FLOOR_DELAY, iTime);
+    EEPROM.commit();
+
+    m_iFloorProtectionDelay = iTime;
+
+    m_bPublishSettings = true;
+  }
+}
+
+
+void CDaikinCtrl::SetLwtCoolDownDelay(const uint16_t iTime)
+{
+  if (iTime != m_iLwtCoolDownDelay)
+  {
+    EEPROM.put(EEPROM_LWT_COOL_DOWN, iTime);
+    EEPROM.commit();
+
+    m_iLwtCoolDownDelay = iTime;
+
+    m_bPublishSettings = true;
+  }
+}
+
+
 void CDaikinCtrl::FactoryReset()
 {
   SetMqttUpdateInterval(MQTT_UPDATE_TIME_DEFAULT);
@@ -148,6 +231,11 @@ void CDaikinCtrl::FactoryReset()
   SetNetWatchDogRecovery(NETWORK_WATCHDOG_RECOVERY_DEFAULT);
   SetLowTempSecondaryZone(LOW_TEMP_SECONDARY_ZONE_DEFAULT);
   SetShortCyclePrevention(SHORT_CYCLE_PREVENTION_DEFAULT);
+
+  SetLeavingWaterMax(LEAVING_WATER_MAX_DEFAULT);
+  SetPrimaryZoneValveDelay(PRIMARY_ZONE_VALVE_DELAY_DEFAULT);
+  SetFloorProtectionDelay(FLOOR_PROTECTION_DELAY_DEFAULT);
+  SetLwtCoolDownDelay(LWT_COOL_DOWN_DELAY_TIME_DEFAULT);
 
   // Reset controller
   Reset();
@@ -222,6 +310,11 @@ void CDaikinCtrl::MqttPublishDiscovery()
   m_network.GetMqttClient().PublishSensorConfig(MQTT_NET_WD_TIMEOUT, "s", "", "", true);
   m_network.GetMqttClient().PublishSensorConfig(MQTT_NET_WD_RECOVERY, "s", "", "", true);
   m_network.GetMqttClient().PublishSensorConfig(MQTT_UP_TIME, "", "", "", true);
+
+  m_network.GetMqttClient().PublishSensorConfig(MQTT_LWT_MAX, "°C", "temperature", "", true);
+  m_network.GetMqttClient().PublishSensorConfig(MQTT_FLOOR_PROTECTION_DELAY, "s", "", "", true);
+  m_network.GetMqttClient().PublishSensorConfig(MQTT_PRIMARY_ZONE_VALVE_DELAY, "s", "", "", true);
+  m_network.GetMqttClient().PublishSensorConfig(MQTT_LWT_COOL_DOWN_DELAY, "s", "", "", true);
 }
 
 
@@ -411,6 +504,18 @@ bool CDaikinCtrl::MqttPublishValues()
 
     snprintf(strBuf, sizeof(strBuf), "%u", m_iNetWatchDogRecovery);
     m_network.GetMqttClient().PublishMessage(MQTT_NET_WD_RECOVERY, strBuf);
+
+    snprintf(strBuf, sizeof(strBuf), "%.1f", m_fLeavingWaterMax);
+    m_network.GetMqttClient().PublishMessage(MQTT_LWT_MAX, strBuf);
+
+    snprintf(strBuf, sizeof(strBuf), "%u", m_iFloorProtectionDelay);
+    m_network.GetMqttClient().PublishMessage(MQTT_FLOOR_PROTECTION_DELAY, strBuf);
+
+    snprintf(strBuf, sizeof(strBuf), "%u", m_iPrimaryZoneValveDelay);
+    m_network.GetMqttClient().PublishMessage(MQTT_PRIMARY_ZONE_VALVE_DELAY, strBuf);
+
+    snprintf(strBuf, sizeof(strBuf), "%u", m_iLwtCoolDownDelay);
+    m_network.GetMqttClient().PublishMessage(MQTT_LWT_COOL_DOWN_DELAY, strBuf);
   }
 
   if (m_bUpdateCtrlEnable || m_bMqttRepublish)
@@ -809,7 +914,7 @@ void CDaikinCtrl::Update()
 
     case STATE_PRIMARY_VALVE_DELAY:
     {
-      m_iSMDelayCounter = PRIMARY_ZONE_VALVE_DELAY;
+      m_iSMDelayCounter = m_iPrimaryZoneValveDelay;
       m_iState = STATE_DELAY_WAIT;
     }
     break;
@@ -823,7 +928,7 @@ void CDaikinCtrl::Update()
 
     case STATE_LWT_COOL_DOWN_DELAY:
     {
-      m_iSMDelayCounter = LWT_COOL_DOWN_DELAY_TIME;
+      m_iSMDelayCounter = m_iLwtCoolDownDelay;
       m_iState = STATE_DELAY_WAIT;
     }
     break;
@@ -927,7 +1032,7 @@ void CDaikinCtrl::Loop()
 
   MqttPublishValues();
 
-  bool bLeavingWaterTooHigh = (m_fP1P2LeavingWaterTemp > LEAVING_WATER_MAX);
+  bool bLeavingWaterTooHigh = (m_fP1P2LeavingWaterTemp > m_fLeavingWaterMax);
 #ifdef HARDWARE_MAX_TEMP_SENSOR
   bLeavingWaterTooHigh |= !digitalRead(HARDWARE_MAX_TEMP_SENSOR);
 #endif
@@ -949,12 +1054,12 @@ void CDaikinCtrl::Loop()
     UpdateLeavingWaterTooHigh(false);
 
     if (m_bFloorProtection &&
-        m_fP1P2LeavingWaterTemp < LEAVING_WATER_MAX - LEAVING_WATER_MAX_MARGIN)
+        m_fP1P2LeavingWaterTemp < m_fLeavingWaterMax - LEAVING_WATER_MAX_MARGIN)
     {
       // Start protection delay (once, it's counted down by the timed control loop)
       if (m_iFloorProtectionCounter == 0)
       {
-        m_iFloorProtectionCounter = FLOOR_PROTECTION_DELAY;
+        m_iFloorProtectionCounter = m_iFloorProtectionDelay;
       }
     }
     else

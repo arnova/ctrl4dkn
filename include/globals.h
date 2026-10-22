@@ -44,6 +44,10 @@
 #define MQTT_NET_WD_TIMEOUT                     "network_watchdog_timeout"
 #define MQTT_NET_WD_RECOVERY                    "network_watchdog_recovery"
 #define MQTT_UP_TIME                            "up_time"
+#define MQTT_LWT_MAX                            "leaving_water_max"
+#define MQTT_FLOOR_PROTECTION_DELAY             "floor_protection_delay"
+#define MQTT_PRIMARY_ZONE_VALVE_DELAY           "valve_zone_primary_delay"
+#define MQTT_LWT_COOL_DOWN_DELAY                "leaving_water_cool_down_delay"
 
 #define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
 
@@ -70,14 +74,29 @@
 #define MQTT_P1P2_P_DATE_TIME                       MQTT_P1P2_P_PREFIX "M/9/Date_Time_Daikin"
 
 #define DAIKIN_HYSTERESIS                     1.0f
-#define LEAVING_WATER_MAX                    45.0f
 #define LEAVING_WATER_MAX_MARGIN              3.0f
 #define DAIKIN_ZONE_SWITCH_TIME                 5   // Seconds
 #define PRIMARY_ZONE_ROOM_TEMP_AVG_TIME      1800   // Seconds = 30 minutes
-#define PRIMARY_ZONE_VALVE_DELAY              180   // Seconds = 3 minutes
-#define FLOOR_PROTECTION_DELAY                300   // Seconds = 5 minutes
 #define DAIKIN_ACTIVE_OFF_TIME                900   // Seconds = 15 minutes
 #define DAIKIN_STARTUP_TIME                    30   // Seconds
-#define LWT_COOL_DOWN_DELAY_TIME              300   // Seconds = 5 minutes
+
+// Expert settings (stored in EEPROM): Defaults and allowed ranges
+// NOTE: Float min/max without "f" suffix, since they're also STRINGIZE'd for the help text
+#define LEAVING_WATER_MAX_DEFAULT                45.0f
+#define LEAVING_WATER_MAX_MIN                    25.0
+#define LEAVING_WATER_MAX_MAX                    65.0
+
+// NOTE: Times are in seconds. Delays/counters that count down require a minimum of 1
+#define PRIMARY_ZONE_VALVE_DELAY_DEFAULT          180   // 3 minutes
+#define PRIMARY_ZONE_VALVE_DELAY_MIN                1
+#define PRIMARY_ZONE_VALVE_DELAY_MAX            65000
+
+#define FLOOR_PROTECTION_DELAY_DEFAULT            300   // 5 minutes
+#define FLOOR_PROTECTION_DELAY_MIN                  1
+#define FLOOR_PROTECTION_DELAY_MAX              65000
+
+#define LWT_COOL_DOWN_DELAY_TIME_DEFAULT          300   // 5 minutes
+#define LWT_COOL_DOWN_DELAY_TIME_MIN                1
+#define LWT_COOL_DOWN_DELAY_TIME_MAX            65000
 
 #endif // GLOBALS_H

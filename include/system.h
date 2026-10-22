@@ -90,6 +90,10 @@ const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno v
 #define MQTT_INTERVAL_SIZE      1
 #define LOW_TEMP_SEC_ZONE_SIZE  1
 #define SC_PREVENTION_SIZE      1
+#define LWT_MAX_SIZE            4
+#define VALVE_DELAY_SIZE        2
+#define FLOOR_DELAY_SIZE        2
+#define LWT_COOL_DOWN_SIZE      2
 
 // EEPROM locations
 #define EEPROM_CHECKSUM       0                                                   // 0
@@ -106,7 +110,11 @@ const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno v
 #define EEPROM_MQTT_INTERVAL  EEPROM_NET_WD_RECOVER + NET_WD_RECOVER_SIZE         // 279
 #define EEPROM_LOW_TEMP_SEC_ZONE EEPROM_MQTT_INTERVAL + MQTT_INTERVAL_SIZE        // 280
 #define EEPROM_SC_PREVENTION  EEPROM_LOW_TEMP_SEC_ZONE + LOW_TEMP_SEC_ZONE_SIZE   // 281
-#define EEPROM_RESERVED       EEPROM_SC_PREVENTION + SC_PREVENTION_SIZE           // 282
+#define EEPROM_LWT_MAX        EEPROM_SC_PREVENTION + SC_PREVENTION_SIZE           // 282
+#define EEPROM_VALVE_DELAY    EEPROM_LWT_MAX + LWT_MAX_SIZE                       // 286
+#define EEPROM_FLOOR_DELAY    EEPROM_VALVE_DELAY + VALVE_DELAY_SIZE               // 288
+#define EEPROM_LWT_COOL_DOWN  EEPROM_FLOOR_DELAY + FLOOR_DELAY_SIZE               // 290
+#define EEPROM_RESERVED       EEPROM_LWT_COOL_DOWN + LWT_COOL_DOWN_SIZE           // 292
 
 // GPIO pin numbers
 #define STATUS_LED 25                           // Onboard LED

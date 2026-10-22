@@ -32,11 +32,15 @@ const char HELP_STR_P[] PROGMEM = "\r\n"
                                   "netwdr [i]             : Set network watchdog recovery time to [i] seconds (min. " STRINGIZE(NETWORK_WATCHDOG_RECOVERY_MIN) ")\r\n"
                                   "lowtempsec [0/1]       : Secondary zone uses low temperature (floor heating safe) AWT range: 0 = no, 1 = yes\r\n"
                                   "scprevent [0/1]        : Short cycle prevention (disable zone when short cycling is detected): 0 = off, 1 = on\r\n"
-//                                  "exhelp                : Show expert help\r\n"
+                                  "exhelp                 : Show expert help\r\n"
                                   "factoryreset           : Reset all (stored) settings to factory defaults (except network)\r\n"
                                   ;
 
 const char EX_HELP_STR_P[] PROGMEM = "\r\n"
+                                  "lwtmax [t]             : Set leaving water max. temperature (floor protection) to [t] C (" STRINGIZE(LEAVING_WATER_MAX_MIN) "-" STRINGIZE(LEAVING_WATER_MAX_MAX) ")\r\n"
+                                  "floordelay [s]         : Set floor protection release delay to [s] seconds (min. " STRINGIZE(FLOOR_PROTECTION_DELAY_MIN) ")\r\n"
+                                  "valvedelay [s]         : Set primary zone valve close delay to [s] seconds (min. " STRINGIZE(PRIMARY_ZONE_VALVE_DELAY_MIN) ")\r\n"
+                                  "lwtcooldown [s]        : Set LWT cool down delay (before opening primary zone valve) to [s] seconds (min. " STRINGIZE(LWT_COOL_DOWN_DELAY_TIME_MIN) ")\r\n"
                                   ;
 
 // Show copyright + firmware version
@@ -319,6 +323,21 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
 
   CTerminal::println("");
 
+  // Expert settings
+  snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetLeavingWaterMax());
+  PrintItemValue("lwt_max", strBuf);
+
+  snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetFloorProtectionDelay());
+  PrintItemValue(" floor_delay", strBuf);
+
+  snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetPrimaryZoneValveDelay());
+  PrintItemValue(" valve_delay", strBuf);
+
+  snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetLwtCoolDownDelay());
+  PrintItemValue(" lwt_cool_down", strBuf);
+
+  CTerminal::println("");
+
   return pack_result_code(ERR_CODE_OK);
 }
 
@@ -529,6 +548,85 @@ result_code_t CCtrl4DknCommandHandler::CmdShortCyclePrevention(const char *strAr
 }
 
 
+// Parse (single) integer argument within range
+static result_code_t GetIntArg(const char *strArgs, int32_t *piVal, const int32_t iMin, const int32_t iMax)
+{
+  const result_code_t result = check_arguments(strArgs, ARG_INT32_NUM1);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  return get_int32_from_string(strArgs, piVal, iMin, iMax, ARG_INT32_NUM1);
+}
+
+
+// Parse (single) temperature argument (1 decimal) within range
+static result_code_t GetTempArg(const char *strArgs, float *pfVal, const double dblMin, const double dblMax)
+{
+  const result_code_t result = check_arguments(strArgs, ARG_INT32_NUM1);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  double dblVal;
+  const result_code_t resultVal = get_double_from_string(strArgs, &dblVal, dblMin, dblMax, ARG_INT32_NUM1, 1);
+  if (resultVal.code == ERR_CODE_OK)
+    *pfVal = (float)dblVal;
+
+  return resultVal;
+}
+
+
+result_code_t CCtrl4DknCommandHandler::CmdLeavingWaterMax(const char *strArgs)
+{
+  float fVal;
+  const result_code_t result = GetTempArg(strArgs, &fVal, LEAVING_WATER_MAX_MIN, LEAVING_WATER_MAX_MAX);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  m_daikinCtrl.SetLeavingWaterMax(fVal);
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
+result_code_t CCtrl4DknCommandHandler::CmdFloorProtectionDelay(const char *strArgs)
+{
+  int32_t iVal;
+  const result_code_t result = GetIntArg(strArgs, &iVal, FLOOR_PROTECTION_DELAY_MIN, FLOOR_PROTECTION_DELAY_MAX);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  m_daikinCtrl.SetFloorProtectionDelay(iVal);
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
+result_code_t CCtrl4DknCommandHandler::CmdPrimaryZoneValveDelay(const char *strArgs)
+{
+  int32_t iVal;
+  const result_code_t result = GetIntArg(strArgs, &iVal, PRIMARY_ZONE_VALVE_DELAY_MIN, PRIMARY_ZONE_VALVE_DELAY_MAX);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  m_daikinCtrl.SetPrimaryZoneValveDelay(iVal);
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
+result_code_t CCtrl4DknCommandHandler::CmdLwtCoolDownDelay(const char *strArgs)
+{
+  int32_t iVal;
+  const result_code_t result = GetIntArg(strArgs, &iVal, LWT_COOL_DOWN_DELAY_TIME_MIN, LWT_COOL_DOWN_DELAY_TIME_MAX);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  m_daikinCtrl.SetLwtCoolDownDelay(iVal);
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
 // Process provided string command
 result_code_t CCtrl4DknCommandHandler::ProcessCommand(char *strCommand)
 {
@@ -644,6 +742,22 @@ result_code_t CCtrl4DknCommandHandler::ProcessCommand(char *strCommand)
   else if (STRIEQUALS(strCommand, "scprevent"))
   {
     result = CmdShortCyclePrevention(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "lwtmax"))
+  {
+    result = CmdLeavingWaterMax(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "floordelay"))
+  {
+    result = CmdFloorProtectionDelay(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "valvedelay"))
+  {
+    result = CmdPrimaryZoneValveDelay(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "lwtcooldown"))
+  {
+    result = CmdLwtCoolDownDelay(strArgs);
   }
 
   return result;
