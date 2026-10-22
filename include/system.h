@@ -83,7 +83,6 @@ const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno v
 #define HOST_NAME_MAX_SIZE      32
 #define MQTT_USER_MAX_SIZE      32
 #define MQTT_PASSWORD_MAX_SIZE  64
-#define HOST_NAME_MAX_SIZE      32
 #define IP_BYTE_SIZE            4
 #define NET_WD_TIMEOUT_SIZE     2
 #define NET_WD_RECOVER_SIZE     2
