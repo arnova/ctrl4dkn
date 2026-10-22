@@ -188,7 +188,7 @@ int strfind(const char *str, const char *substr)
   if (p == NULL)
     return -1;
 
-  return str - p; // Return offset from input string at 0
+  return p - str; // Return offset from input string at 0
 }
 
 
