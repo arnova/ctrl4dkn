@@ -1,18 +1,47 @@
 /*
   Rolling average library
-  (C) Copyright 2010-2024, Arno van Amersfoort
+  (C) Copyright 2018-2026, Arno van Amersfoort
 
   Written by       : Arno van Amersfoort
   Language         : C++11
-  Target compiler  : AVR
+  Target compiler  : Generic
   Dependencies     : (none)
   Initial date     : March 23, 2018
-  Last modified    : October 6, 2024
+  Last modified    : October 22, 2026
 */
 
 #include "RollingAverage.h"
 
-void CRollingAverage::UpdateValue(const float& fNewVal)
+void CRollingAverage::SetAvgCount(uint32_t iCount)
+{
+  if (iCount < 1)
+  {
+    iCount = 1;
+  }
+
+  // Preserve current average in case new count is lower than the current amount of values
+  if (m_iAccCount > iCount)
+  {
+    m_fAccVal = (m_fAccVal / m_iAccCount) * iCount;
+    m_iAccCount = iCount;
+  }
+
+  m_iAvgCountSet = iCount;
+}
+
+
+float CRollingAverage::GetValue()
+{
+  if (m_iAccCount == 0)
+  {
+    return 0.0f; // No value
+  }
+
+  return m_fAccVal / m_iAccCount;
+}
+
+
+float CRollingAverage::UpdateValue(const float fNewVal)
 {
   float fAccVal = (m_iAccCount == 0 ? 0.0f : m_fAccVal);
 
@@ -26,14 +55,23 @@ void CRollingAverage::UpdateValue(const float& fNewVal)
   }
 
   m_fAccVal = fAccVal + fNewVal; // Update value
+
+  return GetValue();
 }
 
 
-void CRollingAverage::RemoveValue()
+float CRollingAverage::RemoveValue()
 {
-  if (m_iAccCount > 0)
+  if (m_iAccCount <= 1)
   {
-    m_fAccVal -= (m_fAccVal / m_iAvgCountSet);
+    m_fAccVal = 0.0f;
+    m_iAccCount = 0;
+  }
+  else
+  {
+    m_fAccVal -= (m_fAccVal / m_iAccCount);
     m_iAccCount--;
   }
+
+  return GetValue();
 }

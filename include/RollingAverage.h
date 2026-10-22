@@ -9,12 +9,12 @@ class CRollingAverage
     CRollingAverage() {}; // Empty constructor
     ~CRollingAverage() {}; // Empty destructor
 
-    void SetAvgCount(const uint32_t& iCount) { m_iAvgCountSet = iCount; };
-    float GetValue() { return m_fAccVal / m_iAccCount; };
+    void SetAvgCount(uint32_t iCount);
+    float GetValue();
     bool HasValue() { return m_iAccCount != 0; };
     uint32_t GetAccCount() { return m_iAccCount; };
-    void UpdateValue(const float& fVal);
-    void RemoveValue();
+    float UpdateValue(const float fVal);
+    float RemoveValue();
     void Reset() { m_fAccVal = 0.0f; m_iAccCount = 0; };
 
   private:
