@@ -5,7 +5,7 @@
   Written by       : Arno van Amersfoort
   Dependencies     : elapsedMillis MqttClient Terminal util
   Initial date     : July 11, 2026
-  Last modified    : October 19, 2026
+  Last modified    : October 22, 2026
 */
 
 #include <Arduino.h>
@@ -265,11 +265,8 @@ void CNetwork::SetNetMask(const uint8_t* ipNetMask)
 
 void CNetwork::ReinitMqtt()
 {
-  // Disconnect to current server
-  if (m_mqttClient.connected())
-  {
-    m_mqttClient.disconnect();
-  }
+  // Disconnect from current server (reports offline)
+  m_mqttClient.ServerDisconnect();
 
   m_mqttClient.Init(m_mqttIpAddr, m_strHostName, m_strMqttUser, m_strMqttPassword);
 }
