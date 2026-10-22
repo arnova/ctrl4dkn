@@ -10,8 +10,6 @@
 #define SHORT_CYCLE_SAMPLES                     5
 #endif
 
-#include "globals.h"
-
 class CShortCycle
 {
   public:

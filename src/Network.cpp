@@ -19,7 +19,6 @@
 #include <ctype.h>
 
 #include "Network.h"
-#include "globals.h"
 #include "Terminal.h"
 #include "util.h"
 

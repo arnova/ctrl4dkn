@@ -11,7 +11,6 @@
 #include <Arduino.h>
 
 #include "MqttClient.h"
-#include "globals.h"
 #include "Terminal.h"
 #include "util.h"
 
