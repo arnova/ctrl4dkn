@@ -30,7 +30,9 @@ const char HELP_STR_P[] PROGMEM = "\r\n"
                                   "restartnet             : Restart network (after eg. WiFi/IP settings changes)\r\n"
                                   "netwdt [i]             : Set network watchdog timeout to [i] seconds (min. " STRINGIZE(NETWORK_WATCHDOG_TIMEOUT_MIN) ", 0 or \"off\" to disable)\r\n"
                                   "netwdr [i]             : Set network watchdog recovery time to [i] seconds (min. " STRINGIZE(NETWORK_WATCHDOG_RECOVERY_MIN) ")\r\n"
-//                                  "exhelp                 : Show expert help\r\n"
+                                  "lowtempsec [0/1]       : Secondary zone uses low temperature (floor heating safe) AWT range: 0 = no, 1 = yes\r\n"
+                                  "scprevent [0/1]        : Short cycle prevention (disable zone when short cycling is detected): 0 = off, 1 = on\r\n"
+//                                  "exhelp                : Show expert help\r\n"
                                   "factoryreset           : Reset all (stored) settings to factory defaults (except network)\r\n"
                                   ;
 
@@ -312,6 +314,9 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
   snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetNetWatchDogRecovery());
   PrintItemValue(" net_wd_recovery", strBuf);
 
+  PrintItemValue(" low_temp_sec_zone", m_daikinCtrl.GetLowTempSecondaryZone());
+  PrintItemValue(" sc_prevent", m_daikinCtrl.GetShortCyclePrevention());
+
   CTerminal::println("");
 
   return pack_result_code(ERR_CODE_OK);
@@ -342,7 +347,6 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
   PrintItemValue(" valve_pri_close_force", m_daikinCtrl.GetCtrlValvePriCloseForce());
   PrintItemValue(" dkn_dis", m_daikinCtrl.GetCtrlDaikinDisable());
   PrintItemValue(" gas_only", m_daikinCtrl.GetCtrlGasOnly());
-  PrintItemValue(" sc_prevent", m_daikinCtrl.GetCtrlShortCyclePrevention());
   CTerminal::println("");
 
   PrintItemValue("room1_en", m_daikinCtrl.GetCtrlRoom1Enable());
@@ -470,6 +474,61 @@ result_code_t CCtrl4DknCommandHandler::CmdNetWatchdogRecovery(const char *strArg
 }
 
 
+// Parse on/off argument: "1"/"on" or "0"/"off"
+static result_code_t GetOnOffArg(const char *strArgs, bool *pbVal)
+{
+  result_code_t result = check_arguments(strArgs, ARG_INT32_NUM1);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  if (STRIEQUALS(strArgs, "on"))
+  {
+    *pbVal = true;
+  }
+  else if (STRIEQUALS(strArgs, "off"))
+  {
+    *pbVal = false;
+  }
+  else
+  {
+    int32_t iVal;
+    result = get_int32_from_string(strArgs, &iVal, 0, 1, ARG_INT32_NUM1);
+    if (result.code != ERR_CODE_OK)
+      return result;
+
+    *pbVal = (iVal == 1);
+  }
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
+result_code_t CCtrl4DknCommandHandler::CmdLowTempSecondaryZone(const char *strArgs)
+{
+  bool bVal;
+  const result_code_t result = GetOnOffArg(strArgs, &bVal);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  m_daikinCtrl.SetLowTempSecondaryZone(bVal);
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
+result_code_t CCtrl4DknCommandHandler::CmdShortCyclePrevention(const char *strArgs)
+{
+  bool bVal;
+  const result_code_t result = GetOnOffArg(strArgs, &bVal);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  m_daikinCtrl.SetShortCyclePrevention(bVal);
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
 // Process provided string command
 result_code_t CCtrl4DknCommandHandler::ProcessCommand(char *strCommand)
 {
@@ -577,6 +636,14 @@ result_code_t CCtrl4DknCommandHandler::ProcessCommand(char *strCommand)
   else if (STRIEQUALS(strCommand, "netwdr"))
   {
     result = CmdNetWatchdogRecovery(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "lowtempsec"))
+  {
+    result = CmdLowTempSecondaryZone(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "scprevent"))
+  {
+    result = CmdShortCyclePrevention(strArgs);
   }
 
   return result;

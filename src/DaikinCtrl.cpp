@@ -62,6 +62,13 @@ void CDaikinCtrl::LoadSettings()
   }
   m_iNetWatchDogRecovery = iVal16;
 
+  uint8_t iVal8 = 0;
+  EEPROM.get(EEPROM_LOW_TEMP_SEC_ZONE, iVal8);
+  m_bLowTempSecondaryZone = (iVal8 > 1) ? LOW_TEMP_SECONDARY_ZONE_DEFAULT : (iVal8 == 1);
+
+  EEPROM.get(EEPROM_SC_PREVENTION, iVal8);
+  m_bShortCyclePrevention = (iVal8 > 1) ? SHORT_CYCLE_PREVENTION_DEFAULT : (iVal8 == 1);
+
   m_bPublishSettings = true;
 }
 
@@ -108,11 +115,39 @@ void CDaikinCtrl::SetNetWatchDogRecovery(const uint16_t iTime)
 }
 
 
+void CDaikinCtrl::SetLowTempSecondaryZone(const bool bVal)
+{
+  if (bVal != m_bLowTempSecondaryZone)
+  {
+    const uint8_t iVal8 = bVal ? 1 : 0;
+    EEPROM.put(EEPROM_LOW_TEMP_SEC_ZONE, iVal8);
+    EEPROM.commit();
+
+    m_bLowTempSecondaryZone = bVal;
+  }
+}
+
+
+void CDaikinCtrl::SetShortCyclePrevention(const bool bVal)
+{
+  if (bVal != m_bShortCyclePrevention)
+  {
+    const uint8_t iVal8 = bVal ? 1 : 0;
+    EEPROM.put(EEPROM_SC_PREVENTION, iVal8);
+    EEPROM.commit();
+
+    m_bShortCyclePrevention = bVal;
+  }
+}
+
+
 void CDaikinCtrl::FactoryReset()
 {
   SetMqttUpdateInterval(MQTT_UPDATE_TIME_DEFAULT);
   SetNetWatchDogTimeout(NETWORK_WATCHDOG_TIMEOUT_DEFAULT);
   SetNetWatchDogRecovery(NETWORK_WATCHDOG_RECOVERY_DEFAULT);
+  SetLowTempSecondaryZone(LOW_TEMP_SECONDARY_ZONE_DEFAULT);
+  SetShortCyclePrevention(SHORT_CYCLE_PREVENTION_DEFAULT);
 
   // Reset controller
   Reset();
@@ -157,7 +192,6 @@ void CDaikinCtrl::MqttPublishDiscovery()
   m_network.GetMqttClient().PublishSwitchConfig(MQTT_GAS_ONLY);
 #endif
 
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_SHORT_CYCLE_PREVENT);
 
 #ifdef ROOM1_VALVE_RELAY
   m_network.GetMqttClient().PublishSwitchConfig(MQTT_ROOM1_ENABLE);
@@ -421,12 +455,6 @@ bool CDaikinCtrl::MqttPublishValues()
     m_network.GetMqttClient().PublishMessage(MQTT_GAS_ONLY, m_bCtrlGasOnly ? "1" : "0");
   }
 
-  if (m_bUpdateCtrlShortCyclePrevention || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlShortCyclePrevention = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_SHORT_CYCLE_PREVENT, m_bCtrlShortCyclePrevention ? "1" : "0");
-  }
-
   if (m_bUpdateCtrlRoom1Enable || m_bMqttRepublish)
   {
     m_bUpdateCtrlRoom1Enable = false;
@@ -572,9 +600,9 @@ void CDaikinCtrl::Update()
   m_bRoom4ValveOpenRq |= !digitalRead(ROOM4_ENABLE);
 #endif
 
-  const bool bPrimaryZoneEnable = m_bCtrlZonePriEnable && !(m_bCtrlShortCyclePrevention && m_bZonePrimaryShortCycleDetected);
+  const bool bPrimaryZoneEnable = m_bCtrlZonePriEnable && !(m_bShortCyclePrevention && m_bZonePrimaryShortCycleDetected);
 
-  bool bSecondaryZoneEnable = m_bCtrlZoneSecEnable && !(m_bCtrlShortCyclePrevention && m_bZoneSecondaryShortCycleDetected);
+  bool bSecondaryZoneEnable = m_bCtrlZoneSecEnable && !(m_bShortCyclePrevention && m_bZoneSecondaryShortCycleDetected);
 
 #ifdef SECONDARY_ZONE_ENABLE
   bSecondaryZoneEnable |= !digitalRead(SECONDARY_ZONE_ENABLE);
@@ -689,25 +717,26 @@ void CDaikinCtrl::Update()
         // Check if secondary zone requires heating
         if ((bSecondaryZoneEnable || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce) && !m_bCtrlDaikinDisable)
         {
-#ifdef LOW_TEMP_SECONDARY_ZONE
-          // Enable (disable secondary zone on Daikin, if requested but primary zone doesn't require heating
-          m_bDaikinSecondaryZoneOn = ((!bPrimaryZoneEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce);
-
-          if (!m_bPrimaryZoneValveClose)
+          if (m_bLowTempSecondaryZone)
           {
-            m_bPrimaryZoneValveClose = true;
+            // Enable (disable secondary zone on Daikin, if requested but primary zone doesn't require heating
+            m_bDaikinSecondaryZoneOn = ((!bPrimaryZoneEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce);
 
-            // We need to wait until primary zone valve is closed
-            if (m_bDaikinSecondaryZoneOn)
-              m_iState = STATE_PRIMARY_VALVE_DELAY; 
+            if (!m_bPrimaryZoneValveClose)
+            {
+              m_bPrimaryZoneValveClose = true;
+
+              // We need to wait until primary zone valve is closed
+              if (m_bDaikinSecondaryZoneOn)
+                m_iState = STATE_PRIMARY_VALVE_DELAY;
+            }
+            else if (m_bDaikinSecondaryZoneOn)
+            {
+              m_bDaikinPrimaryZoneOn = false;
+            }
           }
-          else if (m_bDaikinSecondaryZoneOn)
-          {
-            m_bDaikinPrimaryZoneOn = false;
-          }
-#else
           // When rooms (with floor-heating) are requesting heat, check whether Daikin secondary zone is enabled
-          if ((m_bDaikinSecondaryZoneOn && (m_bRoom1ValveOpenRq || m_bRoom2ValveOpenRq || m_bRoom3ValveOpenRq || m_bRoom4ValveOpenRq)))
+          else if ((m_bDaikinSecondaryZoneOn && (m_bRoom1ValveOpenRq || m_bRoom2ValveOpenRq || m_bRoom3ValveOpenRq || m_bRoom4ValveOpenRq)))
           {
             m_bPrimaryZoneValveClose = true;
 
@@ -741,7 +770,6 @@ void CDaikinCtrl::Update()
           {
             m_bDaikinPrimaryZoneOn = false;
           }
-#endif
         }
         else
         {
@@ -765,11 +793,11 @@ void CDaikinCtrl::Update()
         else if (m_bDaikinSecondaryZoneOn)
         {
           m_bDaikinSecondaryZoneOn = false;
-#ifndef LOW_TEMP_SECONDARY_ZONE
+
           // Wait for AWT temperature to cool down before opening primary valve
           // FIXME: Perhaps monitor LWT temperature?
-          m_iState = STATE_LWT_COOL_DOWN_DELAY;
-#endif
+          if (!m_bLowTempSecondaryZone)
+            m_iState = STATE_LWT_COOL_DOWN_DELAY;
         }
         else
         {
@@ -815,10 +843,10 @@ void CDaikinCtrl::Update()
 void CDaikinCtrl::UpdateRelays()
 {
   bool bSafeForFloorHeating = !m_bFloorProtection;
-#ifndef LOW_TEMP_SECONDARY_ZONE
+
   // When Daikin secondary zone uses high temperature, make sure we don't enable floor heated rooms
-  bSafeForFloorHeating &= (!m_bDaikinSecondaryZoneOn || m_bP1P2CoolingOn); // FIXME: Delay this from SM?
-#endif
+  if (!m_bLowTempSecondaryZone)
+    bSafeForFloorHeating &= (!m_bDaikinSecondaryZoneOn || m_bP1P2CoolingOn); // FIXME: Delay this from SM?
 
   if ((!m_bDaikinActive || !m_bCtrlEnable) && bSafeForFloorHeating)
   {

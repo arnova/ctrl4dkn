@@ -545,27 +545,6 @@ void MqttCallback(char* topic, byte *payload, const unsigned int length)
 
     return;
   }
-
-  if (STRIEQUALS(subTopic, "/" MQTT_SHORT_CYCLE_PREVENT "/set"))
-  {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlShortCyclePrevention(iVal == 1 ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
-
-    return;
-  }
 }
 
 
