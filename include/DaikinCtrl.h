@@ -75,6 +75,17 @@ class CDaikinCtrl
     void SetP1P2ValveZoneMain(const bool& bVal) { m_bP1P2ValveZoneMain = bVal; };
     void SetP1P2DefrostActive(const bool& bVal) { m_bP1P2DefrostActive = bVal; };
     void SetP1P2Compressor(const bool& bVal) { m_bP1P2CompressorOn = bVal; };
+
+    bool GetP1P2AlthermaOn() const { return m_bP1P2AlthermaOn; };
+    float GetP1P2PrimaryZoneRoomTemp() const { return m_fP1P2PrimaryZoneRoomTemp; };
+    float GetP1P2PrimaryZoneTargetTemp() const { return m_fP1P2PrimaryZoneTargetTemp; };
+    float GetP1P2LeavingWaterTemp() const { return m_fP1P2LeavingWaterTemp; };
+    bool GetP1P2CirculationPumpOn() const { return m_bP1P2CirculationPumpOn; };
+    bool GetP1P2HeatingOn() const { return m_bP1P2HeatingOn; };
+    bool GetP1P2CoolingOn() const { return m_bP1P2CoolingOn; };
+    bool GetP1P2ValveZoneMain() const { return m_bP1P2ValveZoneMain; };
+    bool GetP1P2DefrostActive() const { return m_bP1P2DefrostActive; };
+    bool GetP1P2Compressor() const { return m_bP1P2CompressorOn; };
     
 //    bool IsDaikinHeatingActive() { return m_bP1P2HeatingOn && m_bP1P2CirculationPumpOn; };
 //    bool IsDaikinCoolingActive() { return m_bP1P2CoolingOn && m_bP1P2CirculationPumpOn; };
@@ -92,6 +103,31 @@ class CDaikinCtrl
     void SetCtrlRoom2Enable(const bool& bVal) { m_bCtrlRoom2Enable = bVal; m_bUpdateCtrlRoom2Enable = true; };
     void SetCtrlRoom3Enable(const bool& bVal) { m_bCtrlRoom3Enable = bVal; m_bUpdateCtrlRoom3Enable = true; };
     void SetCtrlRoom4Enable(const bool& bVal) { m_bCtrlRoom4Enable = bVal; m_bUpdateCtrlRoom4Enable = true; };
+
+    bool GetCtrlOnOff() const { return m_bCtrlEnable; };
+    bool GetCtrlZonePriEnable() const { return m_bCtrlZonePriEnable; };
+    bool GetCtrlZoneSecEnable() const { return m_bCtrlZoneSecEnable; };
+    bool GetCtrlZoneSecForce() const { return m_bCtrlZoneSecForce; };
+    bool GetCtrlValvePriCloseForce() const { return m_bCtrlValvePriCloseForce; };
+    bool GetCtrlDaikinDisable() const { return m_bCtrlDaikinDisable; };
+    bool GetCtrlGasOnly() const { return m_bCtrlGasOnly; };
+    bool GetCtrlShortCyclePrevention() const { return m_bCtrlShortCyclePrevention; };
+    bool GetCtrlRoom1Enable() const { return m_bCtrlRoom1Enable; };
+    bool GetCtrlRoom2Enable() const { return m_bCtrlRoom2Enable; };
+    bool GetCtrlRoom3Enable() const { return m_bCtrlRoom3Enable; };
+    bool GetCtrlRoom4Enable() const { return m_bCtrlRoom4Enable; };
+
+    bool GetLeavingWaterTooHigh() const { return m_bLeavingWaterTooHigh; };
+    bool GetValveZonePrimaryOpen() const { return m_bValveZonePrimaryOpen; };
+    bool GetRoom1ValveOpen() const { return m_bRoom1ValveOpen; };
+    bool GetRoom2ValveOpen() const { return m_bRoom2ValveOpen; };
+    bool GetRoom3ValveOpen() const { return m_bRoom3ValveOpen; };
+    bool GetRoom4ValveOpen() const { return m_bRoom4ValveOpen; };
+    bool GetDaikinZonePrimaryEnable() const { return m_bDaikinZonePrimaryEnable; };
+    bool GetDaikinZoneSecondaryEnable() const { return m_bDaikinZoneSecondaryEnable; };
+    const char* GetAveragePrimaryZoneRoomTemp() const { return m_strAveragePrimaryZoneRoomTemp; };
+    bool GetZonePrimaryShortCycleDetected() const { return m_bZonePrimaryShortCycleDetected; };
+    bool GetZoneSecondaryShortCycleDetected() const { return m_bZoneSecondaryShortCycleDetected; };
 
     CUptime::uptime_t GetUpTime() const { return m_upTime.GetBreakdown(); };
     uint8_t GetMqttUpdateInterval() const { return m_iMqttUpdateInterval; };
