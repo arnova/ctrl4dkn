@@ -30,15 +30,6 @@ static uint16_t LoadUInt16Setting(const int iAddr, const uint16_t iMin, const ui
 }
 
 
-// Load (and validate) setting from EEPROM, returns default when out of range
-static float LoadFloatSetting(const int iAddr, const float fMin, const float fMax, const float fDefault)
-{
-  float fVal = 0.0f;
-  EEPROM.get(iAddr, fVal);
-
-  // NOTE: Written as in-range check, so NaN (eg. unprogrammed EEPROM) also results in default
-  return (fVal >= fMin && fVal <= fMax) ? fVal : fDefault;
-}
 
 
 void CDaikinCtrl::Reset()
@@ -91,7 +82,15 @@ void CDaikinCtrl::LoadSettings()
   m_bShortCyclePrevention = (iVal8 > 1) ? SHORT_CYCLE_PREVENTION_DEFAULT : (iVal8 == 1);
 
   // Expert settings
-  m_fLeavingWaterMax = LoadFloatSetting(EEPROM_LWT_MAX, LEAVING_WATER_MAX_MIN, LEAVING_WATER_MAX_MAX, LEAVING_WATER_MAX_DEFAULT);
+  float fVal = 0.0f;
+  EEPROM.get(EEPROM_LWT_MAX, fVal);
+  // NOTE: Written as in-range check, so NaN (eg. unprogrammed EEPROM) also results in default (0 = disabled)
+  if (fVal != 0.0f && !(fVal >= LEAVING_WATER_MAX_MIN && fVal <= LEAVING_WATER_MAX_MAX))
+  {
+    fVal = LEAVING_WATER_MAX_DEFAULT;
+  }
+  m_fLeavingWaterMax = fVal;
+
   m_iPrimaryZoneValveDelay = LoadUInt16Setting(EEPROM_VALVE_DELAY, PRIMARY_ZONE_VALVE_DELAY_MIN, PRIMARY_ZONE_VALVE_DELAY_MAX, PRIMARY_ZONE_VALVE_DELAY_DEFAULT);
   m_iFloorProtectionDelay = LoadUInt16Setting(EEPROM_FLOOR_DELAY, FLOOR_PROTECTION_DELAY_MIN, FLOOR_PROTECTION_DELAY_MAX, FLOOR_PROTECTION_DELAY_DEFAULT);
   m_iLwtCoolDownDelay = LoadUInt16Setting(EEPROM_LWT_COOL_DOWN, LWT_COOL_DOWN_DELAY_TIME_MIN, LWT_COOL_DOWN_DELAY_TIME_MAX, LWT_COOL_DOWN_DELAY_TIME_DEFAULT);
@@ -1032,7 +1031,10 @@ void CDaikinCtrl::Loop()
 
   MqttPublishValues();
 
-  bool bLeavingWaterTooHigh = (m_fP1P2LeavingWaterTemp > m_fLeavingWaterMax);
+  // Leaving water max. 0 = disabled (hardware max. temp. sensor (if any) still applies)
+  const bool bLeavingWaterMaxEnabled = (m_fLeavingWaterMax != 0.0f);
+
+  bool bLeavingWaterTooHigh = bLeavingWaterMaxEnabled && (m_fP1P2LeavingWaterTemp > m_fLeavingWaterMax);
 #ifdef HARDWARE_MAX_TEMP_SENSOR
   bLeavingWaterTooHigh |= !digitalRead(HARDWARE_MAX_TEMP_SENSOR);
 #endif
@@ -1054,7 +1056,7 @@ void CDaikinCtrl::Loop()
     UpdateLeavingWaterTooHigh(false);
 
     if (m_bFloorProtection &&
-        m_fP1P2LeavingWaterTemp < m_fLeavingWaterMax - LEAVING_WATER_MAX_MARGIN)
+        (!bLeavingWaterMaxEnabled || m_fP1P2LeavingWaterTemp < m_fLeavingWaterMax - LEAVING_WATER_MAX_MARGIN))
     {
       // Start protection delay (once, it's counted down by the timed control loop)
       if (m_iFloorProtectionCounter == 0)

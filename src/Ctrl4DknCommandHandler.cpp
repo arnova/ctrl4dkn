@@ -37,7 +37,7 @@ const char HELP_STR_P[] PROGMEM = "\r\n"
                                   ;
 
 const char EX_HELP_STR_P[] PROGMEM = "\r\n"
-                                  "lwtmax [t]             : Set leaving water max. temperature (floor protection) to [t] C (" STRINGIZE(LEAVING_WATER_MAX_MIN) "-" STRINGIZE(LEAVING_WATER_MAX_MAX) ")\r\n"
+                                  "lwtmax [t]             : Set leaving water max. temperature (floor protection) to [t] C (" STRINGIZE(LEAVING_WATER_MAX_MIN) "-" STRINGIZE(LEAVING_WATER_MAX_MAX) ", 0 or \"off\" to disable)\r\n"
                                   "floordelay [s]         : Set floor protection release delay to [s] seconds (min. " STRINGIZE(FLOOR_PROTECTION_DELAY_MIN) ")\r\n"
                                   "valvedelay [s]         : Set primary zone valve close delay to [s] seconds (min. " STRINGIZE(PRIMARY_ZONE_VALVE_DELAY_MIN) ")\r\n"
                                   "lwtcooldown [s]        : Set LWT cool down delay (before opening primary zone valve) to [s] seconds (min. " STRINGIZE(LWT_COOL_DOWN_DELAY_TIME_MIN) ")\r\n"
@@ -324,8 +324,15 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
   CTerminal::println("");
 
   // Expert settings
-  snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetLeavingWaterMax());
-  PrintItemValue("lwt_max", strBuf);
+  if (m_daikinCtrl.GetLeavingWaterMax() == 0.0f)
+  {
+    PrintItemValue("lwt_max", "off");
+  }
+  else
+  {
+    snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetLeavingWaterMax());
+    PrintItemValue("lwt_max", strBuf);
+  }
 
   snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetFloorProtectionDelay());
   PrintItemValue(" floor_delay", strBuf);
@@ -559,30 +566,27 @@ static result_code_t GetIntArg(const char *strArgs, int32_t *piVal, const int32_
 }
 
 
-// Parse (single) temperature argument (1 decimal) within range
-static result_code_t GetTempArg(const char *strArgs, float *pfVal, const double dblMin, const double dblMax)
-{
-  const result_code_t result = check_arguments(strArgs, ARG_INT32_NUM1);
-  if (result.code != ERR_CODE_OK)
-    return result;
-
-  double dblVal;
-  const result_code_t resultVal = get_double_from_string(strArgs, &dblVal, dblMin, dblMax, ARG_INT32_NUM1, 1);
-  if (resultVal.code == ERR_CODE_OK)
-    *pfVal = (float)dblVal;
-
-  return resultVal;
-}
-
-
 result_code_t CCtrl4DknCommandHandler::CmdLeavingWaterMax(const char *strArgs)
 {
-  float fVal;
-  const result_code_t result = GetTempArg(strArgs, &fVal, LEAVING_WATER_MAX_MIN, LEAVING_WATER_MAX_MAX);
+  result_code_t result = check_arguments(strArgs, ARG_INT32_NUM1);
   if (result.code != ERR_CODE_OK)
     return result;
 
-  m_daikinCtrl.SetLeavingWaterMax(fVal);
+  double dblVal = 0.0; // 0 = disabled
+  if (!STRIEQUALS(strArgs, "off"))
+  {
+    result = get_double_from_string(strArgs, &dblVal, 0.0, LEAVING_WATER_MAX_MAX, ARG_INT32_NUM1, 1);
+    if (result.code != ERR_CODE_OK)
+      return result;
+
+    if (dblVal != 0.0 && dblVal < LEAVING_WATER_MAX_MIN)
+    {
+      result_code_t resultCode = pack_result_code(ERR_CODE_ARG_VAL_MIN, ARG_INT32_NUM1);
+      return store_arg1_dbl(resultCode, LEAVING_WATER_MAX_MIN, 1);
+    }
+  }
+
+  m_daikinCtrl.SetLeavingWaterMax((float)dblVal);
 
   return pack_result_code(ERR_CODE_OK);
 }
