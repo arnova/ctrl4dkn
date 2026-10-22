@@ -94,7 +94,7 @@ void CDaikinCtrl::LoadSettings()
   // Expert settings
   float fVal = 0.0f;
   EEPROM.get(EEPROM_LWT_MAX, fVal);
-  // NOTE: Written as in-range check, so NaN (eg. unprogrammed EEPROM) also results in default (0 = disabled)
+  // NOTE: Written as in-range check, so NaN (eg. unprogrammed EEPROM) also results in default (0 = disabled is kept)
   if (fVal != 0.0f && !(fVal >= LEAVING_WATER_MAX_MIN && fVal <= LEAVING_WATER_MAX_MAX))
   {
     fVal = LEAVING_WATER_MAX_DEFAULT;
