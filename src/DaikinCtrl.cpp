@@ -602,7 +602,10 @@ bool CDaikinCtrl::MqttPublishValues()
     snprintf(strBuf, sizeof(strBuf), "%u", m_iNetWatchDogRecovery);
     m_network.GetMqttClient().PublishMessage(MQTT_NET_WD_RECOVERY, strBuf);
 
-    snprintf(strBuf, sizeof(strBuf), "%.1f", m_fLeavingWaterMax);
+    if (m_fLeavingWaterMax == 0.0f)
+      strcpy(strBuf, ""); // Disabled: HA shows unknown
+    else
+      snprintf(strBuf, sizeof(strBuf), "%.1f", m_fLeavingWaterMax);
     m_network.GetMqttClient().PublishMessage(MQTT_LWT_MAX, strBuf);
 
     snprintf(strBuf, sizeof(strBuf), "%u", m_iFloorProtectionDelay);
