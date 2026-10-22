@@ -13,6 +13,16 @@ void CShortCycle::Reset()
 }
 
 
+void CShortCycle::SetConfig(const uint16_t iSmallWindow, const uint8_t iSmallWindowCount, const uint16_t iLargeWindow, const uint8_t iLargeWindowCount, const uint16_t iRecoveryTime)
+{
+  m_iSmallWindow = iSmallWindow;
+  m_iSmallWindowCount = iSmallWindowCount;
+  m_iLargeWindow = iLargeWindow;
+  m_iLargeWindowCount = iLargeWindowCount;
+  m_iRecoveryTime = iRecoveryTime;
+}
+
+
 void CShortCycle::Loop(const bool bOn)
 {
   // Increment timestamp
@@ -38,13 +48,13 @@ void CShortCycle::Loop(const bool bOn)
       const uint32_t iTimeDiff = (m_iShortCycleTimestamp - m_iShortCycleTimeStamps[it]) / 60 / (CONTROL_LOOP_TIME / 1000);
 
       // Check if this is a short cycle in the small window
-      if (iTimeDiff <= SHORT_CYCLE_SMALL_WINDOW)
+      if (iTimeDiff <= m_iSmallWindow)
       {
         iCycleCountSmall++;
       }
 
       // Check if this is a short cycle in the large window
-      if (iTimeDiff <= SHORT_CYCLE_LARGE_WINDOW)
+      if (iTimeDiff <= m_iLargeWindow)
       {
         iCycleCountLarge++;
       }
@@ -57,9 +67,9 @@ void CShortCycle::Loop(const bool bOn)
       }
     }
 
-    if (iCycleCountSmall > SHORT_CYCLE_SMALL_WINDOW_COUNT || iCycleCountLarge > SHORT_CYCLE_LARGE_WINDOW_COUNT)
+    if (iCycleCountSmall > m_iSmallWindowCount || iCycleCountLarge > m_iLargeWindowCount)
     {
-      m_iShortCycleRecoveryCounter = SHORT_CYCLE_RECOVERY_TIME * 60 * (CONTROL_LOOP_TIME / 1000);
+      m_iShortCycleRecoveryCounter = m_iRecoveryTime * 60 * (CONTROL_LOOP_TIME / 1000);
     }
 
     m_iShortCycleTimeStamps[iTimeStampPos] = m_iShortCycleTimestamp; // Store current timestamp

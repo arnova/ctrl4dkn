@@ -41,6 +41,11 @@ const char EX_HELP_STR_P[] PROGMEM = "\r\n"
                                   "floordelay [s]         : Set floor protection release delay to [s] seconds (min. " STRINGIZE(FLOOR_PROTECTION_DELAY_MIN) ")\r\n"
                                   "valvedelay [s]         : Set primary zone valve close delay to [s] seconds (min. " STRINGIZE(PRIMARY_ZONE_VALVE_DELAY_MIN) ")\r\n"
                                   "lwtcooldown [s]        : Set LWT cool down delay (before opening primary zone valve) to [s] seconds (min. " STRINGIZE(LWT_COOL_DOWN_DELAY_TIME_MIN) ")\r\n"
+                                  "scsmallwin [m]         : Set short cycle small window to [m] minutes (" STRINGIZE(SHORT_CYCLE_SMALL_WINDOW_MIN) "-" STRINGIZE(SHORT_CYCLE_SMALL_WINDOW_MAX) ")\r\n"
+                                  "scsmallcount [n]       : Set short cycles allowed during small window to [n] (" STRINGIZE(SHORT_CYCLE_SMALL_WINDOW_COUNT_MIN) "-" STRINGIZE(SHORT_CYCLE_SMALL_WINDOW_COUNT_MAX) ")\r\n"
+                                  "sclargewin [m]         : Set short cycle large window to [m] minutes (" STRINGIZE(SHORT_CYCLE_LARGE_WINDOW_MIN) "-" STRINGIZE(SHORT_CYCLE_LARGE_WINDOW_MAX) ")\r\n"
+                                  "sclargecount [n]       : Set short cycles allowed during large window to [n] (" STRINGIZE(SHORT_CYCLE_LARGE_WINDOW_COUNT_MIN) "-" STRINGIZE(SHORT_CYCLE_LARGE_WINDOW_COUNT_MAX) ")\r\n"
+                                  "screcovery [m]         : Set short cycle recovery time to [m] minutes (" STRINGIZE(SHORT_CYCLE_RECOVERY_TIME_MIN) "-" STRINGIZE(SHORT_CYCLE_RECOVERY_TIME_MAX) ")\r\n"
                                   ;
 
 // Show copyright + firmware version
@@ -345,6 +350,23 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
 
   CTerminal::println("");
 
+  snprintf(strBuf, sizeof(strBuf), "%um", m_daikinCtrl.GetShortCycleSmallWindow());
+  PrintItemValue("sc_small_win", strBuf);
+
+  snprintf(strBuf, sizeof(strBuf), "%u", m_daikinCtrl.GetShortCycleSmallWindowCount());
+  PrintItemValue(" sc_small_count", strBuf);
+
+  snprintf(strBuf, sizeof(strBuf), "%um", m_daikinCtrl.GetShortCycleLargeWindow());
+  PrintItemValue(" sc_large_win", strBuf);
+
+  snprintf(strBuf, sizeof(strBuf), "%u", m_daikinCtrl.GetShortCycleLargeWindowCount());
+  PrintItemValue(" sc_large_count", strBuf);
+
+  snprintf(strBuf, sizeof(strBuf), "%um", m_daikinCtrl.GetShortCycleRecoveryTime());
+  PrintItemValue(" sc_recovery", strBuf);
+
+  CTerminal::println("");
+
   return pack_result_code(ERR_CODE_OK);
 }
 
@@ -631,6 +653,71 @@ result_code_t CCtrl4DknCommandHandler::CmdLwtCoolDownDelay(const char *strArgs)
 }
 
 
+result_code_t CCtrl4DknCommandHandler::CmdShortCycleSmallWindow(const char *strArgs)
+{
+  int32_t iVal;
+  const result_code_t result = GetIntArg(strArgs, &iVal, SHORT_CYCLE_SMALL_WINDOW_MIN, SHORT_CYCLE_SMALL_WINDOW_MAX);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  m_daikinCtrl.SetShortCycleSmallWindow(iVal);
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
+result_code_t CCtrl4DknCommandHandler::CmdShortCycleSmallWindowCount(const char *strArgs)
+{
+  int32_t iVal;
+  const result_code_t result = GetIntArg(strArgs, &iVal, SHORT_CYCLE_SMALL_WINDOW_COUNT_MIN, SHORT_CYCLE_SMALL_WINDOW_COUNT_MAX);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  m_daikinCtrl.SetShortCycleSmallWindowCount(iVal);
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
+result_code_t CCtrl4DknCommandHandler::CmdShortCycleLargeWindow(const char *strArgs)
+{
+  int32_t iVal;
+  const result_code_t result = GetIntArg(strArgs, &iVal, SHORT_CYCLE_LARGE_WINDOW_MIN, SHORT_CYCLE_LARGE_WINDOW_MAX);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  m_daikinCtrl.SetShortCycleLargeWindow(iVal);
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
+result_code_t CCtrl4DknCommandHandler::CmdShortCycleLargeWindowCount(const char *strArgs)
+{
+  int32_t iVal;
+  const result_code_t result = GetIntArg(strArgs, &iVal, SHORT_CYCLE_LARGE_WINDOW_COUNT_MIN, SHORT_CYCLE_LARGE_WINDOW_COUNT_MAX);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  m_daikinCtrl.SetShortCycleLargeWindowCount(iVal);
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
+result_code_t CCtrl4DknCommandHandler::CmdShortCycleRecoveryTime(const char *strArgs)
+{
+  int32_t iVal;
+  const result_code_t result = GetIntArg(strArgs, &iVal, SHORT_CYCLE_RECOVERY_TIME_MIN, SHORT_CYCLE_RECOVERY_TIME_MAX);
+  if (result.code != ERR_CODE_OK)
+    return result;
+
+  m_daikinCtrl.SetShortCycleRecoveryTime(iVal);
+
+  return pack_result_code(ERR_CODE_OK);
+}
+
+
 // Process provided string command
 result_code_t CCtrl4DknCommandHandler::ProcessCommand(char *strCommand)
 {
@@ -762,6 +849,26 @@ result_code_t CCtrl4DknCommandHandler::ProcessCommand(char *strCommand)
   else if (STRIEQUALS(strCommand, "lwtcooldown"))
   {
     result = CmdLwtCoolDownDelay(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "scsmallwin"))
+  {
+    result = CmdShortCycleSmallWindow(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "scsmallcount"))
+  {
+    result = CmdShortCycleSmallWindowCount(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "sclargewin"))
+  {
+    result = CmdShortCycleLargeWindow(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "sclargecount"))
+  {
+    result = CmdShortCycleLargeWindowCount(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "screcovery"))
+  {
+    result = CmdShortCycleRecoveryTime(strArgs);
   }
 
   return result;

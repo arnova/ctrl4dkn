@@ -62,6 +62,11 @@ class CCtrl4DknCommandHandler : public CCommandHandler
     result_code_t CmdFloorProtectionDelay(const char *strArgs);
     result_code_t CmdPrimaryZoneValveDelay(const char *strArgs);
     result_code_t CmdLwtCoolDownDelay(const char *strArgs);
+    result_code_t CmdShortCycleSmallWindow(const char *strArgs);
+    result_code_t CmdShortCycleSmallWindowCount(const char *strArgs);
+    result_code_t CmdShortCycleLargeWindow(const char *strArgs);
+    result_code_t CmdShortCycleLargeWindowCount(const char *strArgs);
+    result_code_t CmdShortCycleRecoveryTime(const char *strArgs);
     result_code_t CmdRestartNet(const char *strArgs);
 };
 #endif // CTRL4DKN_COMMAND_HANDLER_H

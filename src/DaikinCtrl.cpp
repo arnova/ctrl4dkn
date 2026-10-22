@@ -30,6 +30,16 @@ static uint16_t LoadUInt16Setting(const int iAddr, const uint16_t iMin, const ui
 }
 
 
+// Load (and validate) setting from EEPROM, returns default when out of range
+static uint8_t LoadUInt8Setting(const int iAddr, const uint8_t iMin, const uint8_t iMax, const uint8_t iDefault)
+{
+  uint8_t iVal8 = 0;
+  EEPROM.get(iAddr, iVal8);
+
+  return (iVal8 < iMin || iVal8 > iMax) ? iDefault : iVal8;
+}
+
+
 
 
 void CDaikinCtrl::Reset()
@@ -94,6 +104,13 @@ void CDaikinCtrl::LoadSettings()
   m_iPrimaryZoneValveDelay = LoadUInt16Setting(EEPROM_VALVE_DELAY, PRIMARY_ZONE_VALVE_DELAY_MIN, PRIMARY_ZONE_VALVE_DELAY_MAX, PRIMARY_ZONE_VALVE_DELAY_DEFAULT);
   m_iFloorProtectionDelay = LoadUInt16Setting(EEPROM_FLOOR_DELAY, FLOOR_PROTECTION_DELAY_MIN, FLOOR_PROTECTION_DELAY_MAX, FLOOR_PROTECTION_DELAY_DEFAULT);
   m_iLwtCoolDownDelay = LoadUInt16Setting(EEPROM_LWT_COOL_DOWN, LWT_COOL_DOWN_DELAY_TIME_MIN, LWT_COOL_DOWN_DELAY_TIME_MAX, LWT_COOL_DOWN_DELAY_TIME_DEFAULT);
+
+  m_iShortCycleSmallWindow = LoadUInt16Setting(EEPROM_SC_SMALL_WINDOW, SHORT_CYCLE_SMALL_WINDOW_MIN, SHORT_CYCLE_SMALL_WINDOW_MAX, SHORT_CYCLE_SMALL_WINDOW_DEFAULT);
+  m_iShortCycleSmallWindowCount = LoadUInt8Setting(EEPROM_SC_SMALL_COUNT, SHORT_CYCLE_SMALL_WINDOW_COUNT_MIN, SHORT_CYCLE_SMALL_WINDOW_COUNT_MAX, SHORT_CYCLE_SMALL_WINDOW_COUNT_DEFAULT);
+  m_iShortCycleLargeWindow = LoadUInt16Setting(EEPROM_SC_LARGE_WINDOW, SHORT_CYCLE_LARGE_WINDOW_MIN, SHORT_CYCLE_LARGE_WINDOW_MAX, SHORT_CYCLE_LARGE_WINDOW_DEFAULT);
+  m_iShortCycleLargeWindowCount = LoadUInt8Setting(EEPROM_SC_LARGE_COUNT, SHORT_CYCLE_LARGE_WINDOW_COUNT_MIN, SHORT_CYCLE_LARGE_WINDOW_COUNT_MAX, SHORT_CYCLE_LARGE_WINDOW_COUNT_DEFAULT);
+  m_iShortCycleRecoveryTime = LoadUInt16Setting(EEPROM_SC_RECOVERY, SHORT_CYCLE_RECOVERY_TIME_MIN, SHORT_CYCLE_RECOVERY_TIME_MAX, SHORT_CYCLE_RECOVERY_TIME_DEFAULT);
+  ApplyShortCycleConfig();
 
   m_bPublishSettings = true;
 }
@@ -223,6 +240,88 @@ void CDaikinCtrl::SetLwtCoolDownDelay(const uint16_t iTime)
 }
 
 
+void CDaikinCtrl::ApplyShortCycleConfig()
+{
+  m_shortCyclePrimary.SetConfig(m_iShortCycleSmallWindow, m_iShortCycleSmallWindowCount, m_iShortCycleLargeWindow, m_iShortCycleLargeWindowCount, m_iShortCycleRecoveryTime);
+  m_shortCycleSecondary.SetConfig(m_iShortCycleSmallWindow, m_iShortCycleSmallWindowCount, m_iShortCycleLargeWindow, m_iShortCycleLargeWindowCount, m_iShortCycleRecoveryTime);
+}
+
+
+void CDaikinCtrl::SetShortCycleSmallWindow(const uint16_t iTime)
+{
+  if (iTime != m_iShortCycleSmallWindow)
+  {
+    EEPROM.put(EEPROM_SC_SMALL_WINDOW, iTime);
+    EEPROM.commit();
+
+    m_iShortCycleSmallWindow = iTime;
+    ApplyShortCycleConfig();
+
+    m_bPublishSettings = true;
+  }
+}
+
+
+void CDaikinCtrl::SetShortCycleSmallWindowCount(const uint8_t iCount)
+{
+  if (iCount != m_iShortCycleSmallWindowCount)
+  {
+    EEPROM.put(EEPROM_SC_SMALL_COUNT, iCount);
+    EEPROM.commit();
+
+    m_iShortCycleSmallWindowCount = iCount;
+    ApplyShortCycleConfig();
+
+    m_bPublishSettings = true;
+  }
+}
+
+
+void CDaikinCtrl::SetShortCycleLargeWindow(const uint16_t iTime)
+{
+  if (iTime != m_iShortCycleLargeWindow)
+  {
+    EEPROM.put(EEPROM_SC_LARGE_WINDOW, iTime);
+    EEPROM.commit();
+
+    m_iShortCycleLargeWindow = iTime;
+    ApplyShortCycleConfig();
+
+    m_bPublishSettings = true;
+  }
+}
+
+
+void CDaikinCtrl::SetShortCycleLargeWindowCount(const uint8_t iCount)
+{
+  if (iCount != m_iShortCycleLargeWindowCount)
+  {
+    EEPROM.put(EEPROM_SC_LARGE_COUNT, iCount);
+    EEPROM.commit();
+
+    m_iShortCycleLargeWindowCount = iCount;
+    ApplyShortCycleConfig();
+
+    m_bPublishSettings = true;
+  }
+}
+
+
+void CDaikinCtrl::SetShortCycleRecoveryTime(const uint16_t iTime)
+{
+  if (iTime != m_iShortCycleRecoveryTime)
+  {
+    EEPROM.put(EEPROM_SC_RECOVERY, iTime);
+    EEPROM.commit();
+
+    m_iShortCycleRecoveryTime = iTime;
+    ApplyShortCycleConfig();
+
+    m_bPublishSettings = true;
+  }
+}
+
+
 void CDaikinCtrl::FactoryReset()
 {
   SetMqttUpdateInterval(MQTT_UPDATE_TIME_DEFAULT);
@@ -235,6 +334,11 @@ void CDaikinCtrl::FactoryReset()
   SetPrimaryZoneValveDelay(PRIMARY_ZONE_VALVE_DELAY_DEFAULT);
   SetFloorProtectionDelay(FLOOR_PROTECTION_DELAY_DEFAULT);
   SetLwtCoolDownDelay(LWT_COOL_DOWN_DELAY_TIME_DEFAULT);
+  SetShortCycleSmallWindow(SHORT_CYCLE_SMALL_WINDOW_DEFAULT);
+  SetShortCycleSmallWindowCount(SHORT_CYCLE_SMALL_WINDOW_COUNT_DEFAULT);
+  SetShortCycleLargeWindow(SHORT_CYCLE_LARGE_WINDOW_DEFAULT);
+  SetShortCycleLargeWindowCount(SHORT_CYCLE_LARGE_WINDOW_COUNT_DEFAULT);
+  SetShortCycleRecoveryTime(SHORT_CYCLE_RECOVERY_TIME_DEFAULT);
 
   // Reset controller
   Reset();
@@ -314,6 +418,11 @@ void CDaikinCtrl::MqttPublishDiscovery()
   m_network.GetMqttClient().PublishSensorConfig(MQTT_FLOOR_PROTECTION_DELAY, "s", "", "", true);
   m_network.GetMqttClient().PublishSensorConfig(MQTT_PRIMARY_ZONE_VALVE_DELAY, "s", "", "", true);
   m_network.GetMqttClient().PublishSensorConfig(MQTT_LWT_COOL_DOWN_DELAY, "s", "", "", true);
+  m_network.GetMqttClient().PublishSensorConfig(MQTT_SC_SMALL_WINDOW, "min", "", "", true);
+  m_network.GetMqttClient().PublishSensorConfig(MQTT_SC_SMALL_WINDOW_COUNT, "", "", "", true);
+  m_network.GetMqttClient().PublishSensorConfig(MQTT_SC_LARGE_WINDOW, "min", "", "", true);
+  m_network.GetMqttClient().PublishSensorConfig(MQTT_SC_LARGE_WINDOW_COUNT, "", "", "", true);
+  m_network.GetMqttClient().PublishSensorConfig(MQTT_SC_RECOVERY_TIME, "min", "", "", true);
 }
 
 
@@ -515,6 +624,21 @@ bool CDaikinCtrl::MqttPublishValues()
 
     snprintf(strBuf, sizeof(strBuf), "%u", m_iLwtCoolDownDelay);
     m_network.GetMqttClient().PublishMessage(MQTT_LWT_COOL_DOWN_DELAY, strBuf);
+
+    snprintf(strBuf, sizeof(strBuf), "%u", m_iShortCycleSmallWindow);
+    m_network.GetMqttClient().PublishMessage(MQTT_SC_SMALL_WINDOW, strBuf);
+
+    snprintf(strBuf, sizeof(strBuf), "%u", m_iShortCycleSmallWindowCount);
+    m_network.GetMqttClient().PublishMessage(MQTT_SC_SMALL_WINDOW_COUNT, strBuf);
+
+    snprintf(strBuf, sizeof(strBuf), "%u", m_iShortCycleLargeWindow);
+    m_network.GetMqttClient().PublishMessage(MQTT_SC_LARGE_WINDOW, strBuf);
+
+    snprintf(strBuf, sizeof(strBuf), "%u", m_iShortCycleLargeWindowCount);
+    m_network.GetMqttClient().PublishMessage(MQTT_SC_LARGE_WINDOW_COUNT, strBuf);
+
+    snprintf(strBuf, sizeof(strBuf), "%u", m_iShortCycleRecoveryTime);
+    m_network.GetMqttClient().PublishMessage(MQTT_SC_RECOVERY_TIME, strBuf);
   }
 
   if (m_bUpdateCtrlEnable || m_bMqttRepublish)

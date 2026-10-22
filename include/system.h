@@ -94,6 +94,11 @@ const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno v
 #define VALVE_DELAY_SIZE        2
 #define FLOOR_DELAY_SIZE        2
 #define LWT_COOL_DOWN_SIZE      2
+#define SC_SMALL_WINDOW_SIZE    2
+#define SC_SMALL_COUNT_SIZE     1
+#define SC_LARGE_WINDOW_SIZE    2
+#define SC_LARGE_COUNT_SIZE     1
+#define SC_RECOVERY_SIZE        2
 
 // EEPROM locations
 #define EEPROM_CHECKSUM       0                                                   // 0
@@ -114,7 +119,12 @@ const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno v
 #define EEPROM_VALVE_DELAY    EEPROM_LWT_MAX + LWT_MAX_SIZE                       // 286
 #define EEPROM_FLOOR_DELAY    EEPROM_VALVE_DELAY + VALVE_DELAY_SIZE               // 288
 #define EEPROM_LWT_COOL_DOWN  EEPROM_FLOOR_DELAY + FLOOR_DELAY_SIZE               // 290
-#define EEPROM_RESERVED       EEPROM_LWT_COOL_DOWN + LWT_COOL_DOWN_SIZE           // 292
+#define EEPROM_SC_SMALL_WINDOW EEPROM_LWT_COOL_DOWN + LWT_COOL_DOWN_SIZE          // 292
+#define EEPROM_SC_SMALL_COUNT EEPROM_SC_SMALL_WINDOW + SC_SMALL_WINDOW_SIZE       // 294
+#define EEPROM_SC_LARGE_WINDOW EEPROM_SC_SMALL_COUNT + SC_SMALL_COUNT_SIZE        // 295
+#define EEPROM_SC_LARGE_COUNT EEPROM_SC_LARGE_WINDOW + SC_LARGE_WINDOW_SIZE       // 297
+#define EEPROM_SC_RECOVERY    EEPROM_SC_LARGE_COUNT + SC_LARGE_COUNT_SIZE         // 298
+#define EEPROM_RESERVED       EEPROM_SC_RECOVERY + SC_RECOVERY_SIZE               // 300
 
 // GPIO pin numbers
 #define STATUS_LED 25                           // Onboard LED

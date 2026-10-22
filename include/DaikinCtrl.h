@@ -72,6 +72,11 @@ class CDaikinCtrl
     void SetPrimaryZoneValveDelay(const uint16_t iTime);
     void SetFloorProtectionDelay(const uint16_t iTime);
     void SetLwtCoolDownDelay(const uint16_t iTime);
+    void SetShortCycleSmallWindow(const uint16_t iTime);
+    void SetShortCycleSmallWindowCount(const uint8_t iCount);
+    void SetShortCycleLargeWindow(const uint16_t iTime);
+    void SetShortCycleLargeWindowCount(const uint8_t iCount);
+    void SetShortCycleRecoveryTime(const uint16_t iTime);
 
     void SetP1P2AlthermaOn(const bool& bVal) { m_bP1P2AlthermaOn = bVal; };
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
@@ -146,11 +151,17 @@ class CDaikinCtrl
     uint16_t GetPrimaryZoneValveDelay() const { return m_iPrimaryZoneValveDelay; };
     uint16_t GetFloorProtectionDelay() const { return m_iFloorProtectionDelay; };
     uint16_t GetLwtCoolDownDelay() const { return m_iLwtCoolDownDelay; };
+    uint16_t GetShortCycleSmallWindow() const { return m_iShortCycleSmallWindow; };
+    uint8_t GetShortCycleSmallWindowCount() const { return m_iShortCycleSmallWindowCount; };
+    uint16_t GetShortCycleLargeWindow() const { return m_iShortCycleLargeWindow; };
+    uint8_t GetShortCycleLargeWindowCount() const { return m_iShortCycleLargeWindowCount; };
+    uint16_t GetShortCycleRecoveryTime() const { return m_iShortCycleRecoveryTime; };
 
   private:
     void MqttPublishDiscovery();
     bool MqttPublishValues();
     void MqttP1P2Subscribe();
+    void ApplyShortCycleConfig();
 
     void Update();
     void UpdateRelays();
@@ -177,6 +188,11 @@ class CDaikinCtrl
     uint16_t m_iPrimaryZoneValveDelay = PRIMARY_ZONE_VALVE_DELAY_DEFAULT; // Seconds
     uint16_t m_iFloorProtectionDelay = FLOOR_PROTECTION_DELAY_DEFAULT;    // Seconds
     uint16_t m_iLwtCoolDownDelay = LWT_COOL_DOWN_DELAY_TIME_DEFAULT;      // Seconds
+    uint16_t m_iShortCycleSmallWindow = SHORT_CYCLE_SMALL_WINDOW_DEFAULT; // Minutes
+    uint8_t m_iShortCycleSmallWindowCount = SHORT_CYCLE_SMALL_WINDOW_COUNT_DEFAULT;
+    uint16_t m_iShortCycleLargeWindow = SHORT_CYCLE_LARGE_WINDOW_DEFAULT; // Minutes
+    uint8_t m_iShortCycleLargeWindowCount = SHORT_CYCLE_LARGE_WINDOW_COUNT_DEFAULT;
+    uint16_t m_iShortCycleRecoveryTime = SHORT_CYCLE_RECOVERY_TIME_DEFAULT; // Minutes
 
     bool m_bPublishSettings = true;
 
