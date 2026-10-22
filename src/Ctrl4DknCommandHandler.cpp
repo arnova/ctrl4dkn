@@ -256,6 +256,28 @@ result_code_t CCtrl4DknCommandHandler::CmdRestartNet(const char *strArgs)
 }
 
 
+static void PrintItemValue(const char* strItem, const char* strValue)
+{
+  CTerminal::print(strItem);
+  CTerminal::print("=");
+  CTerminal::print(strValue);
+}
+
+
+static void PrintItemValue(const char* strItem, const bool bValue)
+{
+  PrintItemValue(strItem, bValue ? "1" : "0");
+}
+
+
+static void PrintItemIp(const char* strItem, const uint8_t* ipAddr)
+{
+  char strBuf[16]; // Enough room for "255.255.255.255"
+  snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", ipAddr[0], ipAddr[1], ipAddr[2], ipAddr[3]);
+  PrintItemValue(strItem, strBuf);
+}
+
+
 result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
 {
   if (strArgs != NULL && *strArgs)
@@ -263,66 +285,33 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
 
   char strBuf[20]; // Enough room for float with 3 decimals
 
-  CTerminal::print("host_name=");
-  CTerminal::print(m_network.GetHostName());
+  PrintItemValue("host_name", m_network.GetHostName());
+  PrintItemValue(" wifi_ssid", m_network.GetWifiSsid());
 
-  CTerminal::print(" wifi_ssid=");
-  CTerminal::print(m_network.GetWifiSsid());
-
-  CTerminal::print(" wifi_pass=");
   const char* strWifiPass = m_network.GetWifiPassword();
-  CTerminal::print((strlen(strWifiPass) == 0) ? "(empty)" : strWifiPass);
+  PrintItemValue(" wifi_pass", (strlen(strWifiPass) == 0) ? "(empty)" : strWifiPass);
 
-  CTerminal::print(" ip=");
-  CTerminal::print(m_network.GetIpAddr()[0]);
-  CTerminal::print(".");
-  CTerminal::print(m_network.GetIpAddr()[1]);
-  CTerminal::print(".");
-  CTerminal::print(m_network.GetIpAddr()[2]);
-  CTerminal::print(".");
-  CTerminal::print(m_network.GetIpAddr()[3]);
+  PrintItemIp(" ip", m_network.GetIpAddr());
+  PrintItemIp(" netmask", m_network.GetNetMask());
+  PrintItemIp(" mqtt_server", m_network.GetMqttIpAddr());
 
-  CTerminal::print(" netmask=");
-  CTerminal::print(m_network.GetNetMask()[0]);
-  CTerminal::print(".");
-  CTerminal::print(m_network.GetNetMask()[1]);
-  CTerminal::print(".");
-  CTerminal::print(m_network.GetNetMask()[2]);
-  CTerminal::print(".");
-  CTerminal::print(m_network.GetNetMask()[3]);
-
-  CTerminal::print(" mqtt_server=");
-  CTerminal::print(m_network.GetMqttIpAddr()[0]);
-  CTerminal::print(".");
-  CTerminal::print(m_network.GetMqttIpAddr()[1]);
-  CTerminal::print(".");
-  CTerminal::print(m_network.GetMqttIpAddr()[2]);
-  CTerminal::print(".");
-  CTerminal::print(m_network.GetMqttIpAddr()[3]);
-
-  CTerminal::print(" mqtt_user=");
   const char* strMqttUser = m_network.GetMqttUser();
-  CTerminal::print((strlen(strMqttUser) == 0) ? "(empty)" : strMqttUser);
+  PrintItemValue(" mqtt_user", (strlen(strMqttUser) == 0) ? "(empty)" : strMqttUser);
 
-  CTerminal::print(" mqtt_password=");
   const char* strMqttPass = m_network.GetMqttPassword();
-  CTerminal::print((strlen(strMqttPass) == 0) ? "(empty)" : strMqttPass);
+  PrintItemValue(" mqtt_password", (strlen(strMqttPass) == 0) ? "(empty)" : strMqttPass);
 
   CTerminal::println("");
 
-  CTerminal::print("mqtt_update_interval=");
   snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetMqttUpdateInterval());
-  CTerminal::print(strBuf);
+  PrintItemValue("mqtt_update_interval", strBuf);
 
-  CTerminal::print(" net_wd_timeout=");
   snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetNetWatchDogTimeout());
-  CTerminal::print(strBuf);
+  PrintItemValue(" net_wd_timeout", strBuf);
 
-  CTerminal::print(" net_wd_recovery=");
   snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetNetWatchDogRecovery());
-  CTerminal::print(strBuf);
+  PrintItemValue(" net_wd_recovery", strBuf);
 
-  CTerminal::println("");
   CTerminal::println("");
 
   return pack_result_code(ERR_CODE_OK);
@@ -334,18 +323,67 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
   if (strArgs != NULL && *strArgs)
     return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
 
-  CTerminal::print("wifi_conn=");
-  CTerminal::print(m_network.IsConnected() ? "1" : "0");
-
-  CTerminal::print(" mqtt_conn=");
-  CTerminal::print(m_network.IsMqttConnected() ? "1" : "0");
-
   char strBuf[20]; // Enough room for float with 3 decimals
 
-  CTerminal::print(" wifi_ip=");
-  snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
-  CTerminal::print(strBuf);
+  PrintItemValue("wifi_conn", m_network.IsConnected());
+  PrintItemValue(" mqtt_conn", m_network.IsMqttConnected());
 
+  const IPAddress localIp = WiFi.localIP();
+  const uint8_t wifiIp[4] = { localIp[0], localIp[1], localIp[2], localIp[3] };
+  PrintItemIp(" wifi_ip", wifiIp);
+
+  CTerminal::println("");
+
+  // Controls (MQTT switches)
+  PrintItemValue("ctrl_en", m_daikinCtrl.GetCtrlOnOff());
+  PrintItemValue(" zone_pri_en", m_daikinCtrl.GetCtrlZonePriEnable());
+  PrintItemValue(" zone_sec_en", m_daikinCtrl.GetCtrlZoneSecEnable());
+  PrintItemValue(" zone_sec_force", m_daikinCtrl.GetCtrlZoneSecForce());
+  PrintItemValue(" valve_pri_close_force", m_daikinCtrl.GetCtrlValvePriCloseForce());
+  PrintItemValue(" dkn_dis", m_daikinCtrl.GetCtrlDaikinDisable());
+  PrintItemValue(" gas_only", m_daikinCtrl.GetCtrlGasOnly());
+  PrintItemValue(" sc_prevent", m_daikinCtrl.GetCtrlShortCyclePrevention());
+  CTerminal::println("");
+
+  PrintItemValue("room1_en", m_daikinCtrl.GetCtrlRoom1Enable());
+  PrintItemValue(" room2_en", m_daikinCtrl.GetCtrlRoom2Enable());
+  PrintItemValue(" room3_en", m_daikinCtrl.GetCtrlRoom3Enable());
+  PrintItemValue(" room4_en", m_daikinCtrl.GetCtrlRoom4Enable());
+  CTerminal::println("");
+
+  // States (MQTT sensors)
+  PrintItemValue("valve_zone_pri", m_daikinCtrl.GetValveZonePrimaryOpen());
+  PrintItemValue(" valve_room1", m_daikinCtrl.GetRoom1ValveOpen());
+  PrintItemValue(" valve_room2", m_daikinCtrl.GetRoom2ValveOpen());
+  PrintItemValue(" valve_room3", m_daikinCtrl.GetRoom3ValveOpen());
+  PrintItemValue(" valve_room4", m_daikinCtrl.GetRoom4ValveOpen());
+  CTerminal::println("");
+
+  PrintItemValue("dkn_pri_en", m_daikinCtrl.GetDaikinZonePrimaryEnable());
+  PrintItemValue(" dkn_sec_en", m_daikinCtrl.GetDaikinZoneSecondaryEnable());
+  PrintItemValue(" lwt_too_high", m_daikinCtrl.GetLeavingWaterTooHigh());
+  PrintItemValue(" sc_pri", m_daikinCtrl.GetZonePrimaryShortCycleDetected());
+  PrintItemValue(" sc_sec", m_daikinCtrl.GetZoneSecondaryShortCycleDetected());
+  const char* strAvgRoomTemp = m_daikinCtrl.GetAveragePrimaryZoneRoomTemp();
+  PrintItemValue(" room_temp_avg", (strlen(strAvgRoomTemp) == 0) ? "(none)" : strAvgRoomTemp);
+  CTerminal::println("");
+
+  // P1P2 (received) values
+  PrintItemValue("p1p2_on", m_daikinCtrl.GetP1P2AlthermaOn());
+  PrintItemValue(" p1p2_comp", m_daikinCtrl.GetP1P2Compressor());
+  PrintItemValue(" p1p2_pump", m_daikinCtrl.GetP1P2CirculationPumpOn());
+  PrintItemValue(" p1p2_heat", m_daikinCtrl.GetP1P2HeatingOn());
+  PrintItemValue(" p1p2_cool", m_daikinCtrl.GetP1P2CoolingOn());
+  PrintItemValue(" p1p2_valve_main", m_daikinCtrl.GetP1P2ValveZoneMain());
+  PrintItemValue(" p1p2_defrost", m_daikinCtrl.GetP1P2DefrostActive());
+  CTerminal::println("");
+
+  snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetP1P2PrimaryZoneRoomTemp());
+  PrintItemValue("p1p2_room_temp", strBuf);
+  snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetP1P2PrimaryZoneTargetTemp());
+  PrintItemValue(" p1p2_target_temp", strBuf);
+  snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetP1P2LeavingWaterTemp());
+  PrintItemValue(" p1p2_lwt", strBuf);
   CTerminal::println("");
 
   return pack_result_code(ERR_CODE_OK);
