@@ -64,6 +64,8 @@ class CDaikinCtrl
     void SetMqttUpdateInterval(const uint8_t iInterval);
     void SetNetWatchDogTimeout(const uint16_t iTimeout);
     void SetNetWatchDogRecovery(const uint16_t iTimeout);
+    void SetLowTempSecondaryZone(const bool bVal);
+    void SetShortCyclePrevention(const bool bVal);
 
     void SetP1P2AlthermaOn(const bool& bVal) { m_bP1P2AlthermaOn = bVal; };
     void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
@@ -98,7 +100,6 @@ class CDaikinCtrl
     void SetCtrlValvePriCloseForce(const bool& bVal) { m_bCtrlValvePriCloseForce = bVal; m_bUpdateCtrlValvePriCloseForce = true; };
     void SetCtrlDaikinDisable(const bool& bVal) { m_bCtrlDaikinDisable = bVal; m_bUpdateCtrlDaikinDisable = true; };
     void SetCtrlGasOnly(const bool& bVal) { m_bCtrlGasOnly = bVal; m_bUpdateCtrlGasOnly = true; };
-    void SetCtrlShortCyclePrevention(const bool& bVal) { m_bCtrlShortCyclePrevention = bVal; m_bUpdateCtrlShortCyclePrevention = true; };
     void SetCtrlRoom1Enable(const bool& bVal) { m_bCtrlRoom1Enable = bVal; m_bUpdateCtrlRoom1Enable = true; };
     void SetCtrlRoom2Enable(const bool& bVal) { m_bCtrlRoom2Enable = bVal; m_bUpdateCtrlRoom2Enable = true; };
     void SetCtrlRoom3Enable(const bool& bVal) { m_bCtrlRoom3Enable = bVal; m_bUpdateCtrlRoom3Enable = true; };
@@ -111,7 +112,6 @@ class CDaikinCtrl
     bool GetCtrlValvePriCloseForce() const { return m_bCtrlValvePriCloseForce; };
     bool GetCtrlDaikinDisable() const { return m_bCtrlDaikinDisable; };
     bool GetCtrlGasOnly() const { return m_bCtrlGasOnly; };
-    bool GetCtrlShortCyclePrevention() const { return m_bCtrlShortCyclePrevention; };
     bool GetCtrlRoom1Enable() const { return m_bCtrlRoom1Enable; };
     bool GetCtrlRoom2Enable() const { return m_bCtrlRoom2Enable; };
     bool GetCtrlRoom3Enable() const { return m_bCtrlRoom3Enable; };
@@ -133,6 +133,8 @@ class CDaikinCtrl
     uint8_t GetMqttUpdateInterval() const { return m_iMqttUpdateInterval; };
     uint16_t GetNetWatchDogTimeout() const { return m_iNetWatchDogTimeout; };
     uint16_t GetNetWatchDogRecovery() const { return m_iNetWatchDogRecovery; };
+    bool GetLowTempSecondaryZone() const { return m_bLowTempSecondaryZone; };
+    bool GetShortCyclePrevention() const { return m_bShortCyclePrevention; };
 
   private:
     void MqttPublishDiscovery();
@@ -156,6 +158,8 @@ class CDaikinCtrl
     uint8_t m_iMqttUpdateInterval = 0;
     uint16_t m_iNetWatchDogTimeout = 0;
     uint16_t m_iNetWatchDogRecovery = 0;
+    bool m_bLowTempSecondaryZone = LOW_TEMP_SECONDARY_ZONE_DEFAULT; // Secondary zone uses low temp. AWT range (safe for floor heating)
+    bool m_bShortCyclePrevention = SHORT_CYCLE_PREVENTION_DEFAULT;   // Disable zone when short cycling is detected
 
     bool m_bPublishSettings = true;
 
@@ -195,9 +199,6 @@ class CDaikinCtrl
 
     bool m_bCtrlGasOnly = false;
     bool m_bUpdateCtrlGasOnly = true;
-
-    bool m_bCtrlShortCyclePrevention = false;
-    bool m_bUpdateCtrlShortCyclePrevention = true;
 
     bool m_bCtrlRoom1Enable = false;
     bool m_bUpdateCtrlRoom1Enable = true;

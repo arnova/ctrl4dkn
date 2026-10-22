@@ -53,8 +53,11 @@ const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno v
 // Enable below when a bridge with older firmware (<v0.9.45) is used
 //#define MQTT_P1P2_OLD_BRIDGE // FIXME: Setting
 
-// Enable this when (Daikin) secondary zone uses low temperature AWT range that is safe for floor-heated rooms
-#define LOW_TEMP_SECONDARY_ZONE // FIXME: Setting
+// Default for when (Daikin) secondary zone uses low temperature AWT range that is safe for floor-heated rooms
+#define LOW_TEMP_SECONDARY_ZONE_DEFAULT         false
+
+// Default for short cycle prevention (disable zone when short cycling is detected)
+#define SHORT_CYCLE_PREVENTION_DEFAULT          true
 
 // Socket server settings
 #define SOCKET_SERVER_PORT                      8000
@@ -85,6 +88,8 @@ const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno v
 #define NET_WD_TIMEOUT_SIZE     2
 #define NET_WD_RECOVER_SIZE     2
 #define MQTT_INTERVAL_SIZE      1
+#define LOW_TEMP_SEC_ZONE_SIZE  1
+#define SC_PREVENTION_SIZE      1
 
 // EEPROM locations
 #define EEPROM_CHECKSUM       0                                                   // 0
@@ -99,7 +104,9 @@ const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno v
 #define EEPROM_NET_WD_TIMEOUT EEPROM_HOST_NAME + HOST_NAME_MAX_SIZE + 1           // 275
 #define EEPROM_NET_WD_RECOVER EEPROM_NET_WD_TIMEOUT + NET_WD_TIMEOUT_SIZE         // 277
 #define EEPROM_MQTT_INTERVAL  EEPROM_NET_WD_RECOVER + NET_WD_RECOVER_SIZE         // 279
-#define EEPROM_RESERVED       EEPROM_MQTT_INTERVAL + MQTT_INTERVAL_SIZE           // 280
+#define EEPROM_LOW_TEMP_SEC_ZONE EEPROM_MQTT_INTERVAL + MQTT_INTERVAL_SIZE        // 280
+#define EEPROM_SC_PREVENTION  EEPROM_LOW_TEMP_SEC_ZONE + LOW_TEMP_SEC_ZONE_SIZE   // 281
+#define EEPROM_RESERVED       EEPROM_SC_PREVENTION + SC_PREVENTION_SIZE           // 282
 
 // GPIO pin numbers
 #define STATUS_LED 25                           // Onboard LED
