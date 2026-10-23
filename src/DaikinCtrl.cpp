@@ -3,7 +3,7 @@
 
 #include <EEPROM.h>
 
-CDaikinCtrl::CDaikinCtrl(CNetwork& network) : m_network(network)
+CDaikinCtrl::CDaikinCtrl(CNetwork& network) : m_network(network), m_mqttClient(network.GetMqttClient())
 {
   m_roomTempRollingAverager.SetAvgCount(PRIMARY_ZONE_ROOM_TEMP_AVG_TIME);
 }
@@ -280,73 +280,73 @@ void CDaikinCtrl::MqttOnConnect()
 void CDaikinCtrl::MqttP1P2Subscribe()
 {
   // Subscribe to messages from p1p2serial etc.
-  m_network.GetMqttClient().subscribe(MQTT_P1P2_P_DATE_TIME, 0); // For watchdog
-  m_network.GetMqttClient().subscribe(MQTT_P1P2_P_ALTHERMA_ON, 0);
-  m_network.GetMqttClient().subscribe(MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE, 0);
-  m_network.GetMqttClient().subscribe(MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE, 0);
-  m_network.GetMqttClient().subscribe(MQTT_P1P2_P_LEAVING_WATER_TEMP, 0);
-  m_network.GetMqttClient().subscribe(MQTT_P1P2_P_VALVE_ZONE_MAIN, 0);
-  m_network.GetMqttClient().subscribe(MQTT_P1P2_P_DEFROST_ACTIVE, 0);
-  m_network.GetMqttClient().subscribe(MQTT_P1P2_P_COMPRESSOR, 0);
-  m_network.GetMqttClient().subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
-  m_network.GetMqttClient().subscribe(MQTT_P1P2_P_HEATING_ON, 0);
-  m_network.GetMqttClient().subscribe(MQTT_P1P2_P_COOLING_ON, 0);
+  m_mqttClient.subscribe(MQTT_P1P2_P_DATE_TIME, 0); // For watchdog
+  m_mqttClient.subscribe(MQTT_P1P2_P_ALTHERMA_ON, 0);
+  m_mqttClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_ROOM_TEMPERATURE, 0);
+  m_mqttClient.subscribe(MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE, 0);
+  m_mqttClient.subscribe(MQTT_P1P2_P_LEAVING_WATER_TEMP, 0);
+  m_mqttClient.subscribe(MQTT_P1P2_P_VALVE_ZONE_MAIN, 0);
+  m_mqttClient.subscribe(MQTT_P1P2_P_DEFROST_ACTIVE, 0);
+  m_mqttClient.subscribe(MQTT_P1P2_P_COMPRESSOR, 0);
+  m_mqttClient.subscribe(MQTT_P1P2_P_CIRCULATION_PUMP_ON, 0);
+  m_mqttClient.subscribe(MQTT_P1P2_P_HEATING_ON, 0);
+  m_mqttClient.subscribe(MQTT_P1P2_P_COOLING_ON, 0);
 }
 
 
 void CDaikinCtrl::MqttPublishDiscovery()
 {
   // Publish MQTT config for eg. HA discovery and subscribe to control topics
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_CONTROLLER_ON_OFF);
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_ZONE_PRIMARY_ENABLE);
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_ZONE_SECONDARY_ENABLE);
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_ZONE_SECONDARY_FORCE);
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_VALVE_PRIMARY_CLOSE_FORCE);
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_DAIKIN_DISABLE);
+  m_mqttClient.PublishSwitchConfig(MQTT_CONTROLLER_ON_OFF);
+  m_mqttClient.PublishSwitchConfig(MQTT_ZONE_PRIMARY_ENABLE);
+  m_mqttClient.PublishSwitchConfig(MQTT_ZONE_SECONDARY_ENABLE);
+  m_mqttClient.PublishSwitchConfig(MQTT_ZONE_SECONDARY_FORCE);
+  m_mqttClient.PublishSwitchConfig(MQTT_VALVE_PRIMARY_CLOSE_FORCE);
+  m_mqttClient.PublishSwitchConfig(MQTT_DAIKIN_DISABLE);
 
 #ifdef DAIKIN_PREFERENTIAL_RELAY
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_GAS_ONLY);
+  m_mqttClient.PublishSwitchConfig(MQTT_GAS_ONLY);
 #endif
 
 #ifdef ROOM1_VALVE_RELAY
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_ROOM1_ENABLE);
-  m_network.GetMqttClient().PublishBinarySensorConfig(MQTT_VALVE_ROOM1_OPEN);
+  m_mqttClient.PublishSwitchConfig(MQTT_ROOM1_ENABLE);
+  m_mqttClient.PublishBinarySensorConfig(MQTT_VALVE_ROOM1_OPEN);
 #endif
 #ifdef ROOM2_VALVE_RELAY
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_ROOM2_ENABLE);
-  m_network.GetMqttClient().PublishBinarySensorConfig(MQTT_VALVE_ROOM2_OPEN);
+  m_mqttClient.PublishSwitchConfig(MQTT_ROOM2_ENABLE);
+  m_mqttClient.PublishBinarySensorConfig(MQTT_VALVE_ROOM2_OPEN);
 #endif
 #ifdef ROOM3_VALVE_RELAY
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_ROOM3_ENABLE);
-  m_network.GetMqttClient().PublishBinarySensorConfig(MQTT_VALVE_ROOM3_OPEN);
+  m_mqttClient.PublishSwitchConfig(MQTT_ROOM3_ENABLE);
+  m_mqttClient.PublishBinarySensorConfig(MQTT_VALVE_ROOM3_OPEN);
 #endif
 #ifdef ROOM4_VALVE_RELAY
-  m_network.GetMqttClient().PublishSwitchConfig(MQTT_ROOM4_ENABLE);
-  m_network.GetMqttClient().PublishBinarySensorConfig(MQTT_VALVE_ROOM4_OPEN);
+  m_mqttClient.PublishSwitchConfig(MQTT_ROOM4_ENABLE);
+  m_mqttClient.PublishBinarySensorConfig(MQTT_VALVE_ROOM4_OPEN);
 #endif
-  m_network.GetMqttClient().PublishBinarySensorConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN);
-  m_network.GetMqttClient().PublishBinarySensorConfig(MQTT_DAIKIN_PRIMARY_ENABLED);
-  m_network.GetMqttClient().PublishBinarySensorConfig(MQTT_DAIKIN_SECONDARY_ENABLED);
-  m_network.GetMqttClient().PublishBinarySensorConfig(MQTT_LEAVING_WATER_TOO_HIGH);
-  m_network.GetMqttClient().PublishBinarySensorConfig(MQTT_SHORT_CYCLE_PRIMARY_DETECTED);
-  m_network.GetMqttClient().PublishBinarySensorConfig(MQTT_SHORT_CYCLE_SECONDARY_DETECTED);
+  m_mqttClient.PublishBinarySensorConfig(MQTT_VALVE_ZONE_PRIMARY_OPEN);
+  m_mqttClient.PublishBinarySensorConfig(MQTT_DAIKIN_PRIMARY_ENABLED);
+  m_mqttClient.PublishBinarySensorConfig(MQTT_DAIKIN_SECONDARY_ENABLED);
+  m_mqttClient.PublishBinarySensorConfig(MQTT_LEAVING_WATER_TOO_HIGH);
+  m_mqttClient.PublishBinarySensorConfig(MQTT_SHORT_CYCLE_PRIMARY_DETECTED);
+  m_mqttClient.PublishBinarySensorConfig(MQTT_SHORT_CYCLE_SECONDARY_DETECTED);
 
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_AVG_ROOM_TEMPERATURE, "°C", "temperature", "measurement");
+  m_mqttClient.PublishSensorConfig(MQTT_AVG_ROOM_TEMPERATURE, "°C", "temperature", "measurement");
 
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_UPDATE_INTERVAL, "s", "", "", true);
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_NET_WD_TIMEOUT, "s", "", "", true);
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_NET_WD_RECOVERY, "s", "", "", true);
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_UP_TIME, "", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_UPDATE_INTERVAL, "s", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_NET_WD_TIMEOUT, "s", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_NET_WD_RECOVERY, "s", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_UP_TIME, "", "", "", true);
 
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_LWT_MAX, "°C", "temperature", "", true);
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_FLOOR_PROTECTION_DELAY, "s", "", "", true);
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_PRIMARY_ZONE_VALVE_DELAY, "s", "", "", true);
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_LWT_COOL_DOWN_DELAY, "s", "", "", true);
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_SC_SMALL_WINDOW, "min", "", "", true);
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_SC_SMALL_WINDOW_COUNT, "", "", "", true);
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_SC_LARGE_WINDOW, "min", "", "", true);
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_SC_LARGE_WINDOW_COUNT, "", "", "", true);
-  m_network.GetMqttClient().PublishSensorConfig(MQTT_SC_RECOVERY_TIME, "min", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_LWT_MAX, "°C", "temperature", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_FLOOR_PROTECTION_DELAY, "s", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_PRIMARY_ZONE_VALVE_DELAY, "s", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_LWT_COOL_DOWN_DELAY, "s", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_SC_SMALL_WINDOW, "min", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_SC_SMALL_WINDOW_COUNT, "", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_SC_LARGE_WINDOW, "min", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_SC_LARGE_WINDOW_COUNT, "", "", "", true);
+  m_mqttClient.PublishSensorConfig(MQTT_SC_RECOVERY_TIME, "min", "", "", true);
 }
 
 
@@ -501,7 +501,7 @@ void CDaikinCtrl::PublishBool(const char* strTopic, bool& bUpdate, const bool bV
   if (bUpdate || m_bMqttRepublish)
   {
     bUpdate = false;
-    m_network.GetMqttClient().PublishMessage(strTopic, bVal ? "1" : "0");
+    m_mqttClient.PublishMessage(strTopic, bVal ? "1" : "0");
   }
 }
 
@@ -510,7 +510,7 @@ void CDaikinCtrl::PublishUInt(const char* strTopic, const uint16_t iVal)
 {
   char strBuf[6]; // Enough room for unsigned 16 bit number
   snprintf(strBuf, sizeof(strBuf), "%u", iVal);
-  m_network.GetMqttClient().PublishMessage(strTopic, strBuf);
+  m_mqttClient.PublishMessage(strTopic, strBuf);
 }
 
 
@@ -532,7 +532,7 @@ bool CDaikinCtrl::MqttPublishValues()
   // Publish our f/w version. Note: Static so only published on request
   if (m_bMqttRepublish)
   {
-    m_network.GetMqttClient().PublishMessage(MQTT_FW_VERSION, MY_VERSION);
+    m_mqttClient.PublishMessage(MQTT_FW_VERSION, MY_VERSION);
   }
 
   if (m_bPublishSettings || m_bMqttRepublish)
@@ -551,7 +551,7 @@ bool CDaikinCtrl::MqttPublishValues()
     {
       snprintf(strBuf, sizeof(strBuf), "%.1f", m_fLeavingWaterMax);
     }
-    m_network.GetMqttClient().PublishMessage(MQTT_LWT_MAX, strBuf);
+    m_mqttClient.PublishMessage(MQTT_LWT_MAX, strBuf);
 
     PublishUInt(MQTT_FLOOR_PROTECTION_DELAY, m_iFloorProtectionDelay);
     PublishUInt(MQTT_PRIMARY_ZONE_VALVE_DELAY, m_iPrimaryZoneValveDelay);
@@ -586,7 +586,7 @@ bool CDaikinCtrl::MqttPublishValues()
   if (m_bUpdateAveragePrimaryZoneRoomTemp || m_bMqttRepublish)
   {
     m_bUpdateAveragePrimaryZoneRoomTemp = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_AVG_ROOM_TEMPERATURE, m_strAveragePrimaryZoneRoomTemp);
+    m_mqttClient.PublishMessage(MQTT_AVG_ROOM_TEMPERATURE, m_strAveragePrimaryZoneRoomTemp);
   }
 
   PublishBool(MQTT_SHORT_CYCLE_PRIMARY_DETECTED, m_bUpdateZonePrimaryShortCycleDetected, m_bZonePrimaryShortCycleDetected);
@@ -595,7 +595,7 @@ bool CDaikinCtrl::MqttPublishValues()
   // Publish uptime. Note: Always published since it changes every interval
   const CUptime::uptime_t upTime = GetUpTime();
   snprintf(strBuf, sizeof(strBuf), "%ud %02u:%02u:%02u", upTime.iDays, upTime.iHours, upTime.iMinutes, upTime.iSeconds);
-  m_network.GetMqttClient().PublishMessage(MQTT_UP_TIME, strBuf);
+  m_mqttClient.PublishMessage(MQTT_UP_TIME, strBuf);
 
   m_bMqttRepublish = false;
 

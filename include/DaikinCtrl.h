@@ -165,6 +165,7 @@ class CDaikinCtrl
     void UpdateRelays();
 
     CNetwork& m_network;
+    CMqttClient& m_mqttClient;
 
     elapsedMillis m_loopTimer = 0;
     elapsedMillis m_mqttPublishTimer = 0;
