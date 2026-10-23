@@ -67,16 +67,16 @@ class CDaikinCtrl
     void SetShortCycleLargeWindowCount(const uint8_t iCount);
     void SetShortCycleRecoveryTime(const uint16_t iTime);
 
-    void SetP1P2AlthermaOn(const bool& bVal) { m_bP1P2AlthermaOn = bVal; };
-    void SetP1P2PrimaryZoneRoomTemp(const float& fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
-    void SetP1P2PrimaryZoneTargetTemp(const float& fVal) { m_fP1P2PrimaryZoneTargetTemp = fVal; };
-    void SetP1P2LeavingWaterTemp(const float& fVal) { m_fP1P2LeavingWaterTemp = fVal; };
-    void SetP1P2CirculationPumpOn(const bool& bVal) { m_bP1P2CirculationPumpOn = bVal; };
-    void SetP1P2HeatingOn(const bool& bVal) { m_bP1P2HeatingOn = bVal; };
-    void SetP1P2CoolingOn(const bool& bVal) { m_bP1P2CoolingOn = bVal; };
-    void SetP1P2ValveZoneMain(const bool& bVal) { m_bP1P2ValveZoneMain = bVal; };
-    void SetP1P2DefrostActive(const bool& bVal) { m_bP1P2DefrostActive = bVal; };
-    void SetP1P2Compressor(const bool& bVal) { m_bP1P2CompressorOn = bVal; };
+    void SetP1P2AlthermaOn(const bool bVal) { m_bP1P2AlthermaOn = bVal; };
+    void SetP1P2PrimaryZoneRoomTemp(const float fVal) { m_fP1P2PrimaryZoneRoomTemp = fVal; };
+    void SetP1P2PrimaryZoneTargetTemp(const float fVal) { m_fP1P2PrimaryZoneTargetTemp = fVal; };
+    void SetP1P2LeavingWaterTemp(const float fVal) { m_fP1P2LeavingWaterTemp = fVal; };
+    void SetP1P2CirculationPumpOn(const bool bVal) { m_bP1P2CirculationPumpOn = bVal; };
+    void SetP1P2HeatingOn(const bool bVal) { m_bP1P2HeatingOn = bVal; };
+    void SetP1P2CoolingOn(const bool bVal) { m_bP1P2CoolingOn = bVal; };
+    void SetP1P2ValveZoneMain(const bool bVal) { m_bP1P2ValveZoneMain = bVal; };
+    void SetP1P2DefrostActive(const bool bVal) { m_bP1P2DefrostActive = bVal; };
+    void SetP1P2Compressor(const bool bVal) { m_bP1P2CompressorOn = bVal; };
 
     bool GetP1P2AlthermaOn() const { return m_bP1P2AlthermaOn; };
     float GetP1P2PrimaryZoneRoomTemp() const { return m_fP1P2PrimaryZoneRoomTemp; };
@@ -93,17 +93,17 @@ class CDaikinCtrl
 //    bool IsDaikinCoolingActive() { return m_bP1P2CoolingOn && m_bP1P2CirculationPumpOn; };
 //    bool IsPrimaryHeatingActive() { return IsDaikinHeatingActive() && m_bP1P2ValveZoneMain; };
 
-    void SetCtrlOnOff(const bool& bVal) { m_bCtrlEnable = bVal; m_bUpdateCtrlEnable = true; };
-    void SetCtrlZonePriEnable(const bool& bVal) { m_bCtrlZonePriEnable = bVal; m_bUpdateCtrlZonePriEnable = true; };
-    void SetCtrlZoneSecEnable(const bool& bVal) { m_bCtrlZoneSecEnable = bVal; m_bUpdateCtrlZoneSecEnable = true; };
-    void SetCtrlZoneSecForce(const bool& bVal) { m_bCtrlZoneSecForce = bVal; m_bUpdateCtrlZoneSecForce = true; };
-    void SetCtrlValvePriCloseForce(const bool& bVal) { m_bCtrlValvePriCloseForce = bVal; m_bUpdateCtrlValvePriCloseForce = true; };
-    void SetCtrlDaikinDisable(const bool& bVal) { m_bCtrlDaikinDisable = bVal; m_bUpdateCtrlDaikinDisable = true; };
-    void SetCtrlGasOnly(const bool& bVal) { m_bCtrlGasOnly = bVal; m_bUpdateCtrlGasOnly = true; };
-    void SetCtrlRoom1Enable(const bool& bVal) { m_bCtrlRoom1Enable = bVal; m_bUpdateCtrlRoom1Enable = true; };
-    void SetCtrlRoom2Enable(const bool& bVal) { m_bCtrlRoom2Enable = bVal; m_bUpdateCtrlRoom2Enable = true; };
-    void SetCtrlRoom3Enable(const bool& bVal) { m_bCtrlRoom3Enable = bVal; m_bUpdateCtrlRoom3Enable = true; };
-    void SetCtrlRoom4Enable(const bool& bVal) { m_bCtrlRoom4Enable = bVal; m_bUpdateCtrlRoom4Enable = true; };
+    void SetCtrlOnOff(const bool bVal) { m_bCtrlEnable = bVal; m_bUpdateCtrlEnable = true; };
+    void SetCtrlZonePriEnable(const bool bVal) { m_bCtrlZonePriEnable = bVal; m_bUpdateCtrlZonePriEnable = true; };
+    void SetCtrlZoneSecEnable(const bool bVal) { m_bCtrlZoneSecEnable = bVal; m_bUpdateCtrlZoneSecEnable = true; };
+    void SetCtrlZoneSecForce(const bool bVal) { m_bCtrlZoneSecForce = bVal; m_bUpdateCtrlZoneSecForce = true; };
+    void SetCtrlValvePriCloseForce(const bool bVal) { m_bCtrlValvePriCloseForce = bVal; m_bUpdateCtrlValvePriCloseForce = true; };
+    void SetCtrlDaikinDisable(const bool bVal) { m_bCtrlDaikinDisable = bVal; m_bUpdateCtrlDaikinDisable = true; };
+    void SetCtrlGasOnly(const bool bVal) { m_bCtrlGasOnly = bVal; m_bUpdateCtrlGasOnly = true; };
+    void SetCtrlRoom1Enable(const bool bVal) { m_bCtrlRoom1Enable = bVal; m_bUpdateCtrlRoom1Enable = true; };
+    void SetCtrlRoom2Enable(const bool bVal) { m_bCtrlRoom2Enable = bVal; m_bUpdateCtrlRoom2Enable = true; };
+    void SetCtrlRoom3Enable(const bool bVal) { m_bCtrlRoom3Enable = bVal; m_bUpdateCtrlRoom3Enable = true; };
+    void SetCtrlRoom4Enable(const bool bVal) { m_bCtrlRoom4Enable = bVal; m_bUpdateCtrlRoom4Enable = true; };
 
     bool GetCtrlOnOff() const { return m_bCtrlEnable; };
     bool GetCtrlZonePriEnable() const { return m_bCtrlZonePriEnable; };
