@@ -29,6 +29,33 @@ static uint8_t LoadUInt8Setting(const int iAddr, const uint8_t iMin, const uint8
 }
 
 
+// Load (and validate) setting from EEPROM, returns default when out of range (or NaN)
+static float LoadFloatSetting(const int iAddr, const float fMin, const float fMax, const float fDefault, const bool bAllowZero = false)
+{
+  float fVal = 0.0f;
+  EEPROM.get(iAddr, fVal);
+
+  if (bAllowZero && fVal == 0.0f)
+    return fVal;
+
+  // NOTE: Written as in-range check, so NaN (eg. unprogrammed EEPROM) also results in default
+  return (fVal >= fMin && fVal <= fMax) ? fVal : fDefault;
+}
+
+
+// Store setting to EEPROM (and member) when changed, returns true when changed
+template <typename T>
+static bool StoreSetting(const int iAddr, T& member, const T val)
+{
+  if (val == member)
+    return false;
+
+  EEPROM.put(iAddr, val);
+  EEPROM.commit();
+  member = val;
+
+  return true;
+}
 
 
 void CDaikinCtrl::Reset()
@@ -51,44 +78,20 @@ void CDaikinCtrl::Reset()
 
 void CDaikinCtrl::LoadSettings()
 {
-  uint16_t iVal16 = 0;
+  m_iMqttUpdateInterval = LoadUInt8Setting(EEPROM_MQTT_INTERVAL, MQTT_UPDATE_TIME_MIN, MQTT_UPDATE_TIME_MAX, MQTT_UPDATE_TIME_DEFAULT);
 
-  EEPROM.get(EEPROM_MQTT_INTERVAL, m_iMqttUpdateInterval);
-  if (m_iMqttUpdateInterval < MQTT_UPDATE_TIME_MIN || m_iMqttUpdateInterval > MQTT_UPDATE_TIME_MAX)
-  {
-    m_iMqttUpdateInterval = MQTT_UPDATE_TIME_DEFAULT;
-  }
+  // NOTE: 0 = disabled is also allowed (below min)
+  uint16_t iVal16 = LoadUInt16Setting(EEPROM_NET_WD_TIMEOUT, 0, NETWORK_WATCHDOG_TIMEOUT_MAX, NETWORK_WATCHDOG_TIMEOUT_DEFAULT);
+  m_iNetWatchDogTimeout = (iVal16 != 0 && iVal16 < NETWORK_WATCHDOG_TIMEOUT_MIN) ? NETWORK_WATCHDOG_TIMEOUT_DEFAULT : iVal16;
 
-  EEPROM.get(EEPROM_NET_WD_TIMEOUT, iVal16);
-  if ((iVal16 != 0 && iVal16 < NETWORK_WATCHDOG_TIMEOUT_MIN) || iVal16 > NETWORK_WATCHDOG_TIMEOUT_MAX)
-  {
-    iVal16 = NETWORK_WATCHDOG_TIMEOUT_DEFAULT;
-  }
-  m_iNetWatchDogTimeout = iVal16;
+  m_iNetWatchDogRecovery = LoadUInt16Setting(EEPROM_NET_WD_RECOVER, NETWORK_WATCHDOG_RECOVERY_MIN, NETWORK_WATCHDOG_RECOVERY_MAX, NETWORK_WATCHDOG_RECOVERY_DEFAULT);
 
-  EEPROM.get(EEPROM_NET_WD_RECOVER, iVal16);
-  if (iVal16 < NETWORK_WATCHDOG_RECOVERY_MIN || iVal16 > NETWORK_WATCHDOG_RECOVERY_MAX)
-  {
-    iVal16 = NETWORK_WATCHDOG_RECOVERY_DEFAULT;
-  }
-  m_iNetWatchDogRecovery = iVal16;
-
-  uint8_t iVal8 = 0;
-  EEPROM.get(EEPROM_LOW_TEMP_SEC_ZONE, iVal8);
-  m_bLowTempSecondaryZone = (iVal8 > 1) ? LOW_TEMP_SECONDARY_ZONE_DEFAULT : (iVal8 == 1);
-
-  EEPROM.get(EEPROM_SC_PREVENTION, iVal8);
-  m_bShortCyclePrevention = (iVal8 > 1) ? SHORT_CYCLE_PREVENTION_DEFAULT : (iVal8 == 1);
+  m_bLowTempSecondaryZone = LoadUInt8Setting(EEPROM_LOW_TEMP_SEC_ZONE, 0, 1, LOW_TEMP_SECONDARY_ZONE_DEFAULT) == 1;
+  m_bShortCyclePrevention = LoadUInt8Setting(EEPROM_SC_PREVENTION, 0, 1, SHORT_CYCLE_PREVENTION_DEFAULT) == 1;
 
   // Expert settings
-  float fVal = 0.0f;
-  EEPROM.get(EEPROM_LWT_MAX, fVal);
-  // NOTE: Written as in-range check, so NaN (eg. unprogrammed EEPROM) also results in default (0 = disabled is kept)
-  if (fVal != 0.0f && !(fVal >= LEAVING_WATER_MAX_MIN && fVal <= LEAVING_WATER_MAX_MAX))
-  {
-    fVal = LEAVING_WATER_MAX_DEFAULT;
-  }
-  m_fLeavingWaterMax = fVal;
+  // NOTE: 0 = disabled is also allowed
+  m_fLeavingWaterMax = LoadFloatSetting(EEPROM_LWT_MAX, LEAVING_WATER_MAX_MIN, LEAVING_WATER_MAX_MAX, LEAVING_WATER_MAX_DEFAULT, true);
 
   m_iPrimaryZoneValveDelay = LoadUInt16Setting(EEPROM_VALVE_DELAY, PRIMARY_ZONE_VALVE_DELAY_MIN, PRIMARY_ZONE_VALVE_DELAY_MAX, PRIMARY_ZONE_VALVE_DELAY_DEFAULT);
   m_iFloorProtectionDelay = LoadUInt16Setting(EEPROM_FLOOR_DELAY, FLOOR_PROTECTION_DELAY_MIN, FLOOR_PROTECTION_DELAY_MAX, FLOOR_PROTECTION_DELAY_DEFAULT);
@@ -99,6 +102,7 @@ void CDaikinCtrl::LoadSettings()
   m_iShortCycleLargeWindow = LoadUInt16Setting(EEPROM_SC_LARGE_WINDOW, SHORT_CYCLE_LARGE_WINDOW_MIN, SHORT_CYCLE_LARGE_WINDOW_MAX, SHORT_CYCLE_LARGE_WINDOW_DEFAULT);
   m_iShortCycleLargeWindowCount = LoadUInt8Setting(EEPROM_SC_LARGE_COUNT, SHORT_CYCLE_LARGE_WINDOW_COUNT_MIN, SHORT_CYCLE_LARGE_WINDOW_COUNT_MAX, SHORT_CYCLE_LARGE_WINDOW_COUNT_DEFAULT);
   m_iShortCycleRecoveryTime = LoadUInt16Setting(EEPROM_SC_RECOVERY, SHORT_CYCLE_RECOVERY_TIME_MIN, SHORT_CYCLE_RECOVERY_TIME_MAX, SHORT_CYCLE_RECOVERY_TIME_DEFAULT);
+
   ApplyShortCycleConfig();
 
   m_bPublishSettings = true;
@@ -107,13 +111,8 @@ void CDaikinCtrl::LoadSettings()
 
 void CDaikinCtrl::SetMqttUpdateInterval(const uint8_t iInterval)
 {
-  if (iInterval != m_iMqttUpdateInterval)
+  if (StoreSetting(EEPROM_MQTT_INTERVAL, m_iMqttUpdateInterval, iInterval))
   {
-    EEPROM.put(EEPROM_MQTT_INTERVAL, iInterval);
-    EEPROM.commit();
-
-    m_iMqttUpdateInterval = iInterval;
-  
     m_bPublishSettings = true;
   }
 }
@@ -121,13 +120,8 @@ void CDaikinCtrl::SetMqttUpdateInterval(const uint8_t iInterval)
 
 void CDaikinCtrl::SetNetWatchDogTimeout(const uint16_t iTime)
 {
-  if (iTime != m_iNetWatchDogTimeout)
+  if (StoreSetting(EEPROM_NET_WD_TIMEOUT, m_iNetWatchDogTimeout, iTime))
   {
-    EEPROM.put(EEPROM_NET_WD_TIMEOUT, iTime);
-    EEPROM.commit();
-
-    m_iNetWatchDogTimeout = iTime;
-
     m_bPublishSettings = true;
   }
 }
@@ -135,13 +129,8 @@ void CDaikinCtrl::SetNetWatchDogTimeout(const uint16_t iTime)
 
 void CDaikinCtrl::SetNetWatchDogRecovery(const uint16_t iTime)
 {
-  if (iTime != m_iNetWatchDogRecovery)
+  if (StoreSetting(EEPROM_NET_WD_RECOVER, m_iNetWatchDogRecovery, iTime))
   {
-    EEPROM.put(EEPROM_NET_WD_RECOVER, iTime);
-    EEPROM.commit();
-
-    m_iNetWatchDogRecovery = iTime;
-
     m_bPublishSettings = true;
   }
 }
@@ -149,39 +138,26 @@ void CDaikinCtrl::SetNetWatchDogRecovery(const uint16_t iTime)
 
 void CDaikinCtrl::SetLowTempSecondaryZone(const bool bVal)
 {
-  if (bVal != m_bLowTempSecondaryZone)
+  if (StoreSetting(EEPROM_LOW_TEMP_SEC_ZONE, m_bLowTempSecondaryZone, bVal))
   {
-    const uint8_t iVal8 = bVal ? 1 : 0;
-    EEPROM.put(EEPROM_LOW_TEMP_SEC_ZONE, iVal8);
-    EEPROM.commit();
-
-    m_bLowTempSecondaryZone = bVal;
+    m_bPublishSettings = true;
   }
 }
 
 
 void CDaikinCtrl::SetShortCyclePrevention(const bool bVal)
 {
-  if (bVal != m_bShortCyclePrevention)
+  if (StoreSetting(EEPROM_SC_PREVENTION, m_bShortCyclePrevention, bVal))
   {
-    const uint8_t iVal8 = bVal ? 1 : 0;
-    EEPROM.put(EEPROM_SC_PREVENTION, iVal8);
-    EEPROM.commit();
-
-    m_bShortCyclePrevention = bVal;
+    m_bPublishSettings = true;
   }
 }
 
 
 void CDaikinCtrl::SetLeavingWaterMax(const float fVal)
 {
-  if (fVal != m_fLeavingWaterMax)
+  if (StoreSetting(EEPROM_LWT_MAX, m_fLeavingWaterMax, fVal))
   {
-    EEPROM.put(EEPROM_LWT_MAX, fVal);
-    EEPROM.commit();
-
-    m_fLeavingWaterMax = fVal;
-
     m_bPublishSettings = true;
   }
 }
@@ -189,13 +165,8 @@ void CDaikinCtrl::SetLeavingWaterMax(const float fVal)
 
 void CDaikinCtrl::SetPrimaryZoneValveDelay(const uint16_t iTime)
 {
-  if (iTime != m_iPrimaryZoneValveDelay)
+  if (StoreSetting(EEPROM_VALVE_DELAY, m_iPrimaryZoneValveDelay, iTime))
   {
-    EEPROM.put(EEPROM_VALVE_DELAY, iTime);
-    EEPROM.commit();
-
-    m_iPrimaryZoneValveDelay = iTime;
-
     m_bPublishSettings = true;
   }
 }
@@ -203,13 +174,8 @@ void CDaikinCtrl::SetPrimaryZoneValveDelay(const uint16_t iTime)
 
 void CDaikinCtrl::SetFloorProtectionDelay(const uint16_t iTime)
 {
-  if (iTime != m_iFloorProtectionDelay)
+  if (StoreSetting(EEPROM_FLOOR_DELAY, m_iFloorProtectionDelay, iTime))
   {
-    EEPROM.put(EEPROM_FLOOR_DELAY, iTime);
-    EEPROM.commit();
-
-    m_iFloorProtectionDelay = iTime;
-
     m_bPublishSettings = true;
   }
 }
@@ -217,13 +183,8 @@ void CDaikinCtrl::SetFloorProtectionDelay(const uint16_t iTime)
 
 void CDaikinCtrl::SetLwtCoolDownDelay(const uint16_t iTime)
 {
-  if (iTime != m_iLwtCoolDownDelay)
+  if (StoreSetting(EEPROM_LWT_COOL_DOWN, m_iLwtCoolDownDelay, iTime))
   {
-    EEPROM.put(EEPROM_LWT_COOL_DOWN, iTime);
-    EEPROM.commit();
-
-    m_iLwtCoolDownDelay = iTime;
-
     m_bPublishSettings = true;
   }
 }
@@ -238,14 +199,9 @@ void CDaikinCtrl::ApplyShortCycleConfig()
 
 void CDaikinCtrl::SetShortCycleSmallWindow(const uint16_t iTime)
 {
-  if (iTime != m_iShortCycleSmallWindow)
+  if (StoreSetting(EEPROM_SC_SMALL_WINDOW, m_iShortCycleSmallWindow, iTime))
   {
-    EEPROM.put(EEPROM_SC_SMALL_WINDOW, iTime);
-    EEPROM.commit();
-
-    m_iShortCycleSmallWindow = iTime;
     ApplyShortCycleConfig();
-
     m_bPublishSettings = true;
   }
 }
@@ -253,14 +209,9 @@ void CDaikinCtrl::SetShortCycleSmallWindow(const uint16_t iTime)
 
 void CDaikinCtrl::SetShortCycleSmallWindowCount(const uint8_t iCount)
 {
-  if (iCount != m_iShortCycleSmallWindowCount)
+  if (StoreSetting(EEPROM_SC_SMALL_COUNT, m_iShortCycleSmallWindowCount, iCount))
   {
-    EEPROM.put(EEPROM_SC_SMALL_COUNT, iCount);
-    EEPROM.commit();
-
-    m_iShortCycleSmallWindowCount = iCount;
     ApplyShortCycleConfig();
-
     m_bPublishSettings = true;
   }
 }
@@ -268,14 +219,9 @@ void CDaikinCtrl::SetShortCycleSmallWindowCount(const uint8_t iCount)
 
 void CDaikinCtrl::SetShortCycleLargeWindow(const uint16_t iTime)
 {
-  if (iTime != m_iShortCycleLargeWindow)
+  if (StoreSetting(EEPROM_SC_LARGE_WINDOW, m_iShortCycleLargeWindow, iTime))
   {
-    EEPROM.put(EEPROM_SC_LARGE_WINDOW, iTime);
-    EEPROM.commit();
-
-    m_iShortCycleLargeWindow = iTime;
     ApplyShortCycleConfig();
-
     m_bPublishSettings = true;
   }
 }
@@ -283,14 +229,9 @@ void CDaikinCtrl::SetShortCycleLargeWindow(const uint16_t iTime)
 
 void CDaikinCtrl::SetShortCycleLargeWindowCount(const uint8_t iCount)
 {
-  if (iCount != m_iShortCycleLargeWindowCount)
+  if (StoreSetting(EEPROM_SC_LARGE_COUNT, m_iShortCycleLargeWindowCount, iCount))
   {
-    EEPROM.put(EEPROM_SC_LARGE_COUNT, iCount);
-    EEPROM.commit();
-
-    m_iShortCycleLargeWindowCount = iCount;
     ApplyShortCycleConfig();
-
     m_bPublishSettings = true;
   }
 }
@@ -298,14 +239,9 @@ void CDaikinCtrl::SetShortCycleLargeWindowCount(const uint8_t iCount)
 
 void CDaikinCtrl::SetShortCycleRecoveryTime(const uint16_t iTime)
 {
-  if (iTime != m_iShortCycleRecoveryTime)
+  if (StoreSetting(EEPROM_SC_RECOVERY, m_iShortCycleRecoveryTime, iTime))
   {
-    EEPROM.put(EEPROM_SC_RECOVERY, iTime);
-    EEPROM.commit();
-
-    m_iShortCycleRecoveryTime = iTime;
     ApplyShortCycleConfig();
-
     m_bPublishSettings = true;
   }
 }
@@ -371,7 +307,6 @@ void CDaikinCtrl::MqttPublishDiscovery()
 #ifdef DAIKIN_PREFERENTIAL_RELAY
   m_network.GetMqttClient().PublishSwitchConfig(MQTT_GAS_ONLY);
 #endif
-
 
 #ifdef ROOM1_VALVE_RELAY
   m_network.GetMqttClient().PublishSwitchConfig(MQTT_ROOM1_ENABLE);
@@ -603,9 +538,13 @@ bool CDaikinCtrl::MqttPublishValues()
     m_network.GetMqttClient().PublishMessage(MQTT_NET_WD_RECOVERY, strBuf);
 
     if (m_fLeavingWaterMax == 0.0f)
+    {
       strcpy(strBuf, ""); // Disabled: HA shows unknown
+    }
     else
+    {
       snprintf(strBuf, sizeof(strBuf), "%.1f", m_fLeavingWaterMax);
+    }
     m_network.GetMqttClient().PublishMessage(MQTT_LWT_MAX, strBuf);
 
     snprintf(strBuf, sizeof(strBuf), "%u", m_iFloorProtectionDelay);
