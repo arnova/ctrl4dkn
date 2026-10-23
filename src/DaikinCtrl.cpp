@@ -660,11 +660,9 @@ void CDaikinCtrl::Update()
   else
     m_roomTempRollingAverager.UpdateValue(m_fP1P2PrimaryZoneRoomTemp);
 
-  float fAveragePrimaryZoneRoomTemp = 0.0f;
   if (m_roomTempRollingAverager.HasValue())
   {
-    fAveragePrimaryZoneRoomTemp = m_roomTempRollingAverager.GetValue();
-    UpdateAveragePrimaryZoneRoomTemp(fAveragePrimaryZoneRoomTemp);
+    UpdateAveragePrimaryZoneRoomTemp(m_roomTempRollingAverager.GetValue());
   }
 
   // Handle watchdog (timeout 0 = disabled)
