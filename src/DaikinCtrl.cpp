@@ -925,14 +925,7 @@ void CDaikinCtrl::UpdateRelays()
   UpdateDaikinZoneSecondaryEnable(m_bDaikinSecondaryZoneOn && bDaikinAllowed);
 
 #ifdef DAIKIN_PREFERENTIAL_RELAY
-  if (m_bCtrlGasOnly)
-  {
-    digitalWrite(DAIKIN_PREFERENTIAL_RELAY, HIGH);
-  }
-  else
-  {
-    digitalWrite(DAIKIN_PREFERENTIAL_RELAY, LOW);
-  }
+  digitalWrite(DAIKIN_PREFERENTIAL_RELAY, m_bCtrlGasOnly ? HIGH : LOW);
 #endif
 }
 
