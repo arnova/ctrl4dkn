@@ -465,8 +465,8 @@ void CDaikinCtrl::UpdateDaikinZoneSecondaryEnable(const bool bVal)
 
 void CDaikinCtrl::UpdateAveragePrimaryZoneRoomTemp(const float fVal)
 {
-  char strTemperature[5];
-  snprintf(strTemperature, 5, "%.1f", fVal);
+  char strTemperature[sizeof(m_strAveragePrimaryZoneRoomTemp)];
+  snprintf(strTemperature, sizeof(strTemperature), "%.1f", fVal);
 
   if (!STRIEQUALS(strTemperature, m_strAveragePrimaryZoneRoomTemp))
   {
@@ -474,6 +474,7 @@ void CDaikinCtrl::UpdateAveragePrimaryZoneRoomTemp(const float fVal)
     m_bUpdateAveragePrimaryZoneRoomTemp = true;
   }
 }
+
 
 void CDaikinCtrl::UpdateZonePrimaryShortCycleDetected(const bool bVal)
 {
