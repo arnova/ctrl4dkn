@@ -157,6 +157,7 @@ class CDaikinCtrl
     void MqttPublishDiscovery();
     bool MqttPublishValues();
     void PublishBool(const char* strTopic, bool& bUpdate, const bool bVal);
+    void PublishUInt(const char* strTopic, const uint16_t iVal);
     void MqttP1P2Subscribe();
     void ApplyShortCycleConfig();
 

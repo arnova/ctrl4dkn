@@ -514,6 +514,14 @@ void CDaikinCtrl::PublishBool(const char* strTopic, bool& bUpdate, const bool bV
 }
 
 
+void CDaikinCtrl::PublishUInt(const char* strTopic, const uint16_t iVal)
+{
+  char strBuf[6]; // Enough room for unsigned 16 bit number
+  snprintf(strBuf, sizeof(strBuf), "%u", iVal);
+  m_network.GetMqttClient().PublishMessage(strTopic, strBuf);
+}
+
+
 bool CDaikinCtrl::MqttPublishValues()
 {
   if (!m_network.IsMqttConnected())
@@ -539,14 +547,9 @@ bool CDaikinCtrl::MqttPublishValues()
   {
     m_bPublishSettings = false;
 
-    snprintf(strBuf, sizeof(strBuf), "%u", m_iMqttUpdateInterval);
-    m_network.GetMqttClient().PublishMessage(MQTT_UPDATE_INTERVAL, strBuf);
-
-    snprintf(strBuf, sizeof(strBuf), "%u", m_iNetWatchDogTimeout);
-    m_network.GetMqttClient().PublishMessage(MQTT_NET_WD_TIMEOUT, strBuf);
-
-    snprintf(strBuf, sizeof(strBuf), "%u", m_iNetWatchDogRecovery);
-    m_network.GetMqttClient().PublishMessage(MQTT_NET_WD_RECOVERY, strBuf);
+    PublishUInt(MQTT_UPDATE_INTERVAL, m_iMqttUpdateInterval);
+    PublishUInt(MQTT_NET_WD_TIMEOUT, m_iNetWatchDogTimeout);
+    PublishUInt(MQTT_NET_WD_RECOVERY, m_iNetWatchDogRecovery);
 
     if (m_fLeavingWaterMax == 0.0f)
     {
@@ -558,29 +561,14 @@ bool CDaikinCtrl::MqttPublishValues()
     }
     m_network.GetMqttClient().PublishMessage(MQTT_LWT_MAX, strBuf);
 
-    snprintf(strBuf, sizeof(strBuf), "%u", m_iFloorProtectionDelay);
-    m_network.GetMqttClient().PublishMessage(MQTT_FLOOR_PROTECTION_DELAY, strBuf);
-
-    snprintf(strBuf, sizeof(strBuf), "%u", m_iPrimaryZoneValveDelay);
-    m_network.GetMqttClient().PublishMessage(MQTT_PRIMARY_ZONE_VALVE_DELAY, strBuf);
-
-    snprintf(strBuf, sizeof(strBuf), "%u", m_iLwtCoolDownDelay);
-    m_network.GetMqttClient().PublishMessage(MQTT_LWT_COOL_DOWN_DELAY, strBuf);
-
-    snprintf(strBuf, sizeof(strBuf), "%u", m_iShortCycleSmallWindow);
-    m_network.GetMqttClient().PublishMessage(MQTT_SC_SMALL_WINDOW, strBuf);
-
-    snprintf(strBuf, sizeof(strBuf), "%u", m_iShortCycleSmallWindowCount);
-    m_network.GetMqttClient().PublishMessage(MQTT_SC_SMALL_WINDOW_COUNT, strBuf);
-
-    snprintf(strBuf, sizeof(strBuf), "%u", m_iShortCycleLargeWindow);
-    m_network.GetMqttClient().PublishMessage(MQTT_SC_LARGE_WINDOW, strBuf);
-
-    snprintf(strBuf, sizeof(strBuf), "%u", m_iShortCycleLargeWindowCount);
-    m_network.GetMqttClient().PublishMessage(MQTT_SC_LARGE_WINDOW_COUNT, strBuf);
-
-    snprintf(strBuf, sizeof(strBuf), "%u", m_iShortCycleRecoveryTime);
-    m_network.GetMqttClient().PublishMessage(MQTT_SC_RECOVERY_TIME, strBuf);
+    PublishUInt(MQTT_FLOOR_PROTECTION_DELAY, m_iFloorProtectionDelay);
+    PublishUInt(MQTT_PRIMARY_ZONE_VALVE_DELAY, m_iPrimaryZoneValveDelay);
+    PublishUInt(MQTT_LWT_COOL_DOWN_DELAY, m_iLwtCoolDownDelay);
+    PublishUInt(MQTT_SC_SMALL_WINDOW, m_iShortCycleSmallWindow);
+    PublishUInt(MQTT_SC_SMALL_WINDOW_COUNT, m_iShortCycleSmallWindowCount);
+    PublishUInt(MQTT_SC_LARGE_WINDOW, m_iShortCycleLargeWindow);
+    PublishUInt(MQTT_SC_LARGE_WINDOW_COUNT, m_iShortCycleLargeWindowCount);
+    PublishUInt(MQTT_SC_RECOVERY_TIME, m_iShortCycleRecoveryTime);
   }
 
   PublishBool(MQTT_CONTROLLER_ON_OFF, m_bUpdateCtrlEnable, m_bCtrlEnable);
