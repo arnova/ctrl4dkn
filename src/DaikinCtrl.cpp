@@ -914,29 +914,15 @@ void CDaikinCtrl::UpdateRelays()
   }
 
   const bool bShutdown = m_bFloorProtection && !m_bPrimaryZoneValveClose;
-  if (m_bDaikinPrimaryZoneOn && m_bCtrlEnable && !m_bCtrlDaikinDisable && !bShutdown && m_iNetworkWatchdogRecoveryCounter == 0)
-  {
-    // Enable primary zone heating on Daikin
-    UpdateDaikinZonePrimaryEnable(true);
-  }
-  else
-  {
-    // Disable primary zone heating on Daikin
-    UpdateDaikinZonePrimaryEnable(false);
-  }
+  const bool bDaikinAllowed = m_bCtrlEnable && !m_bCtrlDaikinDisable && !bShutdown && m_iNetworkWatchdogRecoveryCounter == 0;
 
-  if (m_bDaikinSecondaryZoneOn && m_bCtrlEnable && !m_bCtrlDaikinDisable && !bShutdown && m_iNetworkWatchdogRecoveryCounter == 0)
-  {
-    // FIXME?: Instead of selecting secondary curve, we can also increase AWT deviation but only when primary zone is active
+  // Enable/disable primary zone heating on Daikin
+  UpdateDaikinZonePrimaryEnable(m_bDaikinPrimaryZoneOn && bDaikinAllowed);
 
-    // Enable secondary zone heating on Daikin
-    UpdateDaikinZoneSecondaryEnable(true);
-  }
-  else
-  {
-    // Disable secondary zone heating on Daikin
-    UpdateDaikinZoneSecondaryEnable(false);
-  }
+  // FIXME?: Instead of selecting secondary curve, we can also increase AWT deviation but only when primary zone is active
+
+  // Enable/disable secondary zone heating on Daikin
+  UpdateDaikinZoneSecondaryEnable(m_bDaikinSecondaryZoneOn && bDaikinAllowed);
 
 #ifdef DAIKIN_PREFERENTIAL_RELAY
   if (m_bCtrlGasOnly)
