@@ -503,6 +503,17 @@ void CDaikinCtrl::UpdateZoneSecondaryShortCycleDetected(const bool bVal)
 }
 
 
+void CDaikinCtrl::PublishBool(const char* strTopic, bool& bUpdate, const bool bVal)
+{
+  // Publish when changed (or republish requested)
+  if (bUpdate || m_bMqttRepublish)
+  {
+    bUpdate = false;
+    m_network.GetMqttClient().PublishMessage(strTopic, bVal ? "1" : "0");
+  }
+}
+
+
 bool CDaikinCtrl::MqttPublishValues()
 {
   if (!m_network.IsMqttConnected())
@@ -572,119 +583,25 @@ bool CDaikinCtrl::MqttPublishValues()
     m_network.GetMqttClient().PublishMessage(MQTT_SC_RECOVERY_TIME, strBuf);
   }
 
-  if (m_bUpdateCtrlEnable || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlEnable = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_CONTROLLER_ON_OFF, m_bCtrlEnable ? "1" : "0");
-  }
-
-  if (m_bUpdateCtrlZonePriEnable || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlZonePriEnable = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_ZONE_PRIMARY_ENABLE, m_bCtrlZonePriEnable ? "1" : "0");
-  }
-
-  if (m_bUpdateCtrlZoneSecEnable || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlZoneSecEnable = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_ZONE_SECONDARY_ENABLE, m_bCtrlZoneSecEnable ? "1" : "0");
-  }
-
-  if (m_bUpdateCtrlZoneSecForce || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlZoneSecForce = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_ZONE_SECONDARY_FORCE, m_bCtrlZoneSecForce ? "1" : "0");
-  }
-
-  if (m_bUpdateCtrlValvePriCloseForce || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlValvePriCloseForce = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_VALVE_PRIMARY_CLOSE_FORCE, m_bCtrlValvePriCloseForce ? "1" : "0");
-  }
-
-  if (m_bUpdateCtrlDaikinDisable || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlDaikinDisable = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_DAIKIN_DISABLE, m_bCtrlDaikinDisable ? "1" : "0");
-  }
-
-  if (m_bUpdateCtrlGasOnly || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlGasOnly = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_GAS_ONLY, m_bCtrlGasOnly ? "1" : "0");
-  }
-
-  if (m_bUpdateCtrlRoom1Enable || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlRoom1Enable = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_ROOM1_ENABLE, m_bCtrlRoom1Enable ? "1" : "0");
-  }
-
-  if (m_bUpdateCtrlRoom2Enable || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlRoom2Enable = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_ROOM2_ENABLE, m_bCtrlRoom2Enable ? "1" : "0");
-  }
-
-  if (m_bUpdateCtrlRoom3Enable || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlRoom3Enable = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_ROOM3_ENABLE, m_bCtrlRoom3Enable ? "1" : "0");
-  }
-
-  if (m_bUpdateCtrlRoom4Enable || m_bMqttRepublish)
-  {
-    m_bUpdateCtrlRoom4Enable = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_ROOM4_ENABLE, m_bCtrlRoom4Enable ? "1" : "0");
-  }
-
-  if (m_bUpdateLeavingWaterTooHigh || m_bMqttRepublish)
-  {
-    m_bUpdateLeavingWaterTooHigh = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_LEAVING_WATER_TOO_HIGH, m_bLeavingWaterTooHigh ? "1" : "0");
-  }
-
-  if (m_bUpdateValveZonePrimaryOpen || m_bMqttRepublish)
-  {
-    m_bUpdateValveZonePrimaryOpen = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_VALVE_ZONE_PRIMARY_OPEN, m_bValveZonePrimaryOpen ? "1" : "0");
-  }
-
-  if (m_bUpdateRoom1ValveOpen || m_bMqttRepublish)
-  {
-    m_bUpdateRoom1ValveOpen = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_VALVE_ROOM1_OPEN, m_bRoom1ValveOpen ? "1" : "0");
-  }
-
-  if (m_bUpdateRoom2ValveOpen || m_bMqttRepublish)
-  {
-    m_bUpdateRoom2ValveOpen = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_VALVE_ROOM2_OPEN, m_bRoom2ValveOpen ? "1" : "0");
-  }
-
-  if (m_bUpdateRoom3ValveOpen || m_bMqttRepublish)
-  {
-    m_bUpdateRoom3ValveOpen = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_VALVE_ROOM3_OPEN, m_bRoom3ValveOpen ? "1" : "0");
-  }
-
-  if (m_bUpdateRoom4ValveOpen || m_bMqttRepublish)
-  {
-    m_bUpdateRoom4ValveOpen = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_VALVE_ROOM4_OPEN, m_bRoom4ValveOpen ? "1" : "0");
-  }
-
-  if (m_bUpdateDaikinZonePrimaryEnable || m_bMqttRepublish)
-  {
-    m_bUpdateDaikinZonePrimaryEnable = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_DAIKIN_PRIMARY_ENABLED, m_bDaikinZonePrimaryEnable ? "1" : "0");
-  }
-
-  if (m_bUpdateDaikinZoneSecondaryEnable || m_bMqttRepublish)
-  {
-    m_bUpdateDaikinZoneSecondaryEnable = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_DAIKIN_SECONDARY_ENABLED, m_bDaikinZoneSecondaryEnable ? "1" : "0");
-  }
+  PublishBool(MQTT_CONTROLLER_ON_OFF, m_bUpdateCtrlEnable, m_bCtrlEnable);
+  PublishBool(MQTT_ZONE_PRIMARY_ENABLE, m_bUpdateCtrlZonePriEnable, m_bCtrlZonePriEnable);
+  PublishBool(MQTT_ZONE_SECONDARY_ENABLE, m_bUpdateCtrlZoneSecEnable, m_bCtrlZoneSecEnable);
+  PublishBool(MQTT_ZONE_SECONDARY_FORCE, m_bUpdateCtrlZoneSecForce, m_bCtrlZoneSecForce);
+  PublishBool(MQTT_VALVE_PRIMARY_CLOSE_FORCE, m_bUpdateCtrlValvePriCloseForce, m_bCtrlValvePriCloseForce);
+  PublishBool(MQTT_DAIKIN_DISABLE, m_bUpdateCtrlDaikinDisable, m_bCtrlDaikinDisable);
+  PublishBool(MQTT_GAS_ONLY, m_bUpdateCtrlGasOnly, m_bCtrlGasOnly);
+  PublishBool(MQTT_ROOM1_ENABLE, m_bUpdateCtrlRoom1Enable, m_bCtrlRoom1Enable);
+  PublishBool(MQTT_ROOM2_ENABLE, m_bUpdateCtrlRoom2Enable, m_bCtrlRoom2Enable);
+  PublishBool(MQTT_ROOM3_ENABLE, m_bUpdateCtrlRoom3Enable, m_bCtrlRoom3Enable);
+  PublishBool(MQTT_ROOM4_ENABLE, m_bUpdateCtrlRoom4Enable, m_bCtrlRoom4Enable);
+  PublishBool(MQTT_LEAVING_WATER_TOO_HIGH, m_bUpdateLeavingWaterTooHigh, m_bLeavingWaterTooHigh);
+  PublishBool(MQTT_VALVE_ZONE_PRIMARY_OPEN, m_bUpdateValveZonePrimaryOpen, m_bValveZonePrimaryOpen);
+  PublishBool(MQTT_VALVE_ROOM1_OPEN, m_bUpdateRoom1ValveOpen, m_bRoom1ValveOpen);
+  PublishBool(MQTT_VALVE_ROOM2_OPEN, m_bUpdateRoom2ValveOpen, m_bRoom2ValveOpen);
+  PublishBool(MQTT_VALVE_ROOM3_OPEN, m_bUpdateRoom3ValveOpen, m_bRoom3ValveOpen);
+  PublishBool(MQTT_VALVE_ROOM4_OPEN, m_bUpdateRoom4ValveOpen, m_bRoom4ValveOpen);
+  PublishBool(MQTT_DAIKIN_PRIMARY_ENABLED, m_bUpdateDaikinZonePrimaryEnable, m_bDaikinZonePrimaryEnable);
+  PublishBool(MQTT_DAIKIN_SECONDARY_ENABLED, m_bUpdateDaikinZoneSecondaryEnable, m_bDaikinZoneSecondaryEnable);
 
   if (m_bUpdateAveragePrimaryZoneRoomTemp || m_bMqttRepublish)
   {
@@ -692,17 +609,8 @@ bool CDaikinCtrl::MqttPublishValues()
     m_network.GetMqttClient().PublishMessage(MQTT_AVG_ROOM_TEMPERATURE, m_strAveragePrimaryZoneRoomTemp);
   }
 
-  if (m_bUpdateZonePrimaryShortCycleDetected || m_bMqttRepublish)
-  {
-    m_bUpdateZonePrimaryShortCycleDetected = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_SHORT_CYCLE_PRIMARY_DETECTED, m_bZonePrimaryShortCycleDetected ? "1" : "0");
-  }
-
-  if (m_bUpdateZoneSecondaryShortCycleDetected || m_bMqttRepublish)
-  {
-    m_bUpdateZoneSecondaryShortCycleDetected = false;
-    m_network.GetMqttClient().PublishMessage(MQTT_SHORT_CYCLE_SECONDARY_DETECTED, m_bZoneSecondaryShortCycleDetected ? "1" : "0");
-  }
+  PublishBool(MQTT_SHORT_CYCLE_PRIMARY_DETECTED, m_bUpdateZonePrimaryShortCycleDetected, m_bZonePrimaryShortCycleDetected);
+  PublishBool(MQTT_SHORT_CYCLE_SECONDARY_DETECTED, m_bUpdateZoneSecondaryShortCycleDetected, m_bZoneSecondaryShortCycleDetected);
 
   // Publish uptime. Note: Always published since it changes every interval
   const CUptime::uptime_t upTime = GetUpTime();
