@@ -570,17 +570,29 @@ bool CDaikinCtrl::MqttPublishValues()
   PublishBool(MQTT_ZONE_SECONDARY_FORCE, m_bUpdateCtrlZoneSecForce, m_bCtrlZoneSecForce);
   PublishBool(MQTT_VALVE_PRIMARY_CLOSE_FORCE, m_bUpdateCtrlValvePriCloseForce, m_bCtrlValvePriCloseForce);
   PublishBool(MQTT_DAIKIN_DISABLE, m_bUpdateCtrlDaikinDisable, m_bCtrlDaikinDisable);
+
+#ifdef DAIKIN_PREFERENTIAL_RELAY
   PublishBool(MQTT_GAS_ONLY, m_bUpdateCtrlGasOnly, m_bCtrlGasOnly);
+#endif
+#ifdef ROOM1_VALVE_RELAY
   PublishBool(MQTT_ROOM1_ENABLE, m_bUpdateCtrlRoom1Enable, m_bCtrlRoom1Enable);
+  PublishBool(MQTT_VALVE_ROOM1_OPEN, m_bUpdateRoom1ValveOpen, m_bRoom1ValveOpen);
+#endif
+#ifdef ROOM2_VALVE_RELAY
   PublishBool(MQTT_ROOM2_ENABLE, m_bUpdateCtrlRoom2Enable, m_bCtrlRoom2Enable);
+  PublishBool(MQTT_VALVE_ROOM2_OPEN, m_bUpdateRoom2ValveOpen, m_bRoom2ValveOpen);
+#endif
+#ifdef ROOM3_VALVE_RELAY
   PublishBool(MQTT_ROOM3_ENABLE, m_bUpdateCtrlRoom3Enable, m_bCtrlRoom3Enable);
+  PublishBool(MQTT_VALVE_ROOM3_OPEN, m_bUpdateRoom3ValveOpen, m_bRoom3ValveOpen);
+#endif
+#ifdef ROOM4_VALVE_RELAY
   PublishBool(MQTT_ROOM4_ENABLE, m_bUpdateCtrlRoom4Enable, m_bCtrlRoom4Enable);
+  PublishBool(MQTT_VALVE_ROOM4_OPEN, m_bUpdateRoom4ValveOpen, m_bRoom4ValveOpen);
+#endif
+
   PublishBool(MQTT_LEAVING_WATER_TOO_HIGH, m_bUpdateLeavingWaterTooHigh, m_bLeavingWaterTooHigh);
   PublishBool(MQTT_VALVE_ZONE_PRIMARY_OPEN, m_bUpdateValveZonePrimaryOpen, m_bValveZonePrimaryOpen);
-  PublishBool(MQTT_VALVE_ROOM1_OPEN, m_bUpdateRoom1ValveOpen, m_bRoom1ValveOpen);
-  PublishBool(MQTT_VALVE_ROOM2_OPEN, m_bUpdateRoom2ValveOpen, m_bRoom2ValveOpen);
-  PublishBool(MQTT_VALVE_ROOM3_OPEN, m_bUpdateRoom3ValveOpen, m_bRoom3ValveOpen);
-  PublishBool(MQTT_VALVE_ROOM4_OPEN, m_bUpdateRoom4ValveOpen, m_bRoom4ValveOpen);
   PublishBool(MQTT_DAIKIN_PRIMARY_ENABLED, m_bUpdateDaikinZonePrimaryEnable, m_bDaikinZonePrimaryEnable);
   PublishBool(MQTT_DAIKIN_SECONDARY_ENABLED, m_bUpdateDaikinZoneSecondaryEnable, m_bDaikinZoneSecondaryEnable);
 
