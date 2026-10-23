@@ -14,13 +14,6 @@
 class CDaikinCtrl
 {
   public:
-    typedef enum ha_config_type_e
-    {
-      SWITCH,
-      TEMP_SENSOR,
-      BINARY_SENSOR
-    } ha_config_type_t;
-
     // Statemachine states
     enum sm_state_e
     {
@@ -287,7 +280,6 @@ class CDaikinCtrl
     bool m_bP1P2HeatingOn = false;
     bool m_bP1P2CoolingOn = false;
     bool m_bP1P2ValveZoneMain = false;
-    bool m_bP1P2ValveZoneMainLast = false;
     bool m_bAlthermaOn = false;
     bool m_bP1P2DefrostActive = false;
 

@@ -729,7 +729,6 @@ void CDaikinCtrl::Update()
     m_bPrimaryZoneValveClose = m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce;// && bSecondaryZoneEnable;
     m_bDaikinPrimaryZoneOn = bPrimaryZoneEnable && !m_bPrimaryZoneValveClose;
     m_bDaikinSecondaryZoneOn = !m_bDaikinPrimaryZoneOn && bSecondaryZoneEnable;
-    m_bP1P2ValveZoneMainLast = false;
     m_iState = STATE_IDLE;
     return; // Cooling: Bypass statemachine
   }
@@ -739,7 +738,6 @@ void CDaikinCtrl::Update()
     m_bPrimaryZoneValveClose = false;
     m_bDaikinPrimaryZoneOn = false;
     m_bDaikinSecondaryZoneOn = false;
-    m_bP1P2ValveZoneMainLast = false;
     m_iState = STATE_IDLE;
     return; // Not heating (or cooling): Bypass statemachine
   }
