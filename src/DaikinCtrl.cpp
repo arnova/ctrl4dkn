@@ -702,7 +702,7 @@ void CDaikinCtrl::Update()
       m_iDaikinStartupCounter++;
       m_iDaikinActiveOffCounter = 0; // NOTE: Need to keep active-off counter reset
     }
-    else if (!m_bAlthermaOn)
+    else
     {
       m_bAlthermaOn = true;
     }
