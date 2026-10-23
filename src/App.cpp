@@ -14,6 +14,7 @@ void CApp::Init()
   m_daikinCtrl.Reset();
 }
 
+
 bool CApp::CommandHandler()
 {
   char* strTermCommand = m_terminal.GetCommand();
