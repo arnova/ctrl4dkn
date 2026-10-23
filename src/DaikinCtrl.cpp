@@ -360,12 +360,16 @@ void CDaikinCtrl::UpdateLeavingWaterTooHigh(const bool bVal)
 }
 
 
+// Write valve relay, taking its polarity into account (1 = normally closed, 0 = normally open)
+static void WriteValveRelay(const uint8_t iPin, const bool bPolarity, const bool bOpen)
+{
+  digitalWrite(iPin, (bOpen == bPolarity) ? HIGH : LOW);
+}
+
+
 void CDaikinCtrl::UpdateValveZonePrimaryOpen(const bool bVal)
 {
-  if (bVal)
-    digitalWrite(PRIMARY_ZONE_VALVE_RELAY, PRIMARY_ZONE_VALVE_POLARITY ? HIGH : LOW);
-  else
-    digitalWrite(PRIMARY_ZONE_VALVE_RELAY, PRIMARY_ZONE_VALVE_POLARITY ? LOW : HIGH);
+  WriteValveRelay(PRIMARY_ZONE_VALVE_RELAY, PRIMARY_ZONE_VALVE_POLARITY, bVal);
 
   if (m_bValveZonePrimaryOpen != bVal)
   {
@@ -378,10 +382,7 @@ void CDaikinCtrl::UpdateValveZonePrimaryOpen(const bool bVal)
 void CDaikinCtrl::UpdateRoom1ValveOpen(const bool bVal)
 {
 #ifdef ROOM1_VALVE_RELAY
-  if (bVal)
-    digitalWrite(ROOM1_VALVE_RELAY, ROOM1_VALVE_POLARITY ? HIGH : LOW);
-  else
-    digitalWrite(ROOM1_VALVE_RELAY, ROOM1_VALVE_POLARITY ? LOW : HIGH);
+  WriteValveRelay(ROOM1_VALVE_RELAY, ROOM1_VALVE_POLARITY, bVal);
 
   if (m_bRoom1ValveOpen != bVal)
   {
@@ -395,10 +396,7 @@ void CDaikinCtrl::UpdateRoom1ValveOpen(const bool bVal)
 void CDaikinCtrl::UpdateRoom2ValveOpen(const bool bVal)
 {
 #ifdef ROOM2_VALVE_RELAY
-  if (bVal)
-    digitalWrite(ROOM2_VALVE_RELAY, ROOM2_VALVE_POLARITY ? HIGH : LOW);
-  else
-    digitalWrite(ROOM2_VALVE_RELAY, ROOM2_VALVE_POLARITY ? LOW : HIGH);
+  WriteValveRelay(ROOM2_VALVE_RELAY, ROOM2_VALVE_POLARITY, bVal);
 
   if (m_bRoom2ValveOpen != bVal)
   {
@@ -412,10 +410,7 @@ void CDaikinCtrl::UpdateRoom2ValveOpen(const bool bVal)
 void CDaikinCtrl::UpdateRoom3ValveOpen(const bool bVal)
 {
 #ifdef ROOM3_VALVE_RELAY
-  if (bVal)
-    digitalWrite(ROOM3_VALVE_RELAY, ROOM3_VALVE_POLARITY ? HIGH : LOW);
-  else
-    digitalWrite(ROOM3_VALVE_RELAY, ROOM3_VALVE_POLARITY ? LOW : HIGH);
+  WriteValveRelay(ROOM3_VALVE_RELAY, ROOM3_VALVE_POLARITY, bVal);
 
   if (m_bRoom3ValveOpen != bVal)
   {
@@ -429,10 +424,7 @@ void CDaikinCtrl::UpdateRoom3ValveOpen(const bool bVal)
 void CDaikinCtrl::UpdateRoom4ValveOpen(const bool bVal)
 {
 #ifdef ROOM4_VALVE_RELAY
-  if (bVal)
-    digitalWrite(ROOM4_VALVE_RELAY, ROOM4_VALVE_POLARITY ? HIGH : LOW);
-  else
-    digitalWrite(ROOM4_VALVE_RELAY, ROOM4_VALVE_POLARITY ? LOW : HIGH);
+  WriteValveRelay(ROOM4_VALVE_RELAY, ROOM4_VALVE_POLARITY, bVal);
 
   if (m_bRoom4ValveOpen != bVal)
   {
