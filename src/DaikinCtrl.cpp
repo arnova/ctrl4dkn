@@ -127,6 +127,7 @@ void CDaikinCtrl::MqttPublishDiscovery()
   mqttClient.PublishSensorConfig(MQTT_NET_WD_TIMEOUT, "s", "", "", true);
   mqttClient.PublishSensorConfig(MQTT_NET_WD_RECOVERY, "s", "", "", true);
   mqttClient.PublishBinarySensorConfig(MQTT_SHORT_CYCLE_PREVENT, true);
+  mqttClient.PublishBinarySensorConfig(MQTT_LOW_TEMP_SECONDARY_ZONE, true);
   mqttClient.PublishSensorConfig(MQTT_UP_TIME, "", "", "", true);
 
   mqttClient.PublishSensorConfig(MQTT_LWT_MAX, "°C", "temperature", "", true);
@@ -201,6 +202,7 @@ bool CDaikinCtrl::MqttPublishValues()
     mqttClient.PublishUInt(MQTT_NET_WD_TIMEOUT, m_iNetWatchDogTimeout);
     mqttClient.PublishUInt(MQTT_NET_WD_RECOVERY, m_iNetWatchDogRecovery);
     mqttClient.PublishBool(MQTT_SHORT_CYCLE_PREVENT, m_bShortCyclePrevention);
+    mqttClient.PublishBool(MQTT_LOW_TEMP_SECONDARY_ZONE, m_bLowTempSecondaryZone);
 
     if (m_fLeavingWaterMax == 0.0f)
     {
