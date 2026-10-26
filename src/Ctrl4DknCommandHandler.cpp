@@ -5,6 +5,7 @@
 #include "util.h"
 #include "Network.h"
 #include "system.h"
+#include "SettingLimits.h"
 
 #include <string.h>
 
@@ -76,8 +77,9 @@ result_code_t CCtrl4DknCommandHandler::CmdShowFWVersion(const char *strArgs)
 // Show help screen
 result_code_t CCtrl4DknCommandHandler::CmdShowHelp(const char *strArgs)
 {
-  if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
+  const result_code_t result = check_arguments(strArgs, ARG_INT32_NONE);
+  if (result.code != ERR_CODE_OK)
+    return result;
 
   CTerminal::println(FPSTR(HELP_STR_P));
 
@@ -88,8 +90,9 @@ result_code_t CCtrl4DknCommandHandler::CmdShowHelp(const char *strArgs)
 // Show expert help screen
 result_code_t CCtrl4DknCommandHandler::CmdShowExpertHelp(const char *strArgs)
 {
-  if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
+  const result_code_t result = check_arguments(strArgs, ARG_INT32_NONE);
+  if (result.code != ERR_CODE_OK)
+    return result;
 
   CTerminal::println(FPSTR(EX_HELP_STR_P));
 
@@ -159,7 +162,7 @@ result_code_t CCtrl4DknCommandHandler::CmdSetMqttIpAddress(const char *strArgs)
     return pack_result_code(ERR_CODE_ARG_MISSING, ARG_INT32_NUM1);
 
   uint8_t ipAddress[4];
-    const result_code_t result = parse_ipv4_arg(strArgs, ipAddress);
+  const result_code_t result = parse_ipv4_arg(strArgs, ipAddress);
   if (result.code != ERR_CODE_OK)
     return pack_result_code(ERR_CODE_INVALID_IPV4);
 
@@ -171,12 +174,8 @@ result_code_t CCtrl4DknCommandHandler::CmdSetMqttIpAddress(const char *strArgs)
 
 result_code_t CCtrl4DknCommandHandler::CmdSetMqttUpdateInterval(const char *strArgs)
 {
-  result_code_t result = check_arguments(strArgs, ARG_INT32_NUM1);
-  if (result.code != ERR_CODE_OK)
-    return result;
-
   int32_t iInterval;
-  result = get_int32_from_string(strArgs, &iInterval, MQTT_UPDATE_TIME_MIN, MQTT_UPDATE_TIME_MAX, ARG_INT32_NUM1);
+  const result_code_t result = parse_decimal_arg(strArgs, MQTT_UPDATE_TIME_MIN, MQTT_UPDATE_TIME_MAX, &iInterval);
   if (result.code != ERR_CODE_OK)
     return result;
 
@@ -247,8 +246,9 @@ result_code_t CCtrl4DknCommandHandler::CmdSetMqttPassword(const char *strArgs)
 
 result_code_t CCtrl4DknCommandHandler::CmdRestartNet(const char *strArgs)
 {
-  if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
+  const result_code_t result = check_arguments(strArgs, ARG_INT32_NONE);
+  if (result.code != ERR_CODE_OK)
+    return result;
 
   // Output result before restarting, else it's lost on a socket (terminal) connection
   CTerminal::println("OK");
@@ -263,8 +263,9 @@ result_code_t CCtrl4DknCommandHandler::CmdRestartNet(const char *strArgs)
 
 result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
 {
-  if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
+  const result_code_t result = check_arguments(strArgs, ARG_INT32_NONE);
+  if (result.code != ERR_CODE_OK)
+    return result;
 
   char strBuf[20]; // Enough room for float with 3 decimals
 
@@ -338,6 +339,7 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
   PrintItemValue(" sc_recovery", strBuf);
 
   CTerminal::println("");
+  CTerminal::println("");
 
   return pack_result_code(ERR_CODE_OK);
 }
@@ -409,6 +411,7 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
   snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetP1P2LeavingWaterTemp());
   PrintItemValue(" p1p2_lwt", strBuf);
   CTerminal::println("");
+  CTerminal::println("");
 
   return pack_result_code(ERR_CODE_OK);
 }
@@ -416,8 +419,9 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
 
 result_code_t CCtrl4DknCommandHandler::CmdUpTime(const char *strArgs)
 {
-  if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
+  const result_code_t result = check_arguments(strArgs, ARG_INT32_NONE);
+  if (result.code != ERR_CODE_OK)
+    return result;
 
   // Publish uptime
   const CUptime::uptime_t upTime = m_daikinCtrl.GetUpTime();
@@ -431,8 +435,9 @@ result_code_t CCtrl4DknCommandHandler::CmdUpTime(const char *strArgs)
 
 result_code_t CCtrl4DknCommandHandler::CmdReset(const char *strArgs)
 {
-  if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
+  const result_code_t result = check_arguments(strArgs, ARG_INT32_NONE);
+  if (result.code != ERR_CODE_OK)
+    return result;
 
   m_daikinCtrl.Reset();
 
@@ -442,9 +447,11 @@ result_code_t CCtrl4DknCommandHandler::CmdReset(const char *strArgs)
 
 result_code_t CCtrl4DknCommandHandler::CmdReboot(const char *strArgs)
 {
-  if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
+  const result_code_t result = check_arguments(strArgs, ARG_INT32_NONE);
+  if (result.code != ERR_CODE_OK)
+    return result;
 
+  // Clean disconnect so we report offline
   m_network.GetMqttClient().ServerDisconnect();
 
   CTerminal::println("OK");
@@ -461,8 +468,9 @@ result_code_t CCtrl4DknCommandHandler::CmdReboot(const char *strArgs)
 
 result_code_t CCtrl4DknCommandHandler::CmdFactoryReset(const char *strArgs)
 {
-  if (strArgs != NULL && *strArgs)
-    return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
+  const result_code_t result = check_arguments(strArgs, ARG_INT32_NONE);
+  if (result.code != ERR_CODE_OK)
+    return result;
 
   m_daikinCtrl.FactoryReset();
 
@@ -513,39 +521,10 @@ result_code_t CCtrl4DknCommandHandler::CmdNetWatchdogRecovery(const char *strArg
 }
 
 
-// Parse on/off argument: "1"/"on" or "0"/"off"
-static result_code_t GetOnOffArg(const char *strArgs, bool *pbVal)
-{
-  result_code_t result = check_arguments(strArgs, ARG_INT32_NUM1);
-  if (result.code != ERR_CODE_OK)
-    return result;
-
-  if (STRIEQUALS(strArgs, "on"))
-  {
-    *pbVal = true;
-  }
-  else if (STRIEQUALS(strArgs, "off"))
-  {
-    *pbVal = false;
-  }
-  else
-  {
-    int32_t iVal;
-    result = get_int32_from_string(strArgs, &iVal, 0, 1, ARG_INT32_NUM1);
-    if (result.code != ERR_CODE_OK)
-      return result;
-
-    *pbVal = (iVal == 1);
-  }
-
-  return pack_result_code(ERR_CODE_OK);
-}
-
-
 result_code_t CCtrl4DknCommandHandler::CmdLowTempSecondaryZone(const char *strArgs)
 {
   bool bVal;
-  const result_code_t result = GetOnOffArg(strArgs, &bVal);
+  const result_code_t result = parse_bool_arg(strArgs, &bVal);
   if (result.code != ERR_CODE_OK)
     return result;
 
@@ -558,7 +537,7 @@ result_code_t CCtrl4DknCommandHandler::CmdLowTempSecondaryZone(const char *strAr
 result_code_t CCtrl4DknCommandHandler::CmdShortCyclePrevention(const char *strArgs)
 {
   bool bVal;
-  const result_code_t result = GetOnOffArg(strArgs, &bVal);
+  const result_code_t result = parse_bool_arg(strArgs, &bVal);
   if (result.code != ERR_CODE_OK)
     return result;
 

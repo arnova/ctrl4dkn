@@ -1,60 +1,12 @@
 #include "DaikinCtrl.h"
 #include "util.h"
-
-#include <EEPROM.h>
+#include "EepromSettings.h"
+#include "EepromLayout.h"
+#include "MqttTopics.h"
 
 CDaikinCtrl::CDaikinCtrl(CNetwork& network) : m_network(network), m_mqttClient(network.GetMqttClient())
 {
   m_roomTempRollingAverager.SetAvgCount(PRIMARY_ZONE_ROOM_TEMP_AVG_TIME);
-}
-
-
-// Load (and validate) setting from EEPROM, returns default when out of range
-static uint16_t LoadUInt16Setting(const int iAddr, const uint16_t iMin, const uint16_t iMax, const uint16_t iDefault)
-{
-  uint16_t iVal16 = 0;
-  EEPROM.get(iAddr, iVal16);
-
-  return (iVal16 < iMin || iVal16 > iMax) ? iDefault : iVal16;
-}
-
-
-// Load (and validate) setting from EEPROM, returns default when out of range
-static uint8_t LoadUInt8Setting(const int iAddr, const uint8_t iMin, const uint8_t iMax, const uint8_t iDefault)
-{
-  uint8_t iVal8 = 0;
-  EEPROM.get(iAddr, iVal8);
-
-  return (iVal8 < iMin || iVal8 > iMax) ? iDefault : iVal8;
-}
-
-
-// Load (and validate) setting from EEPROM, returns default when out of range (or NaN)
-static float LoadFloatSetting(const int iAddr, const float fMin, const float fMax, const float fDefault, const bool bAllowZero = false)
-{
-  float fVal = 0.0f;
-  EEPROM.get(iAddr, fVal);
-
-  if (bAllowZero && fVal == 0.0f)
-    return fVal;
-
-  // NOTE: Written as in-range check, so NaN (eg. unprogrammed EEPROM) also results in default
-  return (fVal >= fMin && fVal <= fMax) ? fVal : fDefault;
-}
-
-
-// Store setting to EEPROM (and member) when changed, returns true when changed
-template <typename T>
-static bool StoreSetting(const int iAddr, T& member, const T val)
-{
-  if (val == member)
-    return false;
-
-  EEPROM.put(iAddr, val);
-  EEPROM.commit();
-  member = val;
-
-  return true;
 }
 
 
@@ -78,30 +30,41 @@ void CDaikinCtrl::Reset()
 
 void CDaikinCtrl::LoadSettings()
 {
-  m_iMqttUpdateInterval = LoadUInt8Setting(EEPROM_MQTT_INTERVAL, MQTT_UPDATE_TIME_MIN, MQTT_UPDATE_TIME_MAX, MQTT_UPDATE_TIME_DEFAULT);
+  CEepromSettings::Load(EEPROM_MQTT_INTERVAL, m_iMqttUpdateInterval, MQTT_UPDATE_TIME_MIN, MQTT_UPDATE_TIME_MAX, MQTT_UPDATE_TIME_DEFAULT);
 
   // NOTE: 0 = disabled is also allowed (below min)
-  uint16_t iVal16 = LoadUInt16Setting(EEPROM_NET_WD_TIMEOUT, 0, NETWORK_WATCHDOG_TIMEOUT_MAX, NETWORK_WATCHDOG_TIMEOUT_DEFAULT);
-  m_iNetWatchDogTimeout = (iVal16 != 0 && iVal16 < NETWORK_WATCHDOG_TIMEOUT_MIN) ? NETWORK_WATCHDOG_TIMEOUT_DEFAULT : iVal16;
+  CEepromSettings::Load(EEPROM_NET_WD_TIMEOUT, m_iNetWatchDogTimeout, 0, NETWORK_WATCHDOG_TIMEOUT_MAX, NETWORK_WATCHDOG_TIMEOUT_DEFAULT);
+  if (m_iNetWatchDogTimeout != 0 && m_iNetWatchDogTimeout < NETWORK_WATCHDOG_TIMEOUT_MIN)
+  {
+    m_iNetWatchDogTimeout = NETWORK_WATCHDOG_TIMEOUT_DEFAULT;
+  }
 
-  m_iNetWatchDogRecovery = LoadUInt16Setting(EEPROM_NET_WD_RECOVER, NETWORK_WATCHDOG_RECOVERY_MIN, NETWORK_WATCHDOG_RECOVERY_MAX, NETWORK_WATCHDOG_RECOVERY_DEFAULT);
+  CEepromSettings::Load(EEPROM_NET_WD_RECOVER, m_iNetWatchDogRecovery, NETWORK_WATCHDOG_RECOVERY_MIN, NETWORK_WATCHDOG_RECOVERY_MAX, NETWORK_WATCHDOG_RECOVERY_DEFAULT);
 
-  m_bLowTempSecondaryZone = LoadUInt8Setting(EEPROM_LOW_TEMP_SEC_ZONE, 0, 1, LOW_TEMP_SECONDARY_ZONE_DEFAULT) == 1;
-  m_bShortCyclePrevention = LoadUInt8Setting(EEPROM_SC_PREVENTION, 0, 1, SHORT_CYCLE_PREVENTION_DEFAULT) == 1;
+  // NOTE: Bools are stored as uint8_t (0/1)
+  uint8_t iVal8;
+  CEepromSettings::Load(EEPROM_LOW_TEMP_SEC_ZONE, iVal8, 0, 1, LOW_TEMP_SECONDARY_ZONE_DEFAULT);
+  m_bLowTempSecondaryZone = iVal8 == 1;
+  CEepromSettings::Load(EEPROM_SC_PREVENTION, iVal8, 0, 1, SHORT_CYCLE_PREVENTION_DEFAULT);
+  m_bShortCyclePrevention = iVal8 == 1;
 
   // Expert settings
-  // NOTE: 0 = disabled is also allowed
-  m_fLeavingWaterMax = LoadFloatSetting(EEPROM_LWT_MAX, LEAVING_WATER_MAX_MIN, LEAVING_WATER_MAX_MAX, LEAVING_WATER_MAX_DEFAULT, true);
+  // NOTE: 0 = disabled is also allowed (below min)
+  CEepromSettings::Load(EEPROM_LWT_MAX, m_fLeavingWaterMax, 0.0f, LEAVING_WATER_MAX_MAX, LEAVING_WATER_MAX_DEFAULT);
+  if (m_fLeavingWaterMax != 0.0f && m_fLeavingWaterMax < LEAVING_WATER_MAX_MIN)
+  {
+    m_fLeavingWaterMax = LEAVING_WATER_MAX_DEFAULT;
+  }
 
-  m_iPrimaryZoneValveDelay = LoadUInt16Setting(EEPROM_VALVE_DELAY, PRIMARY_ZONE_VALVE_DELAY_MIN, PRIMARY_ZONE_VALVE_DELAY_MAX, PRIMARY_ZONE_VALVE_DELAY_DEFAULT);
-  m_iFloorProtectionDelay = LoadUInt16Setting(EEPROM_FLOOR_DELAY, FLOOR_PROTECTION_DELAY_MIN, FLOOR_PROTECTION_DELAY_MAX, FLOOR_PROTECTION_DELAY_DEFAULT);
-  m_iLwtCoolDownDelay = LoadUInt16Setting(EEPROM_LWT_COOL_DOWN, LWT_COOL_DOWN_DELAY_TIME_MIN, LWT_COOL_DOWN_DELAY_TIME_MAX, LWT_COOL_DOWN_DELAY_TIME_DEFAULT);
+  CEepromSettings::Load(EEPROM_VALVE_DELAY, m_iPrimaryZoneValveDelay, PRIMARY_ZONE_VALVE_DELAY_MIN, PRIMARY_ZONE_VALVE_DELAY_MAX, PRIMARY_ZONE_VALVE_DELAY_DEFAULT);
+  CEepromSettings::Load(EEPROM_FLOOR_DELAY, m_iFloorProtectionDelay, FLOOR_PROTECTION_DELAY_MIN, FLOOR_PROTECTION_DELAY_MAX, FLOOR_PROTECTION_DELAY_DEFAULT);
+  CEepromSettings::Load(EEPROM_LWT_COOL_DOWN, m_iLwtCoolDownDelay, LWT_COOL_DOWN_DELAY_TIME_MIN, LWT_COOL_DOWN_DELAY_TIME_MAX, LWT_COOL_DOWN_DELAY_TIME_DEFAULT);
 
-  m_iShortCycleSmallWindow = LoadUInt16Setting(EEPROM_SC_SMALL_WINDOW, SHORT_CYCLE_SMALL_WINDOW_MIN, SHORT_CYCLE_SMALL_WINDOW_MAX, SHORT_CYCLE_SMALL_WINDOW_DEFAULT);
-  m_iShortCycleSmallWindowCount = LoadUInt8Setting(EEPROM_SC_SMALL_COUNT, SHORT_CYCLE_SMALL_WINDOW_COUNT_MIN, SHORT_CYCLE_SMALL_WINDOW_COUNT_MAX, SHORT_CYCLE_SMALL_WINDOW_COUNT_DEFAULT);
-  m_iShortCycleLargeWindow = LoadUInt16Setting(EEPROM_SC_LARGE_WINDOW, SHORT_CYCLE_LARGE_WINDOW_MIN, SHORT_CYCLE_LARGE_WINDOW_MAX, SHORT_CYCLE_LARGE_WINDOW_DEFAULT);
-  m_iShortCycleLargeWindowCount = LoadUInt8Setting(EEPROM_SC_LARGE_COUNT, SHORT_CYCLE_LARGE_WINDOW_COUNT_MIN, SHORT_CYCLE_LARGE_WINDOW_COUNT_MAX, SHORT_CYCLE_LARGE_WINDOW_COUNT_DEFAULT);
-  m_iShortCycleRecoveryTime = LoadUInt16Setting(EEPROM_SC_RECOVERY, SHORT_CYCLE_RECOVERY_TIME_MIN, SHORT_CYCLE_RECOVERY_TIME_MAX, SHORT_CYCLE_RECOVERY_TIME_DEFAULT);
+  CEepromSettings::Load(EEPROM_SC_SMALL_WINDOW, m_iShortCycleSmallWindow, SHORT_CYCLE_SMALL_WINDOW_MIN, SHORT_CYCLE_SMALL_WINDOW_MAX, SHORT_CYCLE_SMALL_WINDOW_DEFAULT);
+  CEepromSettings::Load(EEPROM_SC_SMALL_COUNT, m_iShortCycleSmallWindowCount, SHORT_CYCLE_SMALL_WINDOW_COUNT_MIN, SHORT_CYCLE_SMALL_WINDOW_COUNT_MAX, SHORT_CYCLE_SMALL_WINDOW_COUNT_DEFAULT);
+  CEepromSettings::Load(EEPROM_SC_LARGE_WINDOW, m_iShortCycleLargeWindow, SHORT_CYCLE_LARGE_WINDOW_MIN, SHORT_CYCLE_LARGE_WINDOW_MAX, SHORT_CYCLE_LARGE_WINDOW_DEFAULT);
+  CEepromSettings::Load(EEPROM_SC_LARGE_COUNT, m_iShortCycleLargeWindowCount, SHORT_CYCLE_LARGE_WINDOW_COUNT_MIN, SHORT_CYCLE_LARGE_WINDOW_COUNT_MAX, SHORT_CYCLE_LARGE_WINDOW_COUNT_DEFAULT);
+  CEepromSettings::Load(EEPROM_SC_RECOVERY, m_iShortCycleRecoveryTime, SHORT_CYCLE_RECOVERY_TIME_MIN, SHORT_CYCLE_RECOVERY_TIME_MAX, SHORT_CYCLE_RECOVERY_TIME_DEFAULT);
 
   ApplyShortCycleConfig();
 
@@ -111,7 +74,7 @@ void CDaikinCtrl::LoadSettings()
 
 void CDaikinCtrl::SetMqttUpdateInterval(const uint8_t iInterval)
 {
-  if (StoreSetting(EEPROM_MQTT_INTERVAL, m_iMqttUpdateInterval, iInterval))
+  if (CEepromSettings::Store(EEPROM_MQTT_INTERVAL, m_iMqttUpdateInterval, iInterval))
   {
     m_bPublishSettings = true;
   }
@@ -120,7 +83,7 @@ void CDaikinCtrl::SetMqttUpdateInterval(const uint8_t iInterval)
 
 void CDaikinCtrl::SetNetWatchDogTimeout(const uint16_t iTime)
 {
-  if (StoreSetting(EEPROM_NET_WD_TIMEOUT, m_iNetWatchDogTimeout, iTime))
+  if (CEepromSettings::Store(EEPROM_NET_WD_TIMEOUT, m_iNetWatchDogTimeout, iTime))
   {
     m_bPublishSettings = true;
   }
@@ -129,7 +92,7 @@ void CDaikinCtrl::SetNetWatchDogTimeout(const uint16_t iTime)
 
 void CDaikinCtrl::SetNetWatchDogRecovery(const uint16_t iTime)
 {
-  if (StoreSetting(EEPROM_NET_WD_RECOVER, m_iNetWatchDogRecovery, iTime))
+  if (CEepromSettings::Store(EEPROM_NET_WD_RECOVER, m_iNetWatchDogRecovery, iTime))
   {
     m_bPublishSettings = true;
   }
@@ -138,7 +101,7 @@ void CDaikinCtrl::SetNetWatchDogRecovery(const uint16_t iTime)
 
 void CDaikinCtrl::SetLowTempSecondaryZone(const bool bVal)
 {
-  if (StoreSetting(EEPROM_LOW_TEMP_SEC_ZONE, m_bLowTempSecondaryZone, bVal))
+  if (CEepromSettings::Store(EEPROM_LOW_TEMP_SEC_ZONE, m_bLowTempSecondaryZone, bVal))
   {
     m_bPublishSettings = true;
   }
@@ -147,7 +110,7 @@ void CDaikinCtrl::SetLowTempSecondaryZone(const bool bVal)
 
 void CDaikinCtrl::SetShortCyclePrevention(const bool bVal)
 {
-  if (StoreSetting(EEPROM_SC_PREVENTION, m_bShortCyclePrevention, bVal))
+  if (CEepromSettings::Store(EEPROM_SC_PREVENTION, m_bShortCyclePrevention, bVal))
   {
     m_bPublishSettings = true;
   }
@@ -156,7 +119,7 @@ void CDaikinCtrl::SetShortCyclePrevention(const bool bVal)
 
 void CDaikinCtrl::SetLeavingWaterMax(const float fVal)
 {
-  if (StoreSetting(EEPROM_LWT_MAX, m_fLeavingWaterMax, fVal))
+  if (CEepromSettings::Store(EEPROM_LWT_MAX, m_fLeavingWaterMax, fVal))
   {
     m_bPublishSettings = true;
   }
@@ -165,7 +128,7 @@ void CDaikinCtrl::SetLeavingWaterMax(const float fVal)
 
 void CDaikinCtrl::SetPrimaryZoneValveDelay(const uint16_t iTime)
 {
-  if (StoreSetting(EEPROM_VALVE_DELAY, m_iPrimaryZoneValveDelay, iTime))
+  if (CEepromSettings::Store(EEPROM_VALVE_DELAY, m_iPrimaryZoneValveDelay, iTime))
   {
     m_bPublishSettings = true;
   }
@@ -174,7 +137,7 @@ void CDaikinCtrl::SetPrimaryZoneValveDelay(const uint16_t iTime)
 
 void CDaikinCtrl::SetFloorProtectionDelay(const uint16_t iTime)
 {
-  if (StoreSetting(EEPROM_FLOOR_DELAY, m_iFloorProtectionDelay, iTime))
+  if (CEepromSettings::Store(EEPROM_FLOOR_DELAY, m_iFloorProtectionDelay, iTime))
   {
     m_bPublishSettings = true;
   }
@@ -183,7 +146,7 @@ void CDaikinCtrl::SetFloorProtectionDelay(const uint16_t iTime)
 
 void CDaikinCtrl::SetLwtCoolDownDelay(const uint16_t iTime)
 {
-  if (StoreSetting(EEPROM_LWT_COOL_DOWN, m_iLwtCoolDownDelay, iTime))
+  if (CEepromSettings::Store(EEPROM_LWT_COOL_DOWN, m_iLwtCoolDownDelay, iTime))
   {
     m_bPublishSettings = true;
   }
@@ -199,7 +162,7 @@ void CDaikinCtrl::ApplyShortCycleConfig()
 
 void CDaikinCtrl::SetShortCycleSmallWindow(const uint16_t iTime)
 {
-  if (StoreSetting(EEPROM_SC_SMALL_WINDOW, m_iShortCycleSmallWindow, iTime))
+  if (CEepromSettings::Store(EEPROM_SC_SMALL_WINDOW, m_iShortCycleSmallWindow, iTime))
   {
     ApplyShortCycleConfig();
     m_bPublishSettings = true;
@@ -209,7 +172,7 @@ void CDaikinCtrl::SetShortCycleSmallWindow(const uint16_t iTime)
 
 void CDaikinCtrl::SetShortCycleSmallWindowCount(const uint8_t iCount)
 {
-  if (StoreSetting(EEPROM_SC_SMALL_COUNT, m_iShortCycleSmallWindowCount, iCount))
+  if (CEepromSettings::Store(EEPROM_SC_SMALL_COUNT, m_iShortCycleSmallWindowCount, iCount))
   {
     ApplyShortCycleConfig();
     m_bPublishSettings = true;
@@ -219,7 +182,7 @@ void CDaikinCtrl::SetShortCycleSmallWindowCount(const uint8_t iCount)
 
 void CDaikinCtrl::SetShortCycleLargeWindow(const uint16_t iTime)
 {
-  if (StoreSetting(EEPROM_SC_LARGE_WINDOW, m_iShortCycleLargeWindow, iTime))
+  if (CEepromSettings::Store(EEPROM_SC_LARGE_WINDOW, m_iShortCycleLargeWindow, iTime))
   {
     ApplyShortCycleConfig();
     m_bPublishSettings = true;
@@ -229,7 +192,7 @@ void CDaikinCtrl::SetShortCycleLargeWindow(const uint16_t iTime)
 
 void CDaikinCtrl::SetShortCycleLargeWindowCount(const uint8_t iCount)
 {
-  if (StoreSetting(EEPROM_SC_LARGE_COUNT, m_iShortCycleLargeWindowCount, iCount))
+  if (CEepromSettings::Store(EEPROM_SC_LARGE_COUNT, m_iShortCycleLargeWindowCount, iCount))
   {
     ApplyShortCycleConfig();
     m_bPublishSettings = true;
@@ -239,7 +202,7 @@ void CDaikinCtrl::SetShortCycleLargeWindowCount(const uint8_t iCount)
 
 void CDaikinCtrl::SetShortCycleRecoveryTime(const uint16_t iTime)
 {
-  if (StoreSetting(EEPROM_SC_RECOVERY, m_iShortCycleRecoveryTime, iTime))
+  if (CEepromSettings::Store(EEPROM_SC_RECOVERY, m_iShortCycleRecoveryTime, iTime))
   {
     ApplyShortCycleConfig();
     m_bPublishSettings = true;
@@ -945,7 +908,7 @@ void CDaikinCtrl::Loop()
   m_upTime.Update();
 
   // Run timed control loop
-  if (m_loopTimer > CONTROL_LOOP_TIME)
+  if (m_loopTimer > CONTROL_LOOP_TIME_MS)
   {
     if (m_iFloorProtectionCounter > 0)
     {

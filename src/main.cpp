@@ -1,6 +1,6 @@
 /*
   Ctrl4Dkn - Floor Heating(/Cooling) Controller For Daikin (Hybrid) Heatpump Systems
-  Last update: October 19, 2026
+  Last update: October 26, 2026
   (C) Copyright 2024-2026 by Arno van Amersfoort
   Web                   : https://github.com/arnova/ctrl4dkn
   Email                 : a r n o DOT v a n DOT a m e r s f o o r t AT g m a i l DOT c o m
@@ -28,6 +28,8 @@
 #include "util.h"
 #include "App.h"
 #include "system.h"
+#include "EepromLayout.h"
+#include "MqttTopics.h"
 
 // Application global instance
 CApp g_app;
@@ -53,6 +55,16 @@ void MqttCallback(char* topic, byte *payload, const unsigned int length)
   int32_t iVal;
   const bool bValidInt = bytes_to_int32(payload, length, &iVal);
 
+  if (STRIEQUALS(topic, MQTT_HA_STATUS_TOPIC))
+  {
+    // Home Assistant (re)started: it lost our (non-retained) states so republish them
+    if (length == 6 && strncasecmp((const char*) payload, "online", 6) == 0)
+    {
+      g_app.MqttRequestRepublish();
+    }
+    return;
+  }
+
   if (STRIEQUALS(topic, MQTT_P1P2_P_DATE_TIME))
   {
     uint16_t iChecksum = 0;
@@ -68,7 +80,7 @@ void MqttCallback(char* topic, byte *payload, const unsigned int length)
 
     return;
   }
-  
+
   if (STRIEQUALS(topic, MQTT_P1P2_P_ALTHERMA_ON))
   {
     if (bValidInt)
@@ -285,16 +297,6 @@ void MqttCallback(char* topic, byte *payload, const unsigned int length)
       CMqttClient::PrintDataError();
     }
 
-    return;
-  }
-
-  if (STRIEQUALS(topic, MQTT_HA_STATUS_TOPIC))
-  {
-    // Home Assistant (re)started: it lost our (non-retained) states so republish them
-    if (length == 6 && strncasecmp((const char*) payload, "online", 6) == 0)
-    {
-      g_app.MqttRequestRepublish();
-    }
     return;
   }
 

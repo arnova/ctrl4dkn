@@ -58,12 +58,8 @@ void CCommandHandler::PrintItemIp(const char* strItem, const uint8_t* ipAddr)
 // Handle debug on/off
 result_code_t CCommandHandler::CmdDebugOnOff(const char *strArgs)
 {
-  result_code_t result = check_arguments(strArgs, ARG_INT32_NUM1, " ");
-  if (result.code != ERR_CODE_OK)
-    return result;
-
   bool bOnOff;
-  result = get_bool_from_string(strArgs, &bOnOff, ARG_INT32_NUM1);
+  const result_code_t result = parse_bool_arg(strArgs, &bOnOff);
   if (result.code != ERR_CODE_OK)
     return result;
 
@@ -76,15 +72,12 @@ result_code_t CCommandHandler::CmdDebugOnOff(const char *strArgs)
 // Handle local echo on/off
 result_code_t CCommandHandler::CmdEchoOnOff(const char *strArgs)
 {
-  if (strArgs == NULL || !*strArgs)
-    return pack_result_code(ERR_CODE_ARG_MISSING, ARG_INT32_NUM1);
+  bool bOnOff;
+  const result_code_t result = parse_bool_arg(strArgs, &bOnOff);
+  if (result.code != ERR_CODE_OK)
+    return result;
 
-  if (STRIEQUALS(strArgs, "on") || STRIEQUALS(strArgs, "1"))
-    CTerminal::SetLocalEcho(true);
-  else if (STRIEQUALS(strArgs, "off") || STRIEQUALS(strArgs, "0"))
-    CTerminal::SetLocalEcho(false);
-  else
-    return pack_result_code(ERR_CODE_ARG_VAL, ARG_INT32_NUM1);
+  CTerminal::SetLocalEcho(bOnOff);
 
   return pack_result_code(ERR_CODE_OK);
 }

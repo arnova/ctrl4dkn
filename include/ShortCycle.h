@@ -7,13 +7,15 @@
 #include "system.h"
 
 #ifndef SHORT_CYCLE_SAMPLES
-#define SHORT_CYCLE_SAMPLES                     5
+#define SHORT_CYCLE_SAMPLES 5
 #endif
+
+#include "SettingLimits.h"
 
 class CShortCycle
 {
   public:
-    CShortCycle() { Reset(); };
+    CShortCycle(const uint16_t iLoopTime) : m_iLoopTime(iLoopTime) { Reset(); }; // Loop time in ms
     ~CShortCycle() {}; // Empty dtor
 
     void Loop(const bool bOn);
@@ -24,8 +26,9 @@ class CShortCycle
     void SetConfig(const uint16_t iSmallWindow, const uint8_t iSmallWindowCount, const uint16_t iLargeWindow, const uint8_t iLargeWindowCount, const uint16_t iRecoveryTime);
 
   private:
+    const uint16_t m_iLoopTime; // ms
     bool bLastState = false;
-    uint16_t m_iShortCycleRecoveryCounter = 0;
+    uint32_t m_iShortCycleRecoveryCounter = 0;
     uint32_t m_iShortCycleTimestamp = 0;
     uint32_t m_iShortCycleTimeStamps[SHORT_CYCLE_SAMPLES] = { UINT32_MAX / 2 };
 
