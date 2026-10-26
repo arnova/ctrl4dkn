@@ -16,6 +16,9 @@ const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno v
 #define DEVICE_MODEL                            "Ctrl4Dkn"
 #define MANUFACTURER                            "Arnova"
 
+// Socket (network) terminal login password (serial terminal doesn't require login). Uncomment to enable
+//#define TERMINAL_PASSWORD                       "changeme"
+
 // Enable below for additional wifi / mqtt debug messages
 #define WIFI_DEBUG
 //#define MQTT_DEBUG
