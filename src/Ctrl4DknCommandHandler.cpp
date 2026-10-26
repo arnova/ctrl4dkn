@@ -19,6 +19,7 @@ const char HELP_STR_P[] PROGMEM = "\r\n"
                                   "info                   : Show device info\r\n"
                                   "status                 : Show device status\r\n"
                                   "uptime                 : Show device uptime\r\n"
+                                  "echo [e]               : Set terminal local echo to [e] (\"on\" or \"off\")\r\n"
                                   "hostname [h]           : Set hostname to [h] (requires reboot)\r\n"
                                   "ssid [s]               : Set WiFi SSID to [s]\r\n"
                                   "pass [w]               : Set WiFi password to [w]\r\n"
@@ -744,6 +745,10 @@ result_code_t CCtrl4DknCommandHandler::ProcessCommand(char *strCommand)
   else if (STRIEQUALS(strCommand, "uptime"))
   {
     result = CmdUpTime(strArgs);
+  }
+  else if (STRIEQUALS(strCommand, "echo"))
+  {
+    result = CmdEchoOnOff(strArgs);
   }
   else if (STRIEQUALS(strCommand, "hostname") || STRIEQUALS(strCommand, "name"))
   {
