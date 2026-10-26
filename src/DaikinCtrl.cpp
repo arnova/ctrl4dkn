@@ -118,6 +118,11 @@ void CDaikinCtrl::MqttPublishDiscovery()
 
   mqttClient.PublishSensorConfig(MQTT_AVG_ROOM_TEMPERATURE, "°C", "temperature", "measurement");
 
+  // Network diagnostics (values are published by CNetwork)
+  mqttClient.PublishSensorConfig(MQTT_WIFI_SSID, "", "", "", true);
+  mqttClient.PublishSensorConfig(MQTT_IP_ADDRESS, "", "", "", true);
+  mqttClient.PublishSensorConfig(MQTT_IP_NETMASK, "", "", "", true);
+
   mqttClient.PublishSensorConfig(MQTT_UPDATE_INTERVAL, "s", "", "", true);
   mqttClient.PublishSensorConfig(MQTT_NET_WD_TIMEOUT, "s", "", "", true);
   mqttClient.PublishSensorConfig(MQTT_NET_WD_RECOVERY, "s", "", "", true);

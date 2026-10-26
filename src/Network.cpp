@@ -237,9 +237,7 @@ void CNetwork::MqttPublishValues()
 
   char strBuf[16]; // Enough room for a standard IPv4 address
   m_mqttClient.PublishMessage(MQTT_IP_ADDRESS, FormatIp(WiFi.localIP(), strBuf, sizeof(strBuf)));
-
-//  snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", WiFi.net()[0], WiFi.net()[1], WiFi.net()[2], WiFi.net()[3]);
-//  m_mqttClient.PublishMessage(MQTT_IP_NETMASK, strBuf);
+  m_mqttClient.PublishMessage(MQTT_IP_NETMASK, FormatIp(WiFi.subnetMask(), strBuf, sizeof(strBuf)));
 
   m_bMqttRepublish = false;
 }
