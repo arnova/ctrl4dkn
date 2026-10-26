@@ -202,7 +202,7 @@ bool CDaikinCtrl::MqttPublishValues()
 
     if (m_fLeavingWaterMax == 0.0f)
     {
-      strcpy(strBuf, ""); // Disabled: HA shows unknown
+      strcpy(strBuf, "None"); // Disabled: Home Assistant: state "unknown"
     }
     else
     {
@@ -260,7 +260,8 @@ bool CDaikinCtrl::MqttPublishValues()
     if (m_bPublishAveragePrimaryZoneRoomTemp || m_bMqttRepublish)
     {
       m_bPublishAveragePrimaryZoneRoomTemp = false;
-      mqttClient.PublishMessage(MQTT_AVG_ROOM_TEMPERATURE, m_strAveragePrimaryZoneRoomTemp);
+      // No value (yet): Home Assistant: state "unknown"
+      mqttClient.PublishMessage(MQTT_AVG_ROOM_TEMPERATURE, (strlen(m_strAveragePrimaryZoneRoomTemp) == 0) ? "None" : m_strAveragePrimaryZoneRoomTemp);
     }
 
     MqttPublishBool(MQTT_SHORT_CYCLE_PRIMARY_DETECTED, m_bPublishZonePrimaryShortCycleDetected, m_bZonePrimaryShortCycleDetected);
