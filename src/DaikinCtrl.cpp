@@ -859,7 +859,8 @@ void CDaikinCtrl::UpdateRelays()
 
   if ((!m_bDaikinActive || !m_bCtrlEnable) && bSafeForFloorHeating)
   {
-    // Idle states:
+    // Idle states: All valve relays off (de-energized), whatever their polarity.
+    // NOTE: Differs from the boot state in setup() (primary open, rooms closed) on purpose
     UpdateValveZonePrimaryOpen(PRIMARY_ZONE_VALVE_POLARITY ? false : true);
     UpdateRoom1ValveOpen(ROOM1_VALVE_POLARITY ? false : true);
     UpdateRoom2ValveOpen(ROOM2_VALVE_POLARITY ? false : true);
