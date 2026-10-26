@@ -35,6 +35,26 @@
 CApp g_app;
 uint16_t g_iChecksumLast = 0;
 
+// Parse switch setter payload ("0"/"1"). Empty payload (eg. cleared retained setter) resets to bDefault
+static bool ParseSwitchPayload(const bool bValidInt, const int32_t iVal, const unsigned int length, const bool bDefault, bool& bVal)
+{
+  if (length == 0)
+  {
+    bVal = bDefault;
+    return true;
+  }
+
+  if (bValidInt && (iVal == 0 || iVal == 1))
+  {
+    bVal = (iVal == 1);
+    return true;
+  }
+
+  CMqttClient::PrintDataError();
+  return false;
+}
+
+
 void MqttCallback(char* topic, byte *payload, const unsigned int length)
 {
 #ifdef MQTT_DEBUG
@@ -317,233 +337,92 @@ void MqttCallback(char* topic, byte *payload, const unsigned int length)
   // Get rid of host prefix
   char* subTopic = topic + iLen;
 
+  bool bVal;
+
   if (STRIEQUALS(subTopic, "/" MQTT_CONTROLLER_ON_OFF "/set"))
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlOnOff((iVal == 1 || length == 0) ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
+    if (ParseSwitchPayload(bValidInt, iVal, length, CTRL_ENABLE_DEFAULT, bVal))
+      g_app.GetDaikinCtrl().SetCtrlOnOff(bVal);
 
     return;
   }
 
   if (STRIEQUALS(subTopic, "/" MQTT_ZONE_PRIMARY_ENABLE "/set"))
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlZonePriEnable(iVal == 1 ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
+    if (ParseSwitchPayload(bValidInt, iVal, length, CTRL_SWITCH_DEFAULT, bVal))
+      g_app.GetDaikinCtrl().SetCtrlZonePriEnable(bVal);
 
     return;
   }
 
   if (STRIEQUALS(subTopic, "/" MQTT_ZONE_SECONDARY_ENABLE "/set"))
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlZoneSecEnable(iVal == 1 ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
+    if (ParseSwitchPayload(bValidInt, iVal, length, CTRL_SWITCH_DEFAULT, bVal))
+      g_app.GetDaikinCtrl().SetCtrlZoneSecEnable(bVal);
 
     return;
   }
 
   if (STRIEQUALS(subTopic, "/" MQTT_ZONE_SECONDARY_FORCE "/set"))
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlZoneSecForce(iVal == 1 ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
+    if (ParseSwitchPayload(bValidInt, iVal, length, CTRL_SWITCH_DEFAULT, bVal))
+      g_app.GetDaikinCtrl().SetCtrlZoneSecForce(bVal);
 
     return;
   }
 
   if (STRIEQUALS(subTopic, "/" MQTT_VALVE_PRIMARY_CLOSE_FORCE "/set"))
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlValvePriCloseForce(iVal == 1 ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
+    if (ParseSwitchPayload(bValidInt, iVal, length, CTRL_SWITCH_DEFAULT, bVal))
+      g_app.GetDaikinCtrl().SetCtrlValvePriCloseForce(bVal);
 
     return;
   }
 
   if (STRIEQUALS(subTopic, "/" MQTT_DAIKIN_DISABLE "/set"))
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlDaikinDisable(iVal == 1 ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
+    if (ParseSwitchPayload(bValidInt, iVal, length, CTRL_SWITCH_DEFAULT, bVal))
+      g_app.GetDaikinCtrl().SetCtrlDaikinDisable(bVal);
 
     return;
   }
 
   if (STRIEQUALS(subTopic, "/" MQTT_ROOM1_ENABLE "/set"))
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlRoom1Enable(iVal == 1 ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
+    if (ParseSwitchPayload(bValidInt, iVal, length, CTRL_SWITCH_DEFAULT, bVal))
+      g_app.GetDaikinCtrl().SetCtrlRoom1Enable(bVal);
 
     return;
   }
 
   if (STRIEQUALS(subTopic, "/" MQTT_ROOM2_ENABLE "/set"))
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlRoom2Enable(iVal == 1 ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
+    if (ParseSwitchPayload(bValidInt, iVal, length, CTRL_SWITCH_DEFAULT, bVal))
+      g_app.GetDaikinCtrl().SetCtrlRoom2Enable(bVal);
 
     return;
   }
 
   if (STRIEQUALS(subTopic, "/" MQTT_ROOM3_ENABLE "/set"))
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlRoom3Enable(iVal == 1 ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
+    if (ParseSwitchPayload(bValidInt, iVal, length, CTRL_SWITCH_DEFAULT, bVal))
+      g_app.GetDaikinCtrl().SetCtrlRoom3Enable(bVal);
 
     return;
   }
 
   if (STRIEQUALS(subTopic, "/" MQTT_ROOM4_ENABLE "/set"))
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlRoom4Enable(iVal == 1 ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
+    if (ParseSwitchPayload(bValidInt, iVal, length, CTRL_SWITCH_DEFAULT, bVal))
+      g_app.GetDaikinCtrl().SetCtrlRoom4Enable(bVal);
 
     return;
   }
 
   if (STRIEQUALS(subTopic, "/" MQTT_GAS_ONLY "/set"))
   {
-    if (bValidInt || length == 0)
-    {
-      if (iVal == 0 || iVal == 1 || length == 0)
-      {
-        g_app.GetDaikinCtrl().SetCtrlGasOnly(iVal == 1 ? true : false);
-      }
-      else
-      {
-        CMqttClient::PrintDataError();
-      }
-    }
-    else
-    {
-      CMqttClient::PrintDataError();
-    }
+    if (ParseSwitchPayload(bValidInt, iVal, length, CTRL_SWITCH_DEFAULT, bVal))
+      g_app.GetDaikinCtrl().SetCtrlGasOnly(bVal);
 
     return;
   }
