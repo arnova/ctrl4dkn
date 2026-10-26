@@ -118,17 +118,17 @@ class CDaikinCtrl
 //    bool IsDaikinCoolingActive() { return m_bP1P2CoolingOn && m_bP1P2CirculationPumpOn; };
 //    bool IsPrimaryHeatingActive() { return IsDaikinHeatingActive() && m_bP1P2ValveZoneMain; };
 
-    void SetCtrlOnOff(const bool bVal) { m_bCtrlEnable = bVal; m_bUpdateCtrlEnable = true; };
-    void SetCtrlZonePriEnable(const bool bVal) { m_bCtrlZonePriEnable = bVal; m_bUpdateCtrlZonePriEnable = true; };
-    void SetCtrlZoneSecEnable(const bool bVal) { m_bCtrlZoneSecEnable = bVal; m_bUpdateCtrlZoneSecEnable = true; };
-    void SetCtrlZoneSecForce(const bool bVal) { m_bCtrlZoneSecForce = bVal; m_bUpdateCtrlZoneSecForce = true; };
-    void SetCtrlValvePriCloseForce(const bool bVal) { m_bCtrlValvePriCloseForce = bVal; m_bUpdateCtrlValvePriCloseForce = true; };
-    void SetCtrlDaikinDisable(const bool bVal) { m_bCtrlDaikinDisable = bVal; m_bUpdateCtrlDaikinDisable = true; };
-    void SetCtrlGasOnly(const bool bVal) { m_bCtrlGasOnly = bVal; m_bUpdateCtrlGasOnly = true; };
-    void SetCtrlRoom1Enable(const bool bVal) { m_bCtrlRoom1Enable = bVal; m_bUpdateCtrlRoom1Enable = true; };
-    void SetCtrlRoom2Enable(const bool bVal) { m_bCtrlRoom2Enable = bVal; m_bUpdateCtrlRoom2Enable = true; };
-    void SetCtrlRoom3Enable(const bool bVal) { m_bCtrlRoom3Enable = bVal; m_bUpdateCtrlRoom3Enable = true; };
-    void SetCtrlRoom4Enable(const bool bVal) { m_bCtrlRoom4Enable = bVal; m_bUpdateCtrlRoom4Enable = true; };
+    void SetCtrlOnOff(const bool bVal) { m_bCtrlEnable = bVal; m_bPublishCtrlEnable = true; };
+    void SetCtrlZonePriEnable(const bool bVal) { m_bCtrlZonePriEnable = bVal; m_bPublishCtrlZonePriEnable = true; };
+    void SetCtrlZoneSecEnable(const bool bVal) { m_bCtrlZoneSecEnable = bVal; m_bPublishCtrlZoneSecEnable = true; };
+    void SetCtrlZoneSecForce(const bool bVal) { m_bCtrlZoneSecForce = bVal; m_bPublishCtrlZoneSecForce = true; };
+    void SetCtrlValvePriCloseForce(const bool bVal) { m_bCtrlValvePriCloseForce = bVal; m_bPublishCtrlValvePriCloseForce = true; };
+    void SetCtrlDaikinDisable(const bool bVal) { m_bCtrlDaikinDisable = bVal; m_bPublishCtrlDaikinDisable = true; };
+    void SetCtrlGasOnly(const bool bVal) { m_bCtrlGasOnly = bVal; m_bPublishCtrlGasOnly = true; };
+    void SetCtrlRoom1Enable(const bool bVal) { m_bCtrlRoom1Enable = bVal; m_bPublishCtrlRoom1Enable = true; };
+    void SetCtrlRoom2Enable(const bool bVal) { m_bCtrlRoom2Enable = bVal; m_bPublishCtrlRoom2Enable = true; };
+    void SetCtrlRoom3Enable(const bool bVal) { m_bCtrlRoom3Enable = bVal; m_bPublishCtrlRoom3Enable = true; };
+    void SetCtrlRoom4Enable(const bool bVal) { m_bCtrlRoom4Enable = bVal; m_bPublishCtrlRoom4Enable = true; };
 
     bool GetCtrlOnOff() const { return m_bCtrlEnable; };
     bool GetCtrlZonePriEnable() const { return m_bCtrlZonePriEnable; };
@@ -174,16 +174,15 @@ class CDaikinCtrl
   private:
     void MqttPublishDiscovery();
     bool MqttPublishValues();
-    void PublishBool(const char* strTopic, bool& bUpdate, const bool bVal);
-    void PublishUInt(const char* strTopic, const uint16_t iVal);
+    void MqttPublishBool(const char* strTopic, bool& bPublish, const bool bVal);
     void MqttP1P2Subscribe();
     void ApplyShortCycleConfig();
 
+    void CheckNetworkWatchDog();
     void Update();
     void UpdateRelays();
 
     CNetwork& m_network;
-    CMqttClient& m_mqttClient;
 
     elapsedMillis m_loopTimer = 0;
     elapsedMillis m_mqttPublishTimer = 0;
@@ -230,70 +229,70 @@ class CDaikinCtrl
     CRollingAverage m_roomTempRollingAverager;
 
     bool m_bCtrlEnable = true;
-    bool m_bUpdateCtrlEnable = true;
+    bool m_bPublishCtrlEnable = true;
 
     bool m_bCtrlZonePriEnable = false;
-    bool m_bUpdateCtrlZonePriEnable = true;
+    bool m_bPublishCtrlZonePriEnable = true;
 
     bool m_bCtrlZoneSecEnable = false;
-    bool m_bUpdateCtrlZoneSecEnable = true;
+    bool m_bPublishCtrlZoneSecEnable = true;
 
     bool m_bCtrlZoneSecForce = false;
-    bool m_bUpdateCtrlZoneSecForce = true;
+    bool m_bPublishCtrlZoneSecForce = true;
 
     bool m_bCtrlValvePriCloseForce = false;
-    bool m_bUpdateCtrlValvePriCloseForce = true;
+    bool m_bPublishCtrlValvePriCloseForce = true;
 
     bool m_bCtrlDaikinDisable = false;
-    bool m_bUpdateCtrlDaikinDisable = true;
+    bool m_bPublishCtrlDaikinDisable = true;
 
     bool m_bCtrlGasOnly = false;
-    bool m_bUpdateCtrlGasOnly = true;
+    bool m_bPublishCtrlGasOnly = true;
 
     bool m_bCtrlRoom1Enable = false;
-    bool m_bUpdateCtrlRoom1Enable = true;
+    bool m_bPublishCtrlRoom1Enable = true;
 
     bool m_bCtrlRoom2Enable = false;
-    bool m_bUpdateCtrlRoom2Enable = true;
+    bool m_bPublishCtrlRoom2Enable = true;
 
     bool m_bCtrlRoom3Enable = false;
-    bool m_bUpdateCtrlRoom3Enable = true;
+    bool m_bPublishCtrlRoom3Enable = true;
 
     bool m_bCtrlRoom4Enable = false;
-    bool m_bUpdateCtrlRoom4Enable = true;
+    bool m_bPublishCtrlRoom4Enable = true;
 
     bool m_bLeavingWaterTooHigh = false;
-    bool m_bUpdateLeavingWaterTooHigh = true;
+    bool m_bPublishLeavingWaterTooHigh = true;
 
     bool m_bValveZonePrimaryOpen = true;
-    bool m_bUpdateValveZonePrimaryOpen = true;
+    bool m_bPublishValveZonePrimaryOpen = true;
 
     bool m_bRoom1ValveOpen = true;
-    bool m_bUpdateRoom1ValveOpen = true;
+    bool m_bPublishRoom1ValveOpen = true;
 
     bool m_bRoom2ValveOpen = true;
-    bool m_bUpdateRoom2ValveOpen = true;
+    bool m_bPublishRoom2ValveOpen = true;
 
     bool m_bRoom3ValveOpen = true;
-    bool m_bUpdateRoom3ValveOpen = true;
+    bool m_bPublishRoom3ValveOpen = true;
 
     bool m_bRoom4ValveOpen = true;
-    bool m_bUpdateRoom4ValveOpen = true;
+    bool m_bPublishRoom4ValveOpen = true;
 
     bool m_bDaikinZonePrimaryEnable = false;
-    bool m_bUpdateDaikinZonePrimaryEnable = true;
+    bool m_bPublishDaikinZonePrimaryEnable = true;
 
     bool m_bDaikinZoneSecondaryEnable = false;
-    bool m_bUpdateDaikinZoneSecondaryEnable = true;
+    bool m_bPublishDaikinZoneSecondaryEnable = true;
 
     char m_strAveragePrimaryZoneRoomTemp[5] = "";
-    bool m_bUpdateAveragePrimaryZoneRoomTemp = true;
+    bool m_bPublishAveragePrimaryZoneRoomTemp = true;
 
     bool m_bZonePrimaryShortCycleDetected = false;
-    bool m_bUpdateZonePrimaryShortCycleDetected = true;
+    bool m_bPublishZonePrimaryShortCycleDetected = true;
 
     bool m_bZoneSecondaryShortCycleDetected = false;
-    bool m_bUpdateZoneSecondaryShortCycleDetected = true;
+    bool m_bPublishZoneSecondaryShortCycleDetected = true;
 
     float m_fP1P2LeavingWaterTemp = -1.0f;
     float m_fP1P2PrimaryZoneRoomTemp = -1.0f;       // Room temperature reported by P1P2/thermostat
