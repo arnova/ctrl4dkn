@@ -1,3 +1,4 @@
+#pragma once
 #ifndef DAIKIN_CTRL_H
 #define DAIKIN_CTRL_H
 

@@ -177,14 +177,6 @@ bool CDaikinCtrl::MqttPublishValues()
   if (!m_network.IsMqttConnected())
     return false;
 
-  // Publish new MQTT values (if any) when timer expires (and connected)
-  if (m_mqttPublishTimer < m_iMqttUpdateInterval * 1000 && !m_bMqttRepublish)
-  {
-    return false;
-  }
-
-  m_mqttPublishTimer = 0;
-
   char strBuf[24]; // Enough room for signed/unsigned 32 bit number or our floats with 4 digit precision
 
   CMqttClient& mqttClient = m_network.GetMqttClient();
@@ -223,51 +215,57 @@ bool CDaikinCtrl::MqttPublishValues()
     mqttClient.PublishUInt(MQTT_SC_RECOVERY_TIME, m_iShortCycleRecoveryTime);
   }
 
-  MqttPublishBool(MQTT_CONTROLLER_ON_OFF, m_bPublishCtrlEnable, m_bCtrlEnable);
-  MqttPublishBool(MQTT_ZONE_PRIMARY_ENABLE, m_bPublishCtrlZonePriEnable, m_bCtrlZonePriEnable);
-  MqttPublishBool(MQTT_ZONE_SECONDARY_ENABLE, m_bPublishCtrlZoneSecEnable, m_bCtrlZoneSecEnable);
-  MqttPublishBool(MQTT_ZONE_SECONDARY_FORCE, m_bPublishCtrlZoneSecForce, m_bCtrlZoneSecForce);
-  MqttPublishBool(MQTT_VALVE_PRIMARY_CLOSE_FORCE, m_bPublishCtrlValvePriCloseForce, m_bCtrlValvePriCloseForce);
-  MqttPublishBool(MQTT_DAIKIN_DISABLE, m_bPublishCtrlDaikinDisable, m_bCtrlDaikinDisable);
+  // Publish these MQTT values (if any) when timer expires (and connected)
+  if (m_mqttPublishTimer > m_iMqttUpdateInterval * 1000 || m_bMqttRepublish)
+  {
+    m_mqttPublishTimer = 0;
+
+    MqttPublishBool(MQTT_CONTROLLER_ON_OFF, m_bPublishCtrlEnable, m_bCtrlEnable);
+    MqttPublishBool(MQTT_ZONE_PRIMARY_ENABLE, m_bPublishCtrlZonePriEnable, m_bCtrlZonePriEnable);
+    MqttPublishBool(MQTT_ZONE_SECONDARY_ENABLE, m_bPublishCtrlZoneSecEnable, m_bCtrlZoneSecEnable);
+    MqttPublishBool(MQTT_ZONE_SECONDARY_FORCE, m_bPublishCtrlZoneSecForce, m_bCtrlZoneSecForce);
+    MqttPublishBool(MQTT_VALVE_PRIMARY_CLOSE_FORCE, m_bPublishCtrlValvePriCloseForce, m_bCtrlValvePriCloseForce);
+    MqttPublishBool(MQTT_DAIKIN_DISABLE, m_bPublishCtrlDaikinDisable, m_bCtrlDaikinDisable);
 
 #ifdef DAIKIN_PREFERENTIAL_RELAY
-  MqttPublishBool(MQTT_GAS_ONLY, m_bPublishCtrlGasOnly, m_bCtrlGasOnly);
+    MqttPublishBool(MQTT_GAS_ONLY, m_bPublishCtrlGasOnly, m_bCtrlGasOnly);
 #endif
 #ifdef ROOM1_VALVE_RELAY
-  MqttPublishBool(MQTT_ROOM1_ENABLE, m_bPublishCtrlRoom1Enable, m_bCtrlRoom1Enable);
-  MqttPublishBool(MQTT_VALVE_ROOM1_OPEN, m_bPublishRoom1ValveOpen, m_bRoom1ValveOpen);
+    MqttPublishBool(MQTT_ROOM1_ENABLE, m_bPublishCtrlRoom1Enable, m_bCtrlRoom1Enable);
+    MqttPublishBool(MQTT_VALVE_ROOM1_OPEN, m_bPublishRoom1ValveOpen, m_bRoom1ValveOpen);
 #endif
 #ifdef ROOM2_VALVE_RELAY
-  MqttPublishBool(MQTT_ROOM2_ENABLE, m_bPublishCtrlRoom2Enable, m_bCtrlRoom2Enable);
-  MqttPublishBool(MQTT_VALVE_ROOM2_OPEN, m_bPublishRoom2ValveOpen, m_bRoom2ValveOpen);
+    MqttPublishBool(MQTT_ROOM2_ENABLE, m_bPublishCtrlRoom2Enable, m_bCtrlRoom2Enable);
+    MqttPublishBool(MQTT_VALVE_ROOM2_OPEN, m_bPublishRoom2ValveOpen, m_bRoom2ValveOpen);
 #endif
 #ifdef ROOM3_VALVE_RELAY
-  MqttPublishBool(MQTT_ROOM3_ENABLE, m_bPublishCtrlRoom3Enable, m_bCtrlRoom3Enable);
-  MqttPublishBool(MQTT_VALVE_ROOM3_OPEN, m_bPublishRoom3ValveOpen, m_bRoom3ValveOpen);
+    MqttPublishBool(MQTT_ROOM3_ENABLE, m_bPublishCtrlRoom3Enable, m_bCtrlRoom3Enable);
+    MqttPublishBool(MQTT_VALVE_ROOM3_OPEN, m_bPublishRoom3ValveOpen, m_bRoom3ValveOpen);
 #endif
 #ifdef ROOM4_VALVE_RELAY
-  MqttPublishBool(MQTT_ROOM4_ENABLE, m_bPublishCtrlRoom4Enable, m_bCtrlRoom4Enable);
-  MqttPublishBool(MQTT_VALVE_ROOM4_OPEN, m_bPublishRoom4ValveOpen, m_bRoom4ValveOpen);
+    MqttPublishBool(MQTT_ROOM4_ENABLE, m_bPublishCtrlRoom4Enable, m_bCtrlRoom4Enable);
+    MqttPublishBool(MQTT_VALVE_ROOM4_OPEN, m_bPublishRoom4ValveOpen, m_bRoom4ValveOpen);
 #endif
 
-  MqttPublishBool(MQTT_LEAVING_WATER_TOO_HIGH, m_bPublishLeavingWaterTooHigh, m_bLeavingWaterTooHigh);
-  MqttPublishBool(MQTT_VALVE_ZONE_PRIMARY_OPEN, m_bPublishValveZonePrimaryOpen, m_bValveZonePrimaryOpen);
-  MqttPublishBool(MQTT_DAIKIN_PRIMARY_ENABLED, m_bPublishDaikinZonePrimaryEnable, m_bDaikinZonePrimaryEnable);
-  MqttPublishBool(MQTT_DAIKIN_SECONDARY_ENABLED, m_bPublishDaikinZoneSecondaryEnable, m_bDaikinZoneSecondaryEnable);
+    MqttPublishBool(MQTT_LEAVING_WATER_TOO_HIGH, m_bPublishLeavingWaterTooHigh, m_bLeavingWaterTooHigh);
+    MqttPublishBool(MQTT_VALVE_ZONE_PRIMARY_OPEN, m_bPublishValveZonePrimaryOpen, m_bValveZonePrimaryOpen);
+    MqttPublishBool(MQTT_DAIKIN_PRIMARY_ENABLED, m_bPublishDaikinZonePrimaryEnable, m_bDaikinZonePrimaryEnable);
+    MqttPublishBool(MQTT_DAIKIN_SECONDARY_ENABLED, m_bPublishDaikinZoneSecondaryEnable, m_bDaikinZoneSecondaryEnable);
 
-  if (m_bPublishAveragePrimaryZoneRoomTemp || m_bMqttRepublish)
-  {
-    m_bPublishAveragePrimaryZoneRoomTemp = false;
-    mqttClient.PublishMessage(MQTT_AVG_ROOM_TEMPERATURE, m_strAveragePrimaryZoneRoomTemp);
+    if (m_bPublishAveragePrimaryZoneRoomTemp || m_bMqttRepublish)
+    {
+      m_bPublishAveragePrimaryZoneRoomTemp = false;
+      mqttClient.PublishMessage(MQTT_AVG_ROOM_TEMPERATURE, m_strAveragePrimaryZoneRoomTemp);
+    }
+
+    MqttPublishBool(MQTT_SHORT_CYCLE_PRIMARY_DETECTED, m_bPublishZonePrimaryShortCycleDetected, m_bZonePrimaryShortCycleDetected);
+    MqttPublishBool(MQTT_SHORT_CYCLE_SECONDARY_DETECTED, m_bPublishZoneSecondaryShortCycleDetected, m_bZoneSecondaryShortCycleDetected);
+
+    // Publish uptime. Note: Always published since it changes every interval
+    const CUptime::uptime_t upTime = GetUpTime();
+    snprintf(strBuf, sizeof(strBuf), "%ud %02u:%02u:%02u", upTime.iDays, upTime.iHours, upTime.iMinutes, upTime.iSeconds);
+    mqttClient.PublishMessage(MQTT_UP_TIME, strBuf);
   }
-
-  MqttPublishBool(MQTT_SHORT_CYCLE_PRIMARY_DETECTED, m_bPublishZonePrimaryShortCycleDetected, m_bZonePrimaryShortCycleDetected);
-  MqttPublishBool(MQTT_SHORT_CYCLE_SECONDARY_DETECTED, m_bPublishZoneSecondaryShortCycleDetected, m_bZoneSecondaryShortCycleDetected);
-
-  // Publish uptime. Note: Always published since it changes every interval
-  const CUptime::uptime_t upTime = GetUpTime();
-  snprintf(strBuf, sizeof(strBuf), "%ud %02u:%02u:%02u", upTime.iDays, upTime.iHours, upTime.iMinutes, upTime.iSeconds);
-  mqttClient.PublishMessage(MQTT_UP_TIME, strBuf);
 
   m_bMqttRepublish = false;
 

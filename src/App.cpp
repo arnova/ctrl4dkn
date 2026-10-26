@@ -50,7 +50,7 @@ void CApp::HandleNetwork()
 
   if (m_network.HandleMqttClient())
   {
-    // MQTT (re)connection: publish config (values follow after the republish delay)
+    // MQTT (re)connection: subscribe and publish discovery config (values follow after the republish delay)
     m_daikinCtrl.MqttOnConnect();
     MqttRequestRepublish();
   }
