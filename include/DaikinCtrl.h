@@ -10,6 +10,31 @@
 #include "Ctrl4DknCommandHandler.h"
 #include "RollingAverage.h"
 #include "ShortCycle.h"
+#include "SettingLimits.h"
+
+#define DAIKIN_HYSTERESIS 1.0f
+
+#define CONTROL_LOOP_TIME_MS 1000
+
+#ifndef LEAVING_WATER_MAX_MARGIN
+#define LEAVING_WATER_MAX_MARGIN 3.0f
+#endif
+
+#ifndef DAIKIN_ZONE_SWITCH_TIME
+#define DAIKIN_ZONE_SWITCH_TIME 5   // Seconds
+#endif
+
+#ifndef PRIMARY_ZONE_ROOM_TEMP_AVG_TIME
+#define PRIMARY_ZONE_ROOM_TEMP_AVG_TIME 1800   // Seconds = 30 minutes
+#endif
+
+#ifndef DAIKIN_ACTIVE_OFF_TIME
+#define DAIKIN_ACTIVE_OFF_TIME 900   // Seconds = 15 minutes
+#endif
+
+#ifndef DAIKIN_STARTUP_TIME
+#define DAIKIN_STARTUP_TIME 30   // Seconds
+#endif
 
 class CDaikinCtrl
 {
@@ -283,8 +308,8 @@ class CDaikinCtrl
     bool m_bAlthermaOn = false;
     bool m_bP1P2DefrostActive = false;
 
-    CShortCycle m_shortCyclePrimary;
-    CShortCycle m_shortCycleSecondary;
+    CShortCycle m_shortCyclePrimary{CONTROL_LOOP_TIME_MS};
+    CShortCycle m_shortCycleSecondary{CONTROL_LOOP_TIME_MS};
 
     sm_state_e m_iState = STATE_WAIT_STATE;
 };

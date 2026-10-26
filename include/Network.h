@@ -3,6 +3,7 @@
 #define NETWORK_H
 
 #include "system.h"
+#include "EepromLayout.h"
 #include "MqttClient.h"
 
 #include <elapsedMillis.h>
@@ -18,6 +19,18 @@
   using NetClient = EthernetClient;
 #endif
 
+#ifndef MQTT_CONNECT_TIMEOUT
+#define MQTT_CONNECT_TIMEOUT 10000 // ms
+#endif
+
+// Wifi disconnect timeout (max. wait for disconnect to complete when restarting WiFi)
+#ifndef WIFI_DISCONNECT_TIMEOUT
+#define WIFI_DISCONNECT_TIMEOUT 1000  // ms
+#endif
+
+#ifndef WIFI_CONNECT_TIMEOUT
+#define WIFI_CONNECT_TIMEOUT 10000 // ms
+#endif
 
 class CNetwork
 {
@@ -54,8 +67,8 @@ class CNetwork
     const char* GetMqttUser() { return m_strMqttUser; };
     const char* GetMqttPassword() { return m_strMqttPassword; };
 
-    const bool IsConnected() { return m_bWifiConnected; };
-    const bool IsMqttConnected() { return m_bWifiConnected && m_mqttClient.connected(); };
+    bool IsConnected() { return m_bWifiConnected; };
+    bool IsMqttConnected() { return m_bWifiConnected && m_mqttClient.connected(); };
     bool HandleMqttClient();
 
 #ifdef SOCKET_SERVER_PORT
@@ -66,8 +79,10 @@ class CNetwork
 
     static bool IsValidHostName(const char* str);
 
+    // Format IPv4 address as dotted string. Note: strBuf must be at least 16 bytes
+    static const char* FormatIp(const IPAddress& ip, char* strBuf, const size_t iBufSize);
+
   private:
-    static bool IsValidAlpha(const char* str);
     void MqttPublishValues();
 
     char m_strHostName[HOST_NAME_MAX_SIZE + 1] = { 0 };

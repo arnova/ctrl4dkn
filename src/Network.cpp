@@ -5,7 +5,7 @@
   Written by       : Arno van Amersfoort
   Dependencies     : elapsedMillis MqttClient Terminal util
   Initial date     : July 11, 2026
-  Last modified    : October 22, 2026
+  Last modified    : October 19, 2026
 */
 
 #include <Arduino.h>
@@ -21,6 +21,9 @@
 #include "Network.h"
 #include "Terminal.h"
 #include "util.h"
+#include "EepromSettings.h"
+#include "EepromLayout.h"
+#include "MqttTopics.h"
 
 
 CNetwork::CNetwork()
@@ -46,20 +49,6 @@ void CNetwork::Init()
 }
 
 
-bool CNetwork::IsValidAlpha(const char* str)
-{
-  for (; *str; ++str)
-  {
-    if (*str < 32 || *str > 126)
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-
 bool CNetwork::IsValidHostName(const char* str)
 {
   // Hostname is also used for mDNS & MQTT topics: only allow letters, digits & '-' (not at start/end)
@@ -81,56 +70,32 @@ bool CNetwork::IsValidHostName(const char* str)
 }
 
 
+const char* CNetwork::FormatIp(const IPAddress& ip, char* strBuf, const size_t iBufSize)
+{
+  snprintf(strBuf, iBufSize, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
+  return strBuf;
+}
+
+
 void CNetwork::LoadSettings()
 {
-  EEPROM.get(EEPROM_HOST_NAME, m_strHostName);
-  m_strHostName[HOST_NAME_MAX_SIZE] = '\0'; // Always null terminate
+  CEepromSettings::LoadString(EEPROM_HOST_NAME, m_strHostName, HOST_NAME_MAX_SIZE);
   if (!IsValidHostName(m_strHostName))
   {
     strcpy(m_strHostName, DEFAULT_HOST_NAME);
   }
 
-  EEPROM.get(EEPROM_IP_ADDR, m_ipAddr);
-  if (IPAddress(m_ipAddr) == IPAddress(255, 255, 255, 255))
-  {
-    memset(m_ipAddr, 0x00, 4);
-  }
+  CEepromSettings::LoadIp(EEPROM_IP_ADDR, m_ipAddr);
 
+  // Note: Netmask is used as is (also when erased)
   EEPROM.get(EEPROM_IP_NETMASK, m_ipNetmask);
 
-  EEPROM.get(EEPROM_MQTT_IP_ADDR, m_mqttIpAddr);
-  if (IPAddress(m_mqttIpAddr) == IPAddress(255, 255, 255, 255))
-  {
-    memset(m_mqttIpAddr, 0x00, 4);
-  }
+  CEepromSettings::LoadIp(EEPROM_MQTT_IP_ADDR, m_mqttIpAddr);
 
-  EEPROM.get(EEPROM_WIFI_SSID, m_strWifiSsid);
-  m_strWifiSsid[WIFI_SSID_MAX_SIZE] = '\0'; // Always null terminate
-  if (!IsValidAlpha(m_strWifiSsid))
-  {
-    strcpy(m_strWifiSsid, "");
-  }
-
-  EEPROM.get(EEPROM_WIFI_PASSWORD, m_strWifiPassword);
-  m_strWifiPassword[WIFI_PASSWORD_MAX_SIZE] = '\0'; // Always null terminate
-  if (!IsValidAlpha(m_strWifiPassword))
-  {
-    strcpy(m_strWifiPassword, "");
-  }
-
-  EEPROM.get(EEPROM_MQTT_USER, m_strMqttUser);
-  m_strMqttUser[MQTT_USER_MAX_SIZE] = '\0'; // Always null terminate
-  if (!IsValidAlpha(m_strMqttUser))
-  {
-    strcpy(m_strMqttUser, "");
-  }
-
-  EEPROM.get(EEPROM_MQTT_PASSWORD, m_strMqttPassword);
-  m_strMqttPassword[MQTT_PASSWORD_MAX_SIZE] = '\0'; // Always null terminate
-  if (!IsValidAlpha(m_strMqttPassword))
-  {
-    strcpy(m_strMqttPassword, "");
-  }
+  CEepromSettings::LoadString(EEPROM_WIFI_SSID, m_strWifiSsid, WIFI_SSID_MAX_SIZE);
+  CEepromSettings::LoadString(EEPROM_WIFI_PASSWORD, m_strWifiPassword, WIFI_PASSWORD_MAX_SIZE);
+  CEepromSettings::LoadString(EEPROM_MQTT_USER, m_strMqttUser, MQTT_USER_MAX_SIZE);
+  CEepromSettings::LoadString(EEPROM_MQTT_PASSWORD, m_strMqttPassword, MQTT_PASSWORD_MAX_SIZE);
 }
 
 
@@ -201,64 +166,31 @@ void CNetwork::InitWifi(const bool bReconnect)
 
 void CNetwork::SetHostName(const char* strHostName)
 {
-  if (!STREQUALS(strHostName, m_strHostName))
-  {
-    memset(m_strHostName, 0x00, HOST_NAME_MAX_SIZE + 1);
-    strcpy(m_strHostName, strHostName);
-
-    EEPROM.put(EEPROM_HOST_NAME, m_strHostName);
-    EEPROM.commit();
-  }
+  CEepromSettings::StoreString(EEPROM_HOST_NAME, m_strHostName, HOST_NAME_MAX_SIZE, strHostName);
 }
 
 
 void CNetwork::SetWifiSsid(const char* strSsid)
 {
-  if (!STREQUALS(strSsid, m_strWifiSsid))
-  {
-    memset(m_strWifiSsid, 0x00, WIFI_SSID_MAX_SIZE + 1);
-    strcpy(m_strWifiSsid, strSsid);
-
-    EEPROM.put(EEPROM_WIFI_SSID, m_strWifiSsid);
-    EEPROM.commit();
-  }
+  CEepromSettings::StoreString(EEPROM_WIFI_SSID, m_strWifiSsid, WIFI_SSID_MAX_SIZE, strSsid);
 }
 
 
 void CNetwork::SetWifiPassword(const char* strPassword)
 {
-  if (!STREQUALS(strPassword, m_strWifiPassword))
-  {
-    memset(m_strWifiPassword, 0x00, WIFI_PASSWORD_MAX_SIZE + 1);
-    strcpy(m_strWifiPassword, strPassword);
-
-    EEPROM.put(EEPROM_WIFI_PASSWORD, m_strWifiPassword);
-    EEPROM.commit();
-  }
+  CEepromSettings::StoreString(EEPROM_WIFI_PASSWORD, m_strWifiPassword, WIFI_PASSWORD_MAX_SIZE, strPassword);
 }
 
 
 void CNetwork::SetIpAddr(const uint8_t* ipAddress)
 {
-  if (memcmp(ipAddress, m_ipAddr, 4) != 0)
-  {
-    memcpy(m_ipAddr, ipAddress, sizeof(m_ipAddr));
-
-    EEPROM.put(EEPROM_IP_ADDR, m_ipAddr);
-    EEPROM.commit();
-  }
+  CEepromSettings::StoreIp(EEPROM_IP_ADDR, m_ipAddr, ipAddress);
 }
 
 
 void CNetwork::SetNetMask(const uint8_t* ipNetMask)
 {
-  if (memcmp(ipNetMask, m_ipNetmask, 4) != 0)
-  {
-    memcpy(m_ipNetmask, ipNetMask, sizeof(m_ipNetmask));
-
-    EEPROM.put(EEPROM_IP_NETMASK, m_ipNetmask);
-    EEPROM.commit();
-  }
+  CEepromSettings::StoreIp(EEPROM_IP_NETMASK, m_ipNetmask, ipNetMask);
 }
 
 
@@ -273,13 +205,7 @@ void CNetwork::ReinitMqtt()
 
 void CNetwork::SetMqttServerIp(const uint8_t* ipAddress)
 {
-  if (memcmp(ipAddress, m_mqttIpAddr, 4) != 0)
-  {
-    memcpy(m_mqttIpAddr, ipAddress, sizeof(m_mqttIpAddr));
-
-    EEPROM.put(EEPROM_MQTT_IP_ADDR, m_mqttIpAddr);
-    EEPROM.commit();
-  }
+  CEepromSettings::StoreIp(EEPROM_MQTT_IP_ADDR, m_mqttIpAddr, ipAddress);
 
   ReinitMqtt();
 }
@@ -287,14 +213,7 @@ void CNetwork::SetMqttServerIp(const uint8_t* ipAddress)
 
 void CNetwork::SetMqttUser(const char* strUser)
 {
-  if (!STREQUALS(strUser, m_strMqttUser))
-  {
-    memset(m_strMqttUser, 0x00, MQTT_USER_MAX_SIZE + 1);
-    strcpy(m_strMqttUser, strUser);
-
-    EEPROM.put(EEPROM_MQTT_USER, m_strMqttUser);
-    EEPROM.commit();
-  }
+  CEepromSettings::StoreString(EEPROM_MQTT_USER, m_strMqttUser, MQTT_USER_MAX_SIZE, strUser);
 
   ReinitMqtt();
 }
@@ -302,14 +221,7 @@ void CNetwork::SetMqttUser(const char* strUser)
 
 void CNetwork::SetMqttPassword(const char* strPassword)
 {
-  if (!STREQUALS(strPassword, m_strMqttPassword))
-  {
-    memset(m_strMqttPassword, 0x00, MQTT_PASSWORD_MAX_SIZE + 1);
-    strcpy(m_strMqttPassword, strPassword);
-
-    EEPROM.put(EEPROM_MQTT_PASSWORD, m_strMqttPassword);
-    EEPROM.commit();
-  }
+  CEepromSettings::StoreString(EEPROM_MQTT_PASSWORD, m_strMqttPassword, MQTT_PASSWORD_MAX_SIZE, strPassword);
 
   ReinitMqtt();
 }
@@ -324,8 +236,7 @@ void CNetwork::MqttPublishValues()
   m_mqttClient.PublishMessage(MQTT_WIFI_SSID, m_strWifiSsid);
 
   char strBuf[16]; // Enough room for a standard IPv4 address
-  snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
-  m_mqttClient.PublishMessage(MQTT_IP_ADDRESS, strBuf);
+  m_mqttClient.PublishMessage(MQTT_IP_ADDRESS, FormatIp(WiFi.localIP(), strBuf, sizeof(strBuf)));
 
 //  snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", WiFi.net()[0], WiFi.net()[1], WiFi.net()[2], WiFi.net()[3]);
 //  m_mqttClient.PublishMessage(MQTT_IP_NETMASK, strBuf);
@@ -359,8 +270,7 @@ WiFiClient& CNetwork::GetSocketServerClient()
       CTerminal::print("Accepting connection from client: ");
 
       char strBuf[16]; // Enough room for a standard IPv4 address
-      snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", m_socketServerClient.remoteIP()[0], m_socketServerClient.remoteIP()[1], m_socketServerClient.remoteIP()[2], m_socketServerClient.remoteIP()[3]);
-      CTerminal::println(strBuf);
+      CTerminal::println(FormatIp(m_socketServerClient.remoteIP(), strBuf, sizeof(strBuf)));
 #endif
     }
   }
@@ -429,8 +339,7 @@ void CNetwork::Loop()
       TERM_SERIAL.print(PSTR("WiFi connected with IP address: "));
 
       char strBuf[16]; // Enough room for a standard IPv4 address
-      snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
-      TERM_SERIAL.println(strBuf);
+      TERM_SERIAL.println(FormatIp(WiFi.localIP(), strBuf, sizeof(strBuf)));
 #endif
 
 #ifdef SOCKET_SERVER_PORT

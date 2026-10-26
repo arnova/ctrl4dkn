@@ -1,12 +1,6 @@
 #pragma once
-
-#ifndef GLOBALS_H
-#define GLOBALS_H
-
-#define CONTROL_LOOP_TIME                       1000 // ms
-
-// Home Assistant birth/last will topic (HA publishes "online" here after it (re)started)
-#define MQTT_HA_STATUS_TOPIC                    "homeassistant/status"
+#ifndef MQTT_TOPICS_H
+#define MQTT_TOPICS_H
 
 // Control topics
 #define MQTT_CONTROLLER_ON_OFF                  "controller_enable"
@@ -54,6 +48,16 @@
 #define MQTT_SC_LARGE_WINDOW_COUNT              "short_cycle_large_window_count"
 #define MQTT_SC_RECOVERY_TIME                   "short_cycle_recovery_time"
 
+// Home Assistant birth/last will topic (HA publishes "online" here after it (re)started)
+#define MQTT_HA_STATUS_TOPIC                    "homeassistant/status"
+
+// Select the appropriate one below (depends on P1P2Serial/bridge firmware) 
+//#define MQTT_P1P2_HOST_ID "066"               // v0.9.44 or older. NOTE: Need to customize this
+#define MQTT_P1P2_HOST_ID "P1P2MQTT/bridge0"    // v0.9.45 or newer. NOTE: *May* need to customize this
+
+// Enable below when a bridge with older firmware (<v0.9.45) is used
+//#define MQTT_P1P2_OLD_BRIDGE // FIXME: Setting
+
 #define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
 
 // Define P1P2Serial / bridge topics
@@ -78,53 +82,4 @@
 
 #define MQTT_P1P2_P_DATE_TIME                       MQTT_P1P2_P_PREFIX "M/9/Date_Time_Daikin"
 
-#define DAIKIN_HYSTERESIS                     1.0f
-#define LEAVING_WATER_MAX_MARGIN              3.0f
-#define DAIKIN_ZONE_SWITCH_TIME                 5   // Seconds
-#define PRIMARY_ZONE_ROOM_TEMP_AVG_TIME      1800   // Seconds = 30 minutes
-#define DAIKIN_ACTIVE_OFF_TIME                900   // Seconds = 15 minutes
-#define DAIKIN_STARTUP_TIME                    30   // Seconds
-
-// Expert settings (stored in EEPROM): Defaults and allowed ranges
-// NOTE: Float min/max without "f" suffix, since they're also STRINGIZE'd for the help text
-#define LEAVING_WATER_MAX_DEFAULT                45.0f
-#define LEAVING_WATER_MAX_MIN                    25.0
-#define LEAVING_WATER_MAX_MAX                    65.0
-
-// NOTE: Times are in seconds. Delays/counters that count down require a minimum of 1
-#define PRIMARY_ZONE_VALVE_DELAY_DEFAULT          180   // 3 minutes
-#define PRIMARY_ZONE_VALVE_DELAY_MIN                1
-#define PRIMARY_ZONE_VALVE_DELAY_MAX            65000
-
-#define FLOOR_PROTECTION_DELAY_DEFAULT            300   // 5 minutes
-#define FLOOR_PROTECTION_DELAY_MIN                  1
-#define FLOOR_PROTECTION_DELAY_MAX              65000
-
-#define LWT_COOL_DOWN_DELAY_TIME_DEFAULT          300   // 5 minutes
-#define LWT_COOL_DOWN_DELAY_TIME_MIN                1
-#define LWT_COOL_DOWN_DELAY_TIME_MAX            65000
-
-// Short cycle detection: Windows/recovery are in minutes
-// NOTE: Counts max. is SHORT_CYCLE_SAMPLES (larger counts can never be exceeded)
-// NOTE: Recovery max. is limited by its 16 bit (seconds) counter
-#define SHORT_CYCLE_SMALL_WINDOW_DEFAULT           15
-#define SHORT_CYCLE_SMALL_WINDOW_MIN                1
-#define SHORT_CYCLE_SMALL_WINDOW_MAX             1440   // 24 hours
-
-#define SHORT_CYCLE_SMALL_WINDOW_COUNT_DEFAULT      2   // Amount of short cycles allowed during small window
-#define SHORT_CYCLE_SMALL_WINDOW_COUNT_MIN          1
-#define SHORT_CYCLE_SMALL_WINDOW_COUNT_MAX          SHORT_CYCLE_SAMPLES
-
-#define SHORT_CYCLE_LARGE_WINDOW_DEFAULT           60
-#define SHORT_CYCLE_LARGE_WINDOW_MIN                1
-#define SHORT_CYCLE_LARGE_WINDOW_MAX             1440   // 24 hours
-
-#define SHORT_CYCLE_LARGE_WINDOW_COUNT_DEFAULT      4   // Amount of short cycles allowed during large window
-#define SHORT_CYCLE_LARGE_WINDOW_COUNT_MIN          1
-#define SHORT_CYCLE_LARGE_WINDOW_COUNT_MAX          SHORT_CYCLE_SAMPLES
-
-#define SHORT_CYCLE_RECOVERY_TIME_DEFAULT          30
-#define SHORT_CYCLE_RECOVERY_TIME_MIN               1
-#define SHORT_CYCLE_RECOVERY_TIME_MAX            1000
-
-#endif // GLOBALS_H
+#endif // MQTT_TOPICS_H
