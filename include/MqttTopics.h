@@ -14,7 +14,6 @@
 #define MQTT_ROOM3_ENABLE                       "room_3_enable"
 #define MQTT_ROOM4_ENABLE                       "room_4_enable"
 #define MQTT_GAS_ONLY                           "gas_only"
-#define MQTT_SHORT_CYCLE_PREVENT                "short_cycle_prevention"
 
 // Status topics
 #define MQTT_FW_VERSION                         "firmware_version"
@@ -37,6 +36,7 @@
 #define MQTT_UPDATE_INTERVAL                    "update_interval"
 #define MQTT_NET_WD_TIMEOUT                     "network_watchdog_timeout"
 #define MQTT_NET_WD_RECOVERY                    "network_watchdog_recovery"
+#define MQTT_SHORT_CYCLE_PREVENT                "short_cycle_prevention"
 #define MQTT_UP_TIME                            "up_time"
 #define MQTT_LWT_MAX                            "leaving_water_max"
 #define MQTT_FLOOR_PROTECTION_DELAY             "floor_protection_delay"
