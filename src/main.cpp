@@ -450,6 +450,8 @@ void setup()
   digitalWrite(DAIKIN_SECONDARY_ZONE_RELAY, LOW);
 #endif
 
+  // Boot state: Primary zone valve open, room valves closed (taking polarity into account).
+  // NOTE: Differs from the idle state in CDaikinCtrl::UpdateRelays() (all relays off) on purpose
   pinMode(PRIMARY_ZONE_VALVE_RELAY, OUTPUT);
   digitalWrite(PRIMARY_ZONE_VALVE_RELAY, PRIMARY_ZONE_VALVE_POLARITY ? HIGH : LOW);
   
