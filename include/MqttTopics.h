@@ -37,6 +37,7 @@
 #define MQTT_NET_WD_TIMEOUT                     "network_watchdog_timeout"
 #define MQTT_NET_WD_RECOVERY                    "network_watchdog_recovery"
 #define MQTT_SHORT_CYCLE_PREVENT                "short_cycle_prevention"
+#define MQTT_LOW_TEMP_SECONDARY_ZONE            "low_temp_secondary_zone"
 #define MQTT_UP_TIME                            "up_time"
 #define MQTT_LWT_MAX                            "leaving_water_max"
 #define MQTT_FLOOR_PROTECTION_DELAY             "floor_protection_delay"
