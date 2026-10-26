@@ -37,6 +37,10 @@
 #define DAIKIN_STARTUP_TIME 30   // Seconds
 #endif
 
+// Control switch defaults (also applied when an empty MQTT setter payload is received, eg. a cleared retained setter)
+#define CTRL_ENABLE_DEFAULT true    // Controller on/off
+#define CTRL_SWITCH_DEFAULT false   // All other control switches
+
 class CDaikinCtrl
 {
   public:
@@ -229,37 +233,37 @@ class CDaikinCtrl
 
     CRollingAverage m_roomTempRollingAverager;
 
-    bool m_bCtrlEnable = true;
+    bool m_bCtrlEnable = CTRL_ENABLE_DEFAULT;
     bool m_bPublishCtrlEnable = true;
 
-    bool m_bCtrlZonePriEnable = false;
+    bool m_bCtrlZonePriEnable = CTRL_SWITCH_DEFAULT;
     bool m_bPublishCtrlZonePriEnable = true;
 
-    bool m_bCtrlZoneSecEnable = false;
+    bool m_bCtrlZoneSecEnable = CTRL_SWITCH_DEFAULT;
     bool m_bPublishCtrlZoneSecEnable = true;
 
-    bool m_bCtrlZoneSecForce = false;
+    bool m_bCtrlZoneSecForce = CTRL_SWITCH_DEFAULT;
     bool m_bPublishCtrlZoneSecForce = true;
 
-    bool m_bCtrlValvePriCloseForce = false;
+    bool m_bCtrlValvePriCloseForce = CTRL_SWITCH_DEFAULT;
     bool m_bPublishCtrlValvePriCloseForce = true;
 
-    bool m_bCtrlDaikinDisable = false;
+    bool m_bCtrlDaikinDisable = CTRL_SWITCH_DEFAULT;
     bool m_bPublishCtrlDaikinDisable = true;
 
-    bool m_bCtrlGasOnly = false;
+    bool m_bCtrlGasOnly = CTRL_SWITCH_DEFAULT;
     bool m_bPublishCtrlGasOnly = true;
 
-    bool m_bCtrlRoom1Enable = false;
+    bool m_bCtrlRoom1Enable = CTRL_SWITCH_DEFAULT;
     bool m_bPublishCtrlRoom1Enable = true;
 
-    bool m_bCtrlRoom2Enable = false;
+    bool m_bCtrlRoom2Enable = CTRL_SWITCH_DEFAULT;
     bool m_bPublishCtrlRoom2Enable = true;
 
-    bool m_bCtrlRoom3Enable = false;
+    bool m_bCtrlRoom3Enable = CTRL_SWITCH_DEFAULT;
     bool m_bPublishCtrlRoom3Enable = true;
 
-    bool m_bCtrlRoom4Enable = false;
+    bool m_bCtrlRoom4Enable = CTRL_SWITCH_DEFAULT;
     bool m_bPublishCtrlRoom4Enable = true;
 
     bool m_bLeavingWaterTooHigh = false;
