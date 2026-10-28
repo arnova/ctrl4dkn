@@ -28,8 +28,8 @@
 #define MQTT_DAIKIN_SECONDARY_ENABLED           "daikin_secondary_enabled"
 #define MQTT_LEAVING_WATER_TOO_HIGH             "leaving_water_too_high"
 #define MQTT_AVG_ROOM_TEMPERATURE               "temperature_room_averaged"
-#define MQTT_SHORT_CYCLE_PRIMARY_DETECTED       "zone_primary_short_cycle_detected"
-#define MQTT_SHORT_CYCLE_SECONDARY_DETECTED     "zone_secondary_short_cycle_detected"
+#define MQTT_SHORT_CYCLE_PRIMARY_DETECTED       "short_cycle_zone_primary_detected"
+#define MQTT_SHORT_CYCLE_SECONDARY_DETECTED     "short_cycle_zone_secondary_detected"
 
 // Diagnostic topic items
 #define MQTT_WIFI_SSID                          "wifi_ssid"
@@ -39,7 +39,7 @@
 #define MQTT_NET_WD_TIMEOUT                     "network_watchdog_timeout"
 #define MQTT_NET_WD_RECOVERY                    "network_watchdog_recovery"
 #define MQTT_SHORT_CYCLE_PREVENT                "short_cycle_prevention"
-#define MQTT_LOW_TEMP_SECONDARY_ZONE            "low_temp_secondary_zone"
+#define MQTT_LOW_TEMPERATURE_SECONDARY_ZONE     "low_temperature_secondary_zone"
 #define MQTT_UP_TIME                            "up_time"
 #define MQTT_LWT_MAX                            "leaving_water_max"
 #define MQTT_FLOOR_PROTECTION_DELAY             "floor_protection_delay"
@@ -54,7 +54,7 @@
 // Home Assistant birth/last will topic (HA publishes "online" here after it (re)started)
 #define MQTT_HA_STATUS_TOPIC                    "homeassistant/status"
 
-#define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
+#define MQTT_P1P2_P_PREFIX                      "P1P2/P/" MQTT_P1P2_HOST_ID "/"
 
 // Define P1P2Serial / bridge topics
 #ifdef MQTT_P1P2_OLD_BRIDGE
