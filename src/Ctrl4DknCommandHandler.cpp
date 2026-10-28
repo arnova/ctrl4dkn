@@ -295,35 +295,35 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
   snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetNetWatchDogRecovery());
   PrintItemValue(" net_wd_recovery", strBuf);
 
-  PrintItemValue(" low_temp_sec_zone", m_daikinCtrl.GetLowTempSecondaryZone());
-  PrintItemValue(" sc_prevent", m_daikinCtrl.GetShortCyclePrevention());
-
   CTerminal::println("");
 
-  // Expert settings
+  PrintItemValue("lo_temp_sec_zone", m_daikinCtrl.GetLowTemperatureSecondaryZone());
+
   if (m_daikinCtrl.GetLeavingWaterMax() == 0.0f)
   {
-    PrintItemValue("lwt_max", "off");
+    PrintItemValue(" lwt_max", "off");
   }
   else
   {
     snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetLeavingWaterMax());
-    PrintItemValue("lwt_max", strBuf);
+    PrintItemValue(" lwt_max", strBuf);
   }
 
   snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetFloorProtectionDelay());
-  PrintItemValue(" floor_delay", strBuf);
-
-  snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetPrimaryZoneValveDelay());
-  PrintItemValue(" valve_delay", strBuf);
+  PrintItemValue(" protect_delay", strBuf);
 
   snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetLwtCoolDownDelay());
   PrintItemValue(" lwt_cool_down", strBuf);
 
+  snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetPrimaryZoneValveDelay());
+  PrintItemValue(" valve_delay", strBuf);
+
   CTerminal::println("");
 
+  PrintItemValue("sc_prevent", m_daikinCtrl.GetShortCyclePrevention());
+
   snprintf(strBuf, sizeof(strBuf), "%um", m_daikinCtrl.GetShortCycleSmallWindow());
-  PrintItemValue("sc_small_win", strBuf);
+  PrintItemValue(" sc_small_win", strBuf);
 
   snprintf(strBuf, sizeof(strBuf), "%u", m_daikinCtrl.GetShortCycleSmallWindowCount());
   PrintItemValue(" sc_small_count", strBuf);
@@ -386,7 +386,7 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
 
   PrintItemValue("dkn_pri_en", m_daikinCtrl.GetDaikinZonePrimaryEnable());
   PrintItemValue(" dkn_sec_en", m_daikinCtrl.GetDaikinZoneSecondaryEnable());
-  PrintItemValue(" lwt_too_high", m_daikinCtrl.GetLeavingWaterTooHigh());
+  PrintItemValue(" lwt_too_hi", m_daikinCtrl.GetLeavingWaterTooHigh());
   PrintItemValue(" sc_pri", m_daikinCtrl.GetZonePrimaryShortCycleDetected());
   PrintItemValue(" sc_sec", m_daikinCtrl.GetZoneSecondaryShortCycleDetected());
   const char* strAvgRoomTemp = m_daikinCtrl.GetAveragePrimaryZoneRoomTemp();
@@ -527,7 +527,7 @@ result_code_t CCtrl4DknCommandHandler::CmdLowTempSecondaryZone(const char *strAr
   if (result.code != ERR_CODE_OK)
     return result;
 
-  m_daikinCtrl.SetLowTempSecondaryZone(bVal);
+  m_daikinCtrl.SetLowTemperatureSecondaryZone(bVal);
 
   return pack_result_code(ERR_CODE_OK);
 }

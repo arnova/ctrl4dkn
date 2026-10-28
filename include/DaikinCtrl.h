@@ -83,7 +83,7 @@ class CDaikinCtrl
     void SetMqttUpdateInterval(const uint8_t iInterval);
     void SetNetWatchDogTimeout(const uint16_t iTimeout);
     void SetNetWatchDogRecovery(const uint16_t iTimeout);
-    void SetLowTempSecondaryZone(const bool bVal);
+    void SetLowTemperatureSecondaryZone(const bool bVal);
     void SetShortCyclePrevention(const bool bVal);
 
     // Expert settings
@@ -163,7 +163,7 @@ class CDaikinCtrl
     uint8_t GetMqttUpdateInterval() const { return m_iMqttUpdateInterval; };
     uint16_t GetNetWatchDogTimeout() const { return m_iNetWatchDogTimeout; };
     uint16_t GetNetWatchDogRecovery() const { return m_iNetWatchDogRecovery; };
-    bool GetLowTempSecondaryZone() const { return m_bLowTempSecondaryZone; };
+    bool GetLowTemperatureSecondaryZone() const { return m_bLowTemperatureSecondaryZone; };
     bool GetShortCyclePrevention() const { return m_bShortCyclePrevention; };
 
     float GetLeavingWaterMax() const { return m_fLeavingWaterMax; };
@@ -201,7 +201,7 @@ class CDaikinCtrl
     uint8_t m_iMqttUpdateInterval = 0;
     uint16_t m_iNetWatchDogTimeout = 0;
     uint16_t m_iNetWatchDogRecovery = 0;
-    bool m_bLowTempSecondaryZone = LOW_TEMP_SECONDARY_ZONE_DEFAULT; // Secondary zone uses low temp. AWT range (safe for floor heating)
+    bool m_bLowTemperatureSecondaryZone = LOW_TEMP_SECONDARY_ZONE_DEFAULT; // Secondary zone uses low temp. AWT range (safe for floor heating)
     bool m_bShortCyclePrevention = SHORT_CYCLE_PREVENTION_DEFAULT;   // Disable zone when short cycling is detected
 
     // Expert settings

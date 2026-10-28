@@ -23,7 +23,7 @@ void CDaikinCtrl::LoadSettings()
 
   CEepromSettings::Load(EEPROM_NET_WD_RECOVER, m_iNetWatchDogRecovery, NETWORK_WATCHDOG_RECOVERY_MIN, NETWORK_WATCHDOG_RECOVERY_MAX, NETWORK_WATCHDOG_RECOVERY_DEFAULT);
 
-  CEepromSettings::Load(EEPROM_LOW_TEMP_SEC_ZONE, m_bLowTempSecondaryZone, LOW_TEMP_SECONDARY_ZONE_DEFAULT);
+  CEepromSettings::Load(EEPROM_LOW_TEMP_SEC_ZONE, m_bLowTemperatureSecondaryZone, LOW_TEMP_SECONDARY_ZONE_DEFAULT);
   CEepromSettings::Load(EEPROM_SC_PREVENTION, m_bShortCyclePrevention, SHORT_CYCLE_PREVENTION_DEFAULT);
 
   // Expert settings
@@ -127,7 +127,7 @@ void CDaikinCtrl::MqttPublishDiscovery()
   mqttClient.PublishSensorConfig(MQTT_NET_WD_TIMEOUT, "s", "", "", true);
   mqttClient.PublishSensorConfig(MQTT_NET_WD_RECOVERY, "s", "", "", true);
   mqttClient.PublishBinarySensorConfig(MQTT_SHORT_CYCLE_PREVENT, true);
-  mqttClient.PublishBinarySensorConfig(MQTT_LOW_TEMP_SECONDARY_ZONE, true);
+  mqttClient.PublishBinarySensorConfig(MQTT_LOW_TEMPERATURE_SECONDARY_ZONE, true);
   mqttClient.PublishSensorConfig(MQTT_UP_TIME, "", "", "", true);
 
   mqttClient.PublishSensorConfig(MQTT_LWT_MAX, "°C", "temperature", "", true);
@@ -202,7 +202,7 @@ bool CDaikinCtrl::MqttPublishValues()
     mqttClient.PublishUInt(MQTT_NET_WD_TIMEOUT, m_iNetWatchDogTimeout);
     mqttClient.PublishUInt(MQTT_NET_WD_RECOVERY, m_iNetWatchDogRecovery);
     mqttClient.PublishBool(MQTT_SHORT_CYCLE_PREVENT, m_bShortCyclePrevention);
-    mqttClient.PublishBool(MQTT_LOW_TEMP_SECONDARY_ZONE, m_bLowTempSecondaryZone);
+    mqttClient.PublishBool(MQTT_LOW_TEMPERATURE_SECONDARY_ZONE, m_bLowTemperatureSecondaryZone);
 
     if (m_fLeavingWaterMax == 0.0f)
     {
@@ -310,9 +310,9 @@ void CDaikinCtrl::SetNetWatchDogRecovery(const uint16_t iTime)
 }
 
 
-void CDaikinCtrl::SetLowTempSecondaryZone(const bool bVal)
+void CDaikinCtrl::SetLowTemperatureSecondaryZone(const bool bVal)
 {
-  if (CEepromSettings::Store(EEPROM_LOW_TEMP_SEC_ZONE, m_bLowTempSecondaryZone, bVal))
+  if (CEepromSettings::Store(EEPROM_LOW_TEMP_SEC_ZONE, m_bLowTemperatureSecondaryZone, bVal))
   {
     m_bPublishSettings = true;
   }
@@ -730,7 +730,7 @@ void CDaikinCtrl::Update()
         // Check if secondary zone requires heating
         if ((bSecondaryZoneEnable || m_bCtrlZoneSecForce || m_bCtrlValvePriCloseForce) && !m_bCtrlDaikinDisable)
         {
-          if (m_bLowTempSecondaryZone)
+          if (m_bLowTemperatureSecondaryZone)
           {
             // Enable (disable secondary zone on Daikin, if requested but primary zone doesn't require heating
             m_bDaikinSecondaryZoneOn = ((!bPrimaryZoneEnable && bSecondaryZoneEnable) || m_bCtrlZoneSecForce);
@@ -809,7 +809,7 @@ void CDaikinCtrl::Update()
 
           // Wait for AWT temperature to cool down before opening primary valve
           // FIXME: Perhaps monitor LWT temperature?
-          if (!m_bLowTempSecondaryZone)
+          if (!m_bLowTemperatureSecondaryZone)
             m_iState = STATE_LWT_COOL_DOWN_DELAY;
         }
         else
@@ -858,7 +858,7 @@ void CDaikinCtrl::UpdateRelays()
   bool bSafeForFloorHeating = !m_bFloorProtection;
 
   // When Daikin secondary zone uses high temperature, make sure we don't enable floor heated rooms
-  if (!m_bLowTempSecondaryZone)
+  if (!m_bLowTemperatureSecondaryZone)
     bSafeForFloorHeating &= (!m_bDaikinSecondaryZoneOn || m_bP1P2CoolingOn); // FIXME: Delay this from SM?
 
   if ((!m_bDaikinActive || !m_bCtrlEnable) && bSafeForFloorHeating)
