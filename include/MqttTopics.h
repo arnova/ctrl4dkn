@@ -2,6 +2,8 @@
 #ifndef MQTT_TOPICS_H
 #define MQTT_TOPICS_H
 
+#include "system.h"
+
 // Control topics
 #define MQTT_CONTROLLER_ON_OFF                  "controller_enable"
 #define MQTT_ZONE_PRIMARY_ENABLE                "zone_primary_enable"
@@ -52,23 +54,18 @@
 // Home Assistant birth/last will topic (HA publishes "online" here after it (re)started)
 #define MQTT_HA_STATUS_TOPIC                    "homeassistant/status"
 
-// Select the appropriate one below (depends on P1P2Serial/bridge firmware) 
-//#define MQTT_P1P2_HOST_ID "066"               // v0.9.44 or older. NOTE: Need to customize this
-#define MQTT_P1P2_HOST_ID "P1P2MQTT/bridge0"    // v0.9.45 or newer. NOTE: *May* need to customize this
-
-// Enable below when a bridge with older firmware (<v0.9.45) is used
-//#define MQTT_P1P2_OLD_BRIDGE // FIXME: Setting
-
 #define MQTT_P1P2_P_PREFIX                          "P1P2/P/" MQTT_P1P2_HOST_ID "/"
 
 // Define P1P2Serial / bridge topics
-#ifndef MQTT_P1P2_OLD_BRIDGE
+#ifdef MQTT_P1P2_OLD_BRIDGE
+#define MQTT_P1P2_HOST_ID "066"               // v0.9.44 or older. NOTE: Need to customize this
 #define MQTT_P1P2_P_HEATING_ON                      MQTT_P1P2_P_PREFIX "S/0/Heating_OnOff"
 #define MQTT_P1P2_P_COOLING_ON                      MQTT_P1P2_P_PREFIX "S/0/Cooling_OnOff"
 #define MQTT_P1P2_P_CIRCULATION_PUMP_ON             MQTT_P1P2_P_PREFIX "S/1/Circulation_Pump_OnOff"
 #define MQTT_P1P2_P_PRIMARY_ZONE_TARGET_TEMPERATURE MQTT_P1P2_P_PREFIX "S/1/Target_Temperature_Room"
 #define MQTT_P1P2_P_LEAVING_WATER_TEMP              MQTT_P1P2_P_PREFIX "T/1/Temperature_Leaving_Water"
 #else
+#define MQTT_P1P2_HOST_ID "P1P2MQTT/bridge0"    // v0.9.45 or newer. NOTE: *May* need to customize this
 #define MQTT_P1P2_P_HEATING_ON                      MQTT_P1P2_P_PREFIX "S/1/Climate_Heating"
 #define MQTT_P1P2_P_COOLING_ON                      MQTT_P1P2_P_PREFIX "S/1/Climate_Cooling"
 #define MQTT_P1P2_P_CIRCULATION_PUMP_ON             MQTT_P1P2_P_PREFIX "S/1/Circulation_Pump"

@@ -27,6 +27,9 @@ const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno v
 // and HA discover new entities (before we publish their values)
 #define MQTT_SETTLE_TIME_MS                     5000  // ms
 
+// Enable below when a p1p2 bridge with older firmware (<v0.9.45) is used
+//#define MQTT_P1P2_OLD_BRIDGE // FIXME: Setting
+
 // Socket server port. Uncomment to disable
 #define SOCKET_SERVER_PORT                      8000
 
