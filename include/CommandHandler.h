@@ -13,8 +13,6 @@ class CCommandHandler
     CCommandHandler() {};   // Empty ctor
     ~CCommandHandler() {};  // Empty dtor
 
-    static result_code_t FormatIP(uint8_t *data, char *strResult);
-
     bool GetDebugEnabled(void) const { return m_bDebug; };
 
   protected:

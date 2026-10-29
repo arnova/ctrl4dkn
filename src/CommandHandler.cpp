@@ -16,23 +16,6 @@
 #include <Arduino.h>
 
 
-// Helper function to format IP Address
-result_code_t CCommandHandler::FormatIP(uint8_t *data, char *strResult)
-{
-  strResult[0] = '\0';
-  for (uint8_t i = 0; i < 4; i++)
-  {
-    char strDec[4];
-    strcat(strResult, uint32_to_decstr((uint32_t)data[i], strDec, sizeof(strDec)));
-    if (i < 3)
-      strcat(strResult, ".");
-  }
-  strcat(strResult, "\n\r");
-
-  return pack_result_code(ERR_CODE_OK);
-}
-
-
 void CCommandHandler::PrintItemValue(const char* strItem, const char* strValue, const char* strSuffix)
 {
   CTerminal::print(strItem);
