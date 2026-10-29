@@ -95,7 +95,7 @@ void CCommandHandler::PrintItemSecret(const char* strItem, const char* strValue)
 }
 
 
-void CCommandHandler::PrintItemIp(const char* strItem, const uint8_t* ipAddr)
+void CCommandHandler::PrintItemIp(const char* strItem, const IPAddress& ipAddr)
 {
   char strBuf[16]; // Enough room for "255.255.255.255"
   snprintf(strBuf, sizeof(strBuf), "%u.%u.%u.%u", ipAddr[0], ipAddr[1], ipAddr[2], ipAddr[3]);

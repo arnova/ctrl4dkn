@@ -329,9 +329,8 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
   PrintItemValue("wifi_conn", m_network.IsConnected());
   PrintItemValue(" mqtt_conn", m_network.IsMqttConnected());
 
-  const IPAddress localIp = WiFi.localIP();
-  const uint8_t wifiIp[4] = { localIp[0], localIp[1], localIp[2], localIp[3] };
-  PrintItemIp(" wifi_ip", wifiIp);
+  PrintItemIp(" wifi_ip", WiFi.localIP());
+  PrintItemIp(" wifi_subnet", WiFi.subnetMask());
 
   CTerminal::println("");
 
