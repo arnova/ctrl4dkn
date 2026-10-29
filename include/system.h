@@ -5,7 +5,7 @@
 #include <Arduino.h>
 
 // Version string:
-#define MY_VERSION "1.00"
+#define MY_VERSION "1.10"
 
 // Firmware version string
 const char VER_STR_P[] PROGMEM = "Ctrl4Dkn " MY_VERSION " - (C) 2024-2026 Arno van Amersfoort (Arnova)";
