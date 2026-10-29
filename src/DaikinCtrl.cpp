@@ -206,13 +206,12 @@ bool CDaikinCtrl::MqttPublishValues()
 
     if (m_fLeavingWaterMax == 0.0f)
     {
-      strcpy(strBuf, "None"); // Disabled: Home Assistant: state "unknown"
+      mqttClient.PublishMessage(MQTT_LWT_MAX, "None"); // Disabled: Home Assistant: state "unknown"
     }
     else
     {
-      snprintf(strBuf, sizeof(strBuf), "%.1f", m_fLeavingWaterMax);
+      mqttClient.PublishFloat(MQTT_LWT_MAX, m_fLeavingWaterMax, 1);
     }
-    mqttClient.PublishMessage(MQTT_LWT_MAX, strBuf);
 
     mqttClient.PublishUInt(MQTT_FLOOR_PROTECTION_DELAY, m_iFloorProtectionDelay);
     mqttClient.PublishUInt(MQTT_PRIMARY_ZONE_VALVE_DELAY, m_iPrimaryZoneValveDelay);

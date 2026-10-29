@@ -268,8 +268,6 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
   if (result.code != ERR_CODE_OK)
     return result;
 
-  char strBuf[20]; // Enough room for float with 3 decimals
-
   PrintItemValue("host_name", m_network.GetHostName());
   PrintItemValue(" wifi_ssid", m_network.GetWifiSsid());
 
@@ -286,14 +284,9 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
 
   CTerminal::println("");
 
-  snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetMqttUpdateInterval());
-  PrintItemValue("mqtt_update_interval", strBuf);
-
-  snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetNetWatchDogTimeout());
-  PrintItemValue(" net_wd_timeout", strBuf);
-
-  snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetNetWatchDogRecovery());
-  PrintItemValue(" net_wd_recovery", strBuf);
+  PrintItemValue("mqtt_update_interval", m_daikinCtrl.GetMqttUpdateInterval(), "s");
+  PrintItemValue(" net_wd_timeout", m_daikinCtrl.GetNetWatchDogTimeout(), "s");
+  PrintItemValue(" net_wd_recovery", m_daikinCtrl.GetNetWatchDogRecovery(), "s");
 
   CTerminal::println("");
 
@@ -305,37 +298,21 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
   }
   else
   {
-    snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetLeavingWaterMax());
-    PrintItemValue(" lwt_max", strBuf);
+    PrintItemValue(" lwt_max", m_daikinCtrl.GetLeavingWaterMax(), 1);
   }
 
-  snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetFloorProtectionDelay());
-  PrintItemValue(" protect_delay", strBuf);
-
-  snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetLwtCoolDownDelay());
-  PrintItemValue(" lwt_cool_down", strBuf);
-
-  snprintf(strBuf, sizeof(strBuf), "%us", m_daikinCtrl.GetPrimaryZoneValveDelay());
-  PrintItemValue(" valve_delay", strBuf);
+  PrintItemValue(" protect_delay", m_daikinCtrl.GetFloorProtectionDelay(), "s");
+  PrintItemValue(" lwt_cool_down", m_daikinCtrl.GetLwtCoolDownDelay(), "s");
+  PrintItemValue(" valve_delay", m_daikinCtrl.GetPrimaryZoneValveDelay(), "s");
 
   CTerminal::println("");
 
   PrintItemValue("sc_prevent", m_daikinCtrl.GetShortCyclePrevention());
-
-  snprintf(strBuf, sizeof(strBuf), "%um", m_daikinCtrl.GetShortCycleSmallWindow());
-  PrintItemValue(" sc_small_win", strBuf);
-
-  snprintf(strBuf, sizeof(strBuf), "%u", m_daikinCtrl.GetShortCycleSmallWindowCount());
-  PrintItemValue(" sc_small_count", strBuf);
-
-  snprintf(strBuf, sizeof(strBuf), "%um", m_daikinCtrl.GetShortCycleLargeWindow());
-  PrintItemValue(" sc_large_win", strBuf);
-
-  snprintf(strBuf, sizeof(strBuf), "%u", m_daikinCtrl.GetShortCycleLargeWindowCount());
-  PrintItemValue(" sc_large_count", strBuf);
-
-  snprintf(strBuf, sizeof(strBuf), "%um", m_daikinCtrl.GetShortCycleRecoveryTime());
-  PrintItemValue(" sc_recovery", strBuf);
+  PrintItemValue(" sc_small_win", m_daikinCtrl.GetShortCycleSmallWindow(), "m");
+  PrintItemValue(" sc_small_count", m_daikinCtrl.GetShortCycleSmallWindowCount());
+  PrintItemValue(" sc_large_win", m_daikinCtrl.GetShortCycleLargeWindow(), "m");
+  PrintItemValue(" sc_large_count", m_daikinCtrl.GetShortCycleLargeWindowCount());
+  PrintItemValue(" sc_recovery", m_daikinCtrl.GetShortCycleRecoveryTime(), "m");
 
   CTerminal::println("");
   CTerminal::println("");
@@ -348,8 +325,6 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
 {
   if (strArgs != NULL && *strArgs)
     return pack_result_code(ERR_CODE_TOO_MANY_ARGS, ARG_INT32_NONE);
-
-  char strBuf[20]; // Enough room for float with 3 decimals
 
   PrintItemValue("wifi_conn", m_network.IsConnected());
   PrintItemValue(" mqtt_conn", m_network.IsMqttConnected());
@@ -403,12 +378,9 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
   PrintItemValue(" p1p2_defrost", m_daikinCtrl.GetP1P2DefrostActive());
   CTerminal::println("");
 
-  snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetP1P2PrimaryZoneRoomTemp());
-  PrintItemValue("p1p2_room_temp", strBuf);
-  snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetP1P2PrimaryZoneTargetTemp());
-  PrintItemValue(" p1p2_target_temp", strBuf);
-  snprintf(strBuf, sizeof(strBuf), "%.1f", m_daikinCtrl.GetP1P2LeavingWaterTemp());
-  PrintItemValue(" p1p2_lwt", strBuf);
+  PrintItemValue("p1p2_room_temp", m_daikinCtrl.GetP1P2PrimaryZoneRoomTemp(), 1);
+  PrintItemValue(" p1p2_target_temp", m_daikinCtrl.GetP1P2PrimaryZoneTargetTemp(), 1);
+  PrintItemValue(" p1p2_lwt", m_daikinCtrl.GetP1P2LeavingWaterTemp(), 1);
   CTerminal::println("");
   CTerminal::println("");
 
