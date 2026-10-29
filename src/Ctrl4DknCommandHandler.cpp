@@ -298,7 +298,7 @@ result_code_t CCtrl4DknCommandHandler::CmdInfo(const char *strArgs)
   }
   else
   {
-    PrintItemValue(" lwt_max", m_daikinCtrl.GetLeavingWaterMax(), 1);
+    PrintItemValue(" lwt_max", m_daikinCtrl.GetLeavingWaterMax(), 1, "C");
   }
 
   PrintItemValue(" protect_delay", m_daikinCtrl.GetFloorProtectionDelay(), "s");
@@ -364,7 +364,14 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
   PrintItemValue(" sc_pri", m_daikinCtrl.GetZonePrimaryShortCycleDetected());
   PrintItemValue(" sc_sec", m_daikinCtrl.GetZoneSecondaryShortCycleDetected());
   const char* strAvgRoomTemp = m_daikinCtrl.GetAveragePrimaryZoneRoomTemp();
-  PrintItemValue(" room_temp_avg", (strlen(strAvgRoomTemp) == 0) ? "(none)" : strAvgRoomTemp);
+  if (strlen(strAvgRoomTemp) == 0)
+  {
+    PrintItemValue(" room_temp_avg", "(none)");
+  }
+  else
+  {
+    PrintItemValue(" room_temp_avg", strAvgRoomTemp, "C");
+  }
   CTerminal::println("");
 
   // P1P2 (received) values
@@ -377,9 +384,9 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
   PrintItemValue(" p1p2_defrost", m_daikinCtrl.GetP1P2DefrostActive());
   CTerminal::println("");
 
-  PrintItemValue("p1p2_room_temp", m_daikinCtrl.GetP1P2PrimaryZoneRoomTemp(), 1);
-  PrintItemValue(" p1p2_target_temp", m_daikinCtrl.GetP1P2PrimaryZoneTargetTemp(), 1);
-  PrintItemValue(" p1p2_lwt", m_daikinCtrl.GetP1P2LeavingWaterTemp(), 1);
+  PrintItemValue("p1p2_room_temp", m_daikinCtrl.GetP1P2PrimaryZoneRoomTemp(), 1, "C");
+  PrintItemValue(" p1p2_target_temp", m_daikinCtrl.GetP1P2PrimaryZoneTargetTemp(), 1, "C");
+  PrintItemValue(" p1p2_lwt", m_daikinCtrl.GetP1P2LeavingWaterTemp(), 1, "C");
   CTerminal::println("");
   CTerminal::println("");
 
