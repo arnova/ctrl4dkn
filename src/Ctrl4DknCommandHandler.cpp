@@ -347,12 +347,17 @@ result_code_t CCtrl4DknCommandHandler::CmdStatus(const char *strArgs)
   if (m_network.IsConnected())
   {
     PrintItemValue(" wifi_channel", static_cast<long>(WiFi.channel()));
+
+    const CUptime::uptime_t wifiConnTime = m_network.GetWifiConnTime();
+    char strTemp[24];
+    snprintf(strTemp, sizeof(strTemp), "%ud %02u:%02u:%02u", wifiConnTime.iDays, wifiConnTime.iHours, wifiConnTime.iMinutes, wifiConnTime.iSeconds);
+    PrintItemValue(" wifi_conn_time", strTemp);
   }
   else
   {
     PrintItemValue(" wifi_channel", "n/a");
+    PrintItemValue(" wifi_conn_time", "n/a");
   }
-  PrintItemValue(" wifi_reconnects", static_cast<unsigned long>(m_network.GetWifiReconnectCount()));
 
   CTerminal::println("");
 
@@ -439,8 +444,6 @@ result_code_t CCtrl4DknCommandHandler::CmdReset(const char *strArgs)
     return result;
 
   m_daikinCtrl.Reset();
-  m_network.ResetWifiReconnectCount();
-  m_network.MqttRequestRepublish(); // Publish the reset reconnect count directly
 
   return pack_result_code(ERR_CODE_OK);
 }
